@@ -48,6 +48,7 @@ disallow_incomplete_defs = true
 
 [project.scripts]
 openevolve-run = "openevolve.cli:main"
+loopbench = "loopbench.cli:main"
 
 [tool.pytest.ini_options]
 markers = [
@@ -57,10 +58,15 @@ markers = [
 addopts = "--strict-markers"
 
 [tool.setuptools.packages.find]
-include = ["openevolve*"]
+include = ["openevolve*", "loopbench*", "sandbox*"]
 
 [tool.setuptools.package-data]
 openevolve = ["prompts/defaults/*.txt", "prompts/defaults/*.json"]
 
 [tool.setuptools.dynamic]
 version = { attr = "openevolve._version.__version__" }
+
+[tool.pyrefly]
+python-interpreter-path = ".venv/Scripts/python.exe"
+site-package-path = [".venv/Lib/site-packages"]
+
