@@ -178,6 +178,17 @@ def main() -> int:
     Returns:
         Exit code
     """
+    # Force UTF-8 encoding on standard streams to prevent UnicodeEncodeError under Windows command line
+    if hasattr(sys.stdout, "reconfigure"):
+        try:
+            sys.stdout.reconfigure(encoding="utf-8", errors="backslashreplace")
+        except Exception:
+            pass
+    if hasattr(sys.stderr, "reconfigure"):
+        try:
+            sys.stderr.reconfigure(encoding="utf-8", errors="backslashreplace")
+        except Exception:
+            pass
     return asyncio.run(main_async())
 
 
