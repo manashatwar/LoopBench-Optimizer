@@ -1,0 +1,37 @@
+# LoopBench Sandbox Image
+# Minimal Python image that runs a user-supplied test command and writes
+# a JSON score to /results/score.json.
+#
+# Build:
+#   docker build -f sandbox/Dockerfile.sandbox -t loopbench-sandbox .
+#
+# Run (host side — done automatically by sandbox/runner.py):
+#   docker run --rm --network=none \
+#     -v /path/to/evolved/code:/workspace:ro \
+#     -v /path/to/results:/results \
+#     -e LOOPBENCH_PROGRAM_PATH=/workspace/program.py \
+#     -e LOOPBENCH_TEST_CMD="pytest test_fibonacci.py -v -s -q" \
+#     loopbench-sandbox
+
+FROM python:3.12-slim
+
+# No network calls inside the container — belt-and-suspenders on top of --network=none
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
+
+WORKDIR /sandbox
+
+# Install only what's needed to run tests + produce JSON report
+RUN pip install --no-cache-dir --root-user-action=ignore \
+    pytest==8.3.5 \
+    pytest-json-report==1.5.0
+
+# Copy the entrypoint script
+COPY sandbox/entrypoint.sh /sandbox/entrypoint.sh
+RUN chmod +x /sandbox/entrypoint.sh
+
+# Workspace is mounted read-only at runtime: -v <code_dir>:/workspace:ro
+# Results are written to: -v <results_dir>:/results
+RUN mkdir -p /results
+
+ENTRYPOINT ["/sandbox/entrypoint.sh"]
