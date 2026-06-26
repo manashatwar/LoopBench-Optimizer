@@ -1,3 +1,11 @@
+# Secrets — never commit
+.env
+.env.*
+
+# Virtual environment
+.venv/
+venv/
+
 results/
 examples/lm_eval/prompts/system_message.txt
 examples/lm_eval/prompts/evaluator_system_message.txt
@@ -40,8 +48,10 @@ ENV/
 # Output files
 examples/*/output/
 openevolve_output*/
+loopbench_output*/
 *.log
 demo_output*/
+
 pr_sanity*/
 
 # Test cache
