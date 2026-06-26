@@ -1,0 +1,90 @@
+# LoopBench Default Configuration Template
+# Copy this file and fill in target.program + target.evaluator.
+#
+# Usage:
+#   loopbench run --config loopbench_default.yaml
+#   loopbench init --name my_project   (generates a copy of this file)
+#
+# Schema: This file is a SUPERSET of openevolve's config.yaml.
+#   LoopBench-specific sections: target, sandbox, metric, constraints
+#   All other keys pass through to the OpenEvolve engine unchanged.
+
+# ── LoopBench: Target ─────────────────────────────────────────────────────────
+# What to optimize. Both paths are relative to this YAML file.
+target:
+  program: examples/fibonacci_optimizer/initial_program.py
+  evaluator: examples/fibonacci_optimizer/evaluator.py
+
+# ── LoopBench: Sandbox ────────────────────────────────────────────────────────
+# Execution environment for the evaluator.
+# Set use_docker: true to run tests inside an isolated Docker container.
+sandbox:
+  use_docker: false              # true = run tests in Docker (requires Task 3 sandbox)
+  command: "pytest"              # base test command (used by Docker sandbox entrypoint)
+  network_off: true              # --network=none inside container (security)
+  readonly_mount: true           # mount evolved code as read-only
+
+# ── LoopBench: Metric ────────────────────────────────────────────────────────
+# Which metric to optimize and the score to stop at.
+metric:
+  name: "combined_score"         # must match a key returned by evaluate()
+  threshold: 0.95                # stop early when best score >= this value
+  direction: "maximize"          # maximize or minimize
+
+# ── LoopBench: Constraints ───────────────────────────────────────────────────
+# Safety limits on compute and cost.
+constraints:
+  max_iterations: 20             # hard cap on evolution iterations
+  max_token_cost_usd: 5.0        # not yet enforced — reserved for future token tracking
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Everything below this line is standard OpenEvolve configuration.
+# See configs/default_config.yaml for all available options.
+# ─────────────────────────────────────────────────────────────────────────────
+
+max_iterations: 20
+checkpoint_interval: 5
+log_level: "INFO"
+diff_based_evolution: true
+max_code_length: 10000
+
+# ── LLM ───────────────────────────────────────────────────────────────────────
+llm:
+  models:
+    - name: "gemini-2.0-flash-lite"
+      weight: 0.8
+    - name: "gemini-2.0-flash"
+      weight: 0.2
+  api_base: "https://generativelanguage.googleapis.com/v1beta/openai/"
+  api_key: "${GEMINI_API_KEY}"
+  temperature: 0.7
+  max_tokens: 4096
+  timeout: 60
+  retries: 3
+
+# ── Prompt ────────────────────────────────────────────────────────────────────
+prompt:
+  system_message: >
+    You are an expert programmer helping to optimize code through evolutionary
+    search. Propose targeted improvements to the code inside the EVOLVE-BLOCK.
+    Ensure all existing tests continue to pass.
+  num_top_programs: 3
+  num_diverse_programs: 2
+
+# ── Database / Population ─────────────────────────────────────────────────────
+database:
+  population_size: 100
+  archive_size: 30
+  num_islands: 3
+  elite_selection_ratio: 0.1
+  exploitation_ratio: 0.7
+  exploration_ratio: 0.2
+  migration_interval: 20
+  migration_rate: 0.1
+
+# ── Evaluator ─────────────────────────────────────────────────────────────────
+evaluator:
+  timeout: 120
+  cascade_thresholds: [0.3, 0.6]
+  parallel_evaluations: 2
+  use_llm_feedback: false
