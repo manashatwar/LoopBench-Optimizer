@@ -11,6 +11,8 @@
 [![License](https://img.shields.io/github/license/algorithmicsuperintelligence/openevolve)](LICENSE)
 [![Python](https://img.shields.io/badge/python-3.11+-blue)](pyproject.toml)
 [![Tests](https://img.shields.io/badge/tests-457%20passing-brightgreen)](tests/)
+[![CI](https://github.com/manashatwar/LoopBench-Optimizer/actions/workflows/ci.yml/badge.svg)](https://github.com/manashatwar/LoopBench-Optimizer/actions/workflows/ci.yml)
+[![Sandbox Image](https://github.com/manashatwar/LoopBench-Optimizer/actions/workflows/sandbox-image.yml/badge.svg)](https://github.com/manashatwar/LoopBench-Optimizer/actions/workflows/sandbox-image.yml)
 
 </div>
 
