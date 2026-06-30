@@ -1,0 +1,397 @@
+{
+  "run": {
+    "id": "demo-run-001",
+    "target_repo": "https://github.com/your-org/LoopBench-Optimizer",
+    "start_time": 1782852559.3770685,
+    "end_time": 1782856159.3770685,
+    "status": "successful",
+    "success_threshold": 0.1,
+    "final_improvement": 0.5
+  },
+  "candidates": [
+    {
+      "id": "baseline-0",
+      "run_id": "demo-run-001",
+      "generation": 0,
+      "parent_id": null,
+      "timestamp": 1782852559.3770685,
+      "patch_content": "",
+      "applied": true,
+      "tested": true,
+      "exit_code": 0,
+      "stdout": "Baseline: 100ms",
+      "stderr": "",
+      "execution_time": 0.5,
+      "metrics": {
+        "combined_score": 0.5,
+        "latency": 100.0
+      },
+      "score": 0.5,
+      "failed": false,
+      "failure_phase": null,
+      "error_message": null
+    },
+    {
+      "id": "e4879fb5-1af",
+      "run_id": "demo-run-001",
+      "generation": 1,
+      "parent_id": "baseline-0",
+      "timestamp": 1782852739.3770685,
+      "patch_content": "--- a/src/main.py\n+++ b/src/main.py\n@@ -1,5 +1,5 @@\n-def slow_sum(n):\n-    return sum(range(n))\n+def fast_sum(n):\n+    return n * (n - 1) // 2\n",
+      "applied": true,
+      "tested": true,
+      "exit_code": 0,
+      "stdout": "Score: 0.5",
+      "stderr": "",
+      "execution_time": 0.8754841186120954,
+      "metrics": {
+        "combined_score": 0.5,
+        "latency": 200.0
+      },
+      "score": 0.5,
+      "failed": false,
+      "failure_phase": null,
+      "error_message": null
+    },
+    {
+      "id": "5e292752-c2b",
+      "run_id": "demo-run-001",
+      "generation": 2,
+      "parent_id": "baseline-0",
+      "timestamp": 1782852919.3770685,
+      "patch_content": "--- a/src/main.py\n+++ b/src/main.py\n@@ -1,5 +1,5 @@\n-def slow_sum(n):\n-    return sum(range(n))\n+def fast_sum(n):\n+    return n * (n - 1) // 2\n",
+      "applied": true,
+      "tested": true,
+      "exit_code": 0,
+      "stdout": "Score: 0.55",
+      "stderr": "",
+      "execution_time": 0.32250967970040023,
+      "metrics": {
+        "combined_score": 0.55,
+        "latency": 181.8
+      },
+      "score": 0.55,
+      "failed": false,
+      "failure_phase": null,
+      "error_message": null
+    },
+    {
+      "id": "3cfae810-a7b",
+      "run_id": "demo-run-001",
+      "generation": 3,
+      "parent_id": "baseline-0",
+      "timestamp": 1782853099.3770685,
+      "patch_content": "",
+      "applied": false,
+      "tested": false,
+      "exit_code": 1,
+      "stdout": "",
+      "stderr": "patch apply failed",
+      "execution_time": 0.5475263865322073,
+      "metrics": {},
+      "score": 0.0,
+      "failed": true,
+      "failure_phase": "apply",
+      "error_message": "patch apply failed"
+    },
+    {
+      "id": "1c68052d-7a0",
+      "run_id": "demo-run-001",
+      "generation": 4,
+      "parent_id": "baseline-0",
+      "timestamp": 1782853279.3770685,
+      "patch_content": "--- a/src/main.py\n+++ b/src/main.py\n@@ -1,5 +1,5 @@\n-def slow_sum(n):\n-    return sum(range(n))\n+def fast_sum(n):\n+    return n * (n - 1) // 2\n",
+      "applied": true,
+      "tested": true,
+      "exit_code": 0,
+      "stdout": "Score: 0.62",
+      "stderr": "",
+      "execution_time": 0.5008896643339404,
+      "metrics": {
+        "combined_score": 0.62,
+        "latency": 161.3
+      },
+      "score": 0.62,
+      "failed": false,
+      "failure_phase": null,
+      "error_message": null
+    },
+    {
+      "id": "f26b11e6-ab4",
+      "run_id": "demo-run-001",
+      "generation": 5,
+      "parent_id": "baseline-0",
+      "timestamp": 1782853459.3770685,
+      "patch_content": "--- a/src/main.py\n+++ b/src/main.py\n@@ -1,5 +1,5 @@\n-def slow_sum(n):\n-    return sum(range(n))\n+def fast_sum(n):\n+    return n * (n - 1) // 2\n",
+      "applied": true,
+      "tested": true,
+      "exit_code": 0,
+      "stdout": "Score: 0.68",
+      "stderr": "",
+      "execution_time": 0.962824092747611,
+      "metrics": {
+        "combined_score": 0.68,
+        "latency": 147.1
+      },
+      "score": 0.68,
+      "failed": false,
+      "failure_phase": null,
+      "error_message": null
+    },
+    {
+      "id": "57d52a71-bd4",
+      "run_id": "demo-run-001",
+      "generation": 6,
+      "parent_id": "baseline-0",
+      "timestamp": 1782853639.3770685,
+      "patch_content": "--- a/src/main.py\n+++ b/src/main.py\n@@ -1,5 +1,5 @@\n-def slow_sum(n):\n-    return sum(range(n))\n+def fast_sum(n):\n+    return n * (n - 1) // 2\n",
+      "applied": true,
+      "tested": true,
+      "exit_code": 0,
+      "stdout": "Score: 0.66",
+      "stderr": "",
+      "execution_time": 0.9090295386806202,
+      "metrics": {
+        "combined_score": 0.66,
+        "latency": 151.5
+      },
+      "score": 0.66,
+      "failed": false,
+      "failure_phase": null,
+      "error_message": null
+    },
+    {
+      "id": "24339fd3-70c",
+      "run_id": "demo-run-001",
+      "generation": 7,
+      "parent_id": "baseline-0",
+      "timestamp": 1782853819.3770685,
+      "patch_content": "--- a/src/main.py\n+++ b/src/main.py\n@@ -1,5 +1,5 @@\n-def slow_sum(n):\n-    return sum(range(n))\n+def fast_sum(n):\n+    return n * (n - 1) // 2\n",
+      "applied": true,
+      "tested": true,
+      "exit_code": 0,
+      "stdout": "Score: 0.71",
+      "stderr": "",
+      "execution_time": 1.1029616109343607,
+      "metrics": {
+        "combined_score": 0.71,
+        "latency": 140.8
+      },
+      "score": 0.71,
+      "failed": false,
+      "failure_phase": null,
+      "error_message": null
+    },
+    {
+      "id": "2a4a6fb3-a13",
+      "run_id": "demo-run-001",
+      "generation": 8,
+      "parent_id": "baseline-0",
+      "timestamp": 1782853999.3770685,
+      "patch_content": "--- a/src/main.py\n+++ b/src/main.py\n@@ -1,5 +1,5 @@\n-def slow_sum(n):\n-    return sum(range(n))\n+def fast_sum(n):\n+    return n * (n - 1) // 2\n",
+      "applied": true,
+      "tested": true,
+      "exit_code": 0,
+      "stdout": "Score: 0.7",
+      "stderr": "",
+      "execution_time": 0.3782449493664745,
+      "metrics": {
+        "combined_score": 0.7,
+        "latency": 142.9
+      },
+      "score": 0.7,
+      "failed": false,
+      "failure_phase": null,
+      "error_message": null
+    },
+    {
+      "id": "1e7a4b23-2b0",
+      "run_id": "demo-run-001",
+      "generation": 9,
+      "parent_id": "baseline-0",
+      "timestamp": 1782854179.3770685,
+      "patch_content": "--- a/src/main.py\n+++ b/src/main.py\n@@ -1,5 +1,5 @@\n-def slow_sum(n):\n-    return sum(range(n))\n+def fast_sum(n):\n+    return n * (n - 1) // 2\n",
+      "applied": true,
+      "tested": true,
+      "exit_code": 0,
+      "stdout": "Score: 0.75",
+      "stderr": "",
+      "execution_time": 0.6797296377167433,
+      "metrics": {
+        "combined_score": 0.75,
+        "latency": 133.3
+      },
+      "score": 0.75,
+      "failed": false,
+      "failure_phase": null,
+      "error_message": null
+    },
+    {
+      "id": "226b9cf2-482",
+      "run_id": "demo-run-001",
+      "generation": 10,
+      "parent_id": "baseline-0",
+      "timestamp": 1782854359.3770685,
+      "patch_content": "--- a/src/main.py\n+++ b/src/main.py\n@@ -1,5 +1,5 @@\n-def slow_sum(n):\n-    return sum(range(n))\n+def fast_sum(n):\n+    return n * (n - 1) // 2\n",
+      "applied": true,
+      "tested": true,
+      "exit_code": 0,
+      "stdout": "Score: 0.73",
+      "stderr": "",
+      "execution_time": 0.3268174974942633,
+      "metrics": {
+        "combined_score": 0.73,
+        "latency": 137.0
+      },
+      "score": 0.73,
+      "failed": false,
+      "failure_phase": null,
+      "error_message": null
+    }
+  ],
+  "best_candidate": {
+    "id": "24339fd3-70c",
+    "run_id": "demo-run-001",
+    "generation": 7,
+    "parent_id": "baseline-0",
+    "timestamp": 1782853819.3770685,
+    "patch_content": "--- a/src/main.py\n+++ b/src/main.py\n@@ -1,5 +1,5 @@\n-def slow_sum(n):\n-    return sum(range(n))\n+def fast_sum(n):\n+    return n * (n - 1) // 2\n",
+    "applied": true,
+    "tested": true,
+    "exit_code": 0,
+    "stdout": "Score: 0.71",
+    "stderr": "",
+    "execution_time": 1.1029616109343607,
+    "metrics": {
+      "combined_score": 0.71,
+      "latency": 140.8
+    },
+    "score": 0.71,
+    "failed": false,
+    "failure_phase": null,
+    "error_message": null
+  },
+  "failures": [
+    {
+      "id": "3cfae810-a7b",
+      "run_id": "demo-run-001",
+      "generation": 3,
+      "parent_id": "baseline-0",
+      "timestamp": 1782853099.3770685,
+      "patch_content": "",
+      "applied": false,
+      "tested": false,
+      "exit_code": 1,
+      "stdout": "",
+      "stderr": "patch apply failed",
+      "execution_time": 0.5475263865322073,
+      "metrics": {},
+      "score": 0.0,
+      "failed": true,
+      "failure_phase": "apply",
+      "error_message": "patch apply failed"
+    }
+  ],
+  "audit_log": [
+    {
+      "id": 1,
+      "run_id": "demo-run-001",
+      "candidate_id": null,
+      "timestamp": 1782852739.3770685,
+      "event_type": "generation_start",
+      "event_data": {
+        "generation": 1
+      }
+    },
+    {
+      "id": 2,
+      "run_id": "demo-run-001",
+      "candidate_id": null,
+      "timestamp": 1782852919.3770685,
+      "event_type": "generation_start",
+      "event_data": {
+        "generation": 2
+      }
+    },
+    {
+      "id": 3,
+      "run_id": "demo-run-001",
+      "candidate_id": null,
+      "timestamp": 1782853099.3770685,
+      "event_type": "generation_start",
+      "event_data": {
+        "generation": 3
+      }
+    },
+    {
+      "id": 4,
+      "run_id": "demo-run-001",
+      "candidate_id": null,
+      "timestamp": 1782853279.3770685,
+      "event_type": "generation_start",
+      "event_data": {
+        "generation": 4
+      }
+    },
+    {
+      "id": 5,
+      "run_id": "demo-run-001",
+      "candidate_id": null,
+      "timestamp": 1782853459.3770685,
+      "event_type": "generation_start",
+      "event_data": {
+        "generation": 5
+      }
+    },
+    {
+      "id": 6,
+      "run_id": "demo-run-001",
+      "candidate_id": null,
+      "timestamp": 1782853639.3770685,
+      "event_type": "generation_start",
+      "event_data": {
+        "generation": 6
+      }
+    },
+    {
+      "id": 7,
+      "run_id": "demo-run-001",
+      "candidate_id": null,
+      "timestamp": 1782853819.3770685,
+      "event_type": "generation_start",
+      "event_data": {
+        "generation": 7
+      }
+    },
+    {
+      "id": 8,
+      "run_id": "demo-run-001",
+      "candidate_id": null,
+      "timestamp": 1782853999.3770685,
+      "event_type": "generation_start",
+      "event_data": {
+        "generation": 8
+      }
+    },
+    {
+      "id": 9,
+      "run_id": "demo-run-001",
+      "candidate_id": null,
+      "timestamp": 1782854179.3770685,
+      "event_type": "generation_start",
+      "event_data": {
+        "generation": 9
+      }
+    },
+    {
+      "id": 10,
+      "run_id": "demo-run-001",
+      "candidate_id": null,
+      "timestamp": 1782854359.3770685,
+      "event_type": "generation_start",
+      "event_data": {
+        "generation": 10
+      }
+    }
+  ]
+}

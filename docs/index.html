@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LoopBench Optimizer — Dashboard</title>
+  <!-- CDN: React 18 + ReactDOM (UMD) -->
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <!-- Recharts (depends on React) -->
+  <script crossorigin src="https://unpkg.com/recharts@2/umd/Recharts.js"></script>
+  <!-- html2canvas for PNG export (task 15.5) -->
+  <script crossorigin src="https://unpkg.com/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Segoe UI',system-ui,sans-serif;background:#0f172a;color:#e2e8f0;min-height:100vh}
+    #root{max-width:1200px;margin:0 auto;padding:1.5rem}
+    h1{font-size:1.6rem;font-weight:700;color:#f8fafc;margin-bottom:0.25rem}
+    .subtitle{color:#94a3b8;font-size:0.875rem;margin-bottom:1.5rem}
+    .card{background:#1e293b;border:1px solid #334155;border-radius:0.75rem;padding:1.25rem;margin-bottom:1.25rem}
+    .card-title{font-size:1rem;font-weight:600;color:#cbd5e1;margin-bottom:0.75rem}
+    .stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:0.75rem;margin-bottom:1.25rem}
+    .stat{background:#1e293b;border:1px solid #334155;border-radius:0.5rem;padding:0.875rem;text-align:center}
+    .stat-val{font-size:1.5rem;font-weight:700;color:#f1f5f9}
+    .stat-label{font-size:0.75rem;color:#64748b;margin-top:0.25rem;text-transform:uppercase;letter-spacing:.05em}
+    .stat.success .stat-val{color:#4ade80}
+    .stat.warn .stat-val{color:#fb923c}
+    .badge{display:inline-block;padding:.15em .55em;border-radius:9999px;font-size:.75rem;font-weight:600}
+    .badge-success{background:#166534;color:#86efac}
+    .badge-failed{background:#7f1d1d;color:#fca5a5}
+    .badge-completed{background:#1e3a5f;color:#93c5fd}
+    table{width:100%;border-collapse:collapse;font-size:.8125rem}
+    th{text-align:left;color:#64748b;font-weight:600;padding:.5rem .75rem;border-bottom:1px solid #334155;white-space:nowrap}
+    td{padding:.5rem .75rem;border-bottom:1px solid #1e293b;color:#cbd5e1;vertical-align:top}
+    tr:hover td{background:#273449;cursor:pointer}
+    .detail-panel{background:#0f172a;border:1px solid #334155;border-radius:.5rem;padding:1rem;margin-top:.75rem}
+    pre{background:#0a0f1a;border-radius:.375rem;padding:.75rem;overflow:auto;font-size:.75rem;color:#7dd3fc;line-height:1.5;max-height:260px;white-space:pre-wrap;word-break:break-all}
+    .btn{display:inline-flex;align-items:center;gap:.35rem;background:#334155;border:none;color:#e2e8f0;padding:.45rem .9rem;border-radius:.375rem;font-size:.8125rem;cursor:pointer;transition:background .15s}
+    .btn:hover{background:#475569}
+    .btn-primary{background:#2563eb;color:#fff}
+    .btn-primary:hover{background:#1d4ed8}
+    .toolbar{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;margin-bottom:1rem}
+    .refresh-info{margin-left:auto;color:#64748b;font-size:.75rem}
+    #chart-area .recharts-wrapper{width:100%!important}
+    .error-box{background:#450a0a;border:1px solid #7f1d1d;border-radius:.5rem;padding:1rem;color:#fca5a5;font-size:.875rem}
+    .loading{color:#64748b;font-size:.875rem;padding:2rem;text-align:center}
+    .metrics-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:.5rem;margin-top:.5rem}
+    .metric-chip{background:#0f172a;border:1px solid #334155;border-radius:.375rem;padding:.35rem .6rem;font-size:.75rem}
+    .metric-key{color:#64748b}
+    .metric-val{color:#f1f5f9;font-weight:600}
+    .diff-block{background:#0a0f1a;border-radius:.375rem;overflow:auto;max-height:300px;font-size:.75rem;line-height:1.6;padding:.75rem}
+    .diff-add{color:#4ade80}
+    .diff-del{color:#f87171}
+    .diff-hunk{color:#818cf8}
+    .diff-meta{color:#64748b}
+  </style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+// ─── helpers ───────────────────────────────────────────────────────────────
+const {
+  useState, useEffect, useCallback, useMemo, useRef, createElement: h
+} = React;
+const {
+  LineChart, Line, ScatterChart, Scatter, XAxis, YAxis, CartesianGrid,
+  Tooltip, Legend, ResponsiveContainer, ReferenceLine
+} = Recharts;
+
+// ─── mode detection ────────────────────────────────────────────────────────
+// Static mode: served from file:// or GitHub Pages (no localhost)
+// Live mode: served from localhost (optimizer dashboard --port)
+const IS_LIVE = window.location.hostname === 'localhost'
+                || window.location.hostname === '127.0.0.1';
+
+const urlParams = new URLSearchParams(window.location.search);
+const RUN_ID     = urlParams.get('run_id')   || null;
+const REFRESH_S  = parseInt(urlParams.get('refresh') || '0', 10);
+const API_BASE   = IS_LIVE ? `http://${window.location.host}` : '';
+
+// ─── data fetching ─────────────────────────────────────────────────────────
+async function fetchData() {
+  if (!IS_LIVE) {
+    // Static mode: load data.json from same directory
+    const r = await fetch('./data.json');
+    if (!r.ok) throw new Error('data.json not found — run: optimizer dashboard --run-id <id>');
+    return r.json();
+  }
+  // Live mode: hit local API
+  const endpoint = RUN_ID
+    ? `${API_BASE}/api/runs/${RUN_ID}`
+    : `${API_BASE}/api/runs/latest`;
+  const r = await fetch(endpoint);
+  if (!r.ok) throw new Error(`API error ${r.status}`);
+  return r.json();
+}
+
+// ─── diff renderer ─────────────────────────────────────────────────────────
+function DiffView({ patch }) {
+  if (!patch || !patch.trim()) return h('div', {style:{color:'#64748b',fontSize:'.8rem'}}, 'No patch content');
+  const lines = patch.split('\n');
+  return h('div', {className:'diff-block'},
+    lines.map((line, i) => {
+      let cls = '';
+      if (line.startsWith('+++') || line.startsWith('---')) cls = 'diff-meta';
+      else if (line.startsWith('+')) cls = 'diff-add';
+      else if (line.startsWith('-')) cls = 'diff-del';
+      else if (line.startsWith('@@')) cls = 'diff-hunk';
+      else cls = 'diff-meta';
+      return h('div', {key: i, className: cls}, line || '\u00A0');
+    })
+  );
+}
+
+// ─── candidate detail panel ─────────────────────────────────────────────────
+function CandidateDetail({ candidate, onClose }) {
+  if (!candidate) return null;
+  const metrics = candidate.metrics || {};
+  return h('div', {className:'detail-panel'},
+    h('div', {style:{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'.75rem'}},
+      h('span', {style:{fontWeight:600,color:'#f1f5f9'}},
+        `Generation ${candidate.generation} — ${(candidate.id||'').slice(0,8)}…`),
+      h('button', {className:'btn', onClick: onClose}, '✕ Close')
+    ),
+    h('div', {style:{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'1rem'}},
+      h('div', null,
+        h('div', {style:{color:'#64748b',fontSize:'.75rem',marginBottom:'.35rem'}}, 'METRICS'),
+        h('div', {className:'metrics-grid'},
+          Object.entries(metrics).map(([k,v]) =>
+            h('div', {key:k, className:'metric-chip'},
+              h('div', {className:'metric-key'}, k),
+              h('div', {className:'metric-val'}, typeof v==='number' ? v.toFixed(4) : String(v))
+            )
+          )
+        ),
+        candidate.failure_phase && h('div', {style:{marginTop:'.5rem',color:'#f87171',fontSize:'.8rem'}},
+          `Failure: ${candidate.failure_phase} — ${candidate.error_message||''}`
+        )
+      ),
+      h('div', null,
+        h('div', {style:{color:'#64748b',fontSize:'.75rem',marginBottom:'.35rem'}}, 'PATCH'),
+        h(DiffView, {patch: candidate.patch_content})
+      )
+    ),
+    (candidate.stdout || candidate.stderr) && h('div', {style:{marginTop:'1rem'}},
+      candidate.stdout && h('div', null,
+        h('div', {style:{color:'#64748b',fontSize:'.75rem',marginBottom:'.25rem'}}, 'STDOUT'),
+        h('pre', null, candidate.stdout)
+      ),
+      candidate.stderr && h('div', {style:{marginTop:'.5rem'}},
+        h('div', {style:{color:'#64748b',fontSize:'.75rem',marginBottom:'.25rem'}}, 'STDERR'),
+        h('pre', null, candidate.stderr)
+      )
+    )
+  );
+}
+
+// ─── export PNG ─────────────────────────────────────────────────────────────
+function exportPng(elementId, filename) {
+  const el = document.getElementById(elementId);
+  if (!el || typeof html2canvas === 'undefined') return;
+  html2canvas(el, {backgroundColor:'#1e293b', scale:2}).then(canvas => {
+    const a = document.createElement('a');
+    a.download = filename;
+    a.href = canvas.toDataURL('image/png');
+    a.click();
+  });
+}
+
+// ─── main app ──────────────────────────────────────────────────────────────
+function App() {
+  const [data, setData]         = useState(null);
+  const [error, setError]       = useState(null);
+  const [lastUpdated, setLastUpdated] = useState(null);
+  const [selected, setSelected] = useState(null);   // candidate detail
+  const intervalRef = useRef(null);
+
+  const load = useCallback(async () => {
+    try {
+      const d = await fetchData();
+      setData(d);
+      setLastUpdated(new Date().toLocaleTimeString());
+      setError(null);
+    } catch (e) {
+      setError(e.message);
+    }
+  }, []);
+
+  useEffect(() => {
+    load();
+    if (IS_LIVE && REFRESH_S > 0) {
+      intervalRef.current = setInterval(load, REFRESH_S * 1000);
+    }
+    return () => clearInterval(intervalRef.current);
+  }, [load]);
+
+  if (error) return h('div', {id:'root-inner'},
+    h('h1', null, '⚡ LoopBench Optimizer'),
+    h('div', {className:'error-box', style:{marginTop:'1rem'}},
+      h('strong', null, 'Could not load data: '), error, h('br'), h('br'),
+      IS_LIVE
+        ? 'Ensure the optimizer dashboard server is running.'
+        : 'Run: optimizer dashboard --run-id <id>  then commit docs/data.json'
+    )
+  );
+
+  if (!data) return h('div', {className:'loading'}, 'Loading dashboard…');
+
+  const run        = data.run || {};
+  const candidates = (data.candidates || []).sort((a,b) => a.generation - b.generation);
+  const best       = data.best_candidate || {};
+
+  // ── build chart data ────────────────────────────────────────────────────
+  const byGen = {};
+  candidates.forEach(c => {
+    const g = c.generation;
+    if (!byGen[g]) byGen[g] = {generation: g, best: null, scores: []};
+    if (!c.failed && c.score != null) byGen[g].scores.push(c.score);
+  });
+  // running best
+  let runningBest = null;
+  const chartData = Object.values(byGen).sort((a,b) => a.generation-b.generation).map(g => {
+    const genBest = g.scores.length ? Math.max(...g.scores) : null;
+    if (genBest != null && (runningBest == null || genBest > runningBest)) runningBest = genBest;
+    return {...g, genBest, runningBest};
+  });
+
+  // scatter data: one dot per candidate
+  const scatterData = candidates.map(c => ({
+    x: c.generation,
+    y: c.score ?? 0,
+    id: c.id,
+    failed: c.failed,
+    _c: c,
+  }));
+
+  const baselineScore = (candidates.find(c=>c.generation===0)||{}).score ?? 0;
+  const improvement = run.final_improvement != null
+    ? (run.final_improvement * 100).toFixed(1) + '%'
+    : best.score != null && baselineScore
+      ? ((best.score - baselineScore) / Math.abs(baselineScore) * 100).toFixed(1) + '%'
+      : '—';
+
+  const statusClass = run.status === 'successful' ? 'badge-success'
+                    : run.status === 'completed'  ? 'badge-completed'
+                    : 'badge-failed';
+
+  // Custom scatter dot: green = success, red = failed
+  const CustomDot = (props) => {
+    const {cx, cy, payload} = props;
+    const fill = payload.failed ? '#f87171' : '#4ade80';
+    return h('circle', {
+      cx, cy, r: 5, fill, fillOpacity: 0.85, stroke: '#0f172a', strokeWidth: 1,
+      style:{cursor:'pointer'},
+      onClick: () => setSelected(payload._c),
+    });
+  };
+
+  return h('div', {id:'root-inner'},
+    h('h1', null, '⚡ LoopBench Optimizer — Dashboard'),
+    h('p', {className:'subtitle'},
+      IS_LIVE
+        ? `Live mode · Run: ${run.id||'—'} · Updated: ${lastUpdated||'…'}`
+        : `Static mode (GitHub Pages) · Run: ${run.id||'—'}`
+    ),
+
+    // ── stats row ──────────────────────────────────────────────────────────
+    h('div', {className:'stats-row'},
+      h('div', {className:'stat'+(run.status==='successful'?' success':'')},
+        h('div', {className:'stat-val'},
+          h('span', {className:`badge ${statusClass}`}, (run.status||'—').toUpperCase())
+        ),
+        h('div', {className:'stat-label'}, 'Status')
+      ),
+      h('div', {className:'stat'},
+        h('div', {className:'stat-val'}, candidates.filter(c=>c.generation>0).length),
+        h('div', {className:'stat-label'}, 'Generations')
+      ),
+      h('div', {className:'stat success'},
+        h('div', {className:'stat-val'}, best.score != null ? best.score.toFixed(4) : '—'),
+        h('div', {className:'stat-label'}, 'Best Score')
+      ),
+      h('div', {className:'stat'+(parseFloat(improvement)>0?' success':' warn')},
+        h('div', {className:'stat-val'}, improvement),
+        h('div', {className:'stat-label'}, 'Improvement')
+      ),
+      h('div', {className:'stat'},
+        h('div', {className:'stat-val'},
+          candidates.filter(c=>c.failed&&c.generation>0).length,
+          h('span',{style:{fontSize:'.9rem',color:'#f87171'}}, ' failed')
+        ),
+        h('div', {className:'stat-label'}, 'Failed Runs')
+      )
+    ),
+
+    // ── score trajectory chart ─────────────────────────────────────────────
+    h('div', {className:'card', id:'chart-area'},
+      h('div', {className:'toolbar'},
+        h('span', {className:'card-title', style:{marginBottom:0}}, 'Score Trajectory'),
+        h('button', {className:'btn', onClick: ()=>exportPng('chart-area','score_trajectory.png')},
+          '📷 Export PNG')
+      ),
+      h(ResponsiveContainer, {width:'100%', height:280},
+        h(LineChart, {data: chartData, margin:{top:5,right:20,bottom:5,left:0}},
+          h(CartesianGrid, {strokeDasharray:'3 3', stroke:'#334155'}),
+          h(XAxis, {dataKey:'generation', stroke:'#64748b', tick:{fill:'#64748b',fontSize:11}, label:{value:'Generation',position:'insideBottomRight',offset:-5,fill:'#64748b',fontSize:11}}),
+          h(YAxis, {stroke:'#64748b', tick:{fill:'#64748b',fontSize:11}, domain:['auto','auto']}),
+          h(Tooltip, {
+            contentStyle:{background:'#1e293b',border:'1px solid #334155',borderRadius:'.375rem',color:'#e2e8f0',fontSize:'.8rem'},
+            labelFormatter: g => `Generation ${g}`
+          }),
+          h(Legend, {wrapperStyle:{fontSize:'.8rem',color:'#94a3b8'}}),
+          baselineScore && h(ReferenceLine, {y:baselineScore, stroke:'#94a3b8', strokeDasharray:'4 2', label:{value:'Baseline',position:'right',fill:'#94a3b8',fontSize:10}}),
+          h(Line, {type:'monotone', dataKey:'genBest', stroke:'#60a5fa', dot:false, name:'Generation Best', strokeWidth:1.5}),
+          h(Line, {type:'monotone', dataKey:'runningBest', stroke:'#4ade80', dot:false, name:'Running Best', strokeWidth:2.5})
+        )
+      )
+    ),
+
+    // ── scatter chart ──────────────────────────────────────────────────────
+    h('div', {className:'card', id:'scatter-area'},
+      h('div', {className:'toolbar'},
+        h('span', {className:'card-title', style:{marginBottom:0}}, 'All Candidates (click for detail)'),
+        h('button', {className:'btn', onClick: ()=>exportPng('scatter-area','candidates_scatter.png')},
+          '📷 Export PNG')
+      ),
+      h(ResponsiveContainer, {width:'100%', height:240},
+        h(ScatterChart, {margin:{top:5,right:20,bottom:5,left:0}},
+          h(CartesianGrid, {strokeDasharray:'3 3', stroke:'#334155'}),
+          h(XAxis, {type:'number', dataKey:'x', name:'Generation', stroke:'#64748b', tick:{fill:'#64748b',fontSize:11}}),
+          h(YAxis, {type:'number', dataKey:'y', name:'Score', stroke:'#64748b', tick:{fill:'#64748b',fontSize:11}}),
+          h(Tooltip, {
+            contentStyle:{background:'#1e293b',border:'1px solid #334155',borderRadius:'.375rem',color:'#e2e8f0',fontSize:'.8rem'},
+            formatter: (val, name) => [typeof val==='number'?val.toFixed(4):val, name]
+          }),
+          h(Scatter, {name:'Candidates', data:scatterData, shape: CustomDot})
+        )
+      )
+    ),
+
+    // ── selected candidate detail ──────────────────────────────────────────
+    selected && h('div', {className:'card'},
+      h(CandidateDetail, {candidate: selected, onClose: ()=>setSelected(null)})
+    ),
+
+    // ── candidates table ───────────────────────────────────────────────────
+    h('div', {className:'card'},
+      h('div', {className:'card-title'}, `Candidates (${candidates.filter(c=>c.generation>0).length} generations)`),
+      h('div', {style:{overflowX:'auto'}},
+        h('table', null,
+          h('thead', null,
+            h('tr', null,
+              ['Gen','ID','Score','Status','Phase','Exec Time'].map(t => h('th', {key:t}, t))
+            )
+          ),
+          h('tbody', null,
+            candidates.filter(c=>c.generation>0).map(c =>
+              h('tr', {key:c.id, onClick:()=>setSelected(c)},
+                h('td', null, c.generation),
+                h('td', null, h('code', {style:{fontSize:'.7rem',color:'#94a3b8'}}, (c.id||'').slice(0,8)+'…')),
+                h('td', null, c.score != null ? c.score.toFixed(4) : '—'),
+                h('td', null,
+                  h('span', {className:`badge ${c.failed?'badge-failed':'badge-success'}`},
+                    c.failed ? 'FAILED' : 'PASSED')
+                ),
+                h('td', null, c.failure_phase || '—'),
+                h('td', null, c.execution_time != null ? c.execution_time.toFixed(2)+'s' : '—')
+              )
+            )
+          )
+        )
+      )
+    ),
+
+    h('div', {style:{textAlign:'center',color:'#475569',fontSize:'.75rem',marginTop:'1rem',paddingBottom:'1rem'}},
+      'LoopBench Optimizer Dashboard · ',
+      IS_LIVE
+        ? `Live mode · auto-refresh: ${REFRESH_S>0?REFRESH_S+'s':'off'}`
+        : 'Static mode — commit docs/data.json to GitHub Pages'
+    )
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(h(App));
+</script>
+</body>
+</html>
