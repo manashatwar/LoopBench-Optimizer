@@ -17,6 +17,7 @@ dependencies = [
     "tqdm>=4.64.0",
     "flask",
     "dacite>=1.9.2",
+    "sqlalchemy>=2.0",
 ]
 
 [project.optional-dependencies]
@@ -49,11 +50,13 @@ disallow_incomplete_defs = true
 [project.scripts]
 openevolve-run = "openevolve.cli:main"
 loopbench = "loopbench.cli:main"
+optimizer = "openevolve.cli:optimizer_main"
 
 [tool.pytest.ini_options]
 markers = [
     "slow: marks tests as slow (deselect with '-m \"not slow\"')",
     "integration: marks tests as integration tests requiring external services",
+    "performance: marks tests as performance benchmarks",
 ]
 addopts = "--strict-markers"
 
