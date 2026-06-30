@@ -1,0 +1,88 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ── Lint ────────────────────────────────────────────────────────────────────
+  lint:
+    name: Lint (ruff)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install ruff
+        run: pip install ruff
+
+      - name: Run ruff
+        run: ruff check openevolve/ loopbench/ sandbox/ --output-format=github
+
+  # ── Unit & Property Tests ───────────────────────────────────────────────────
+  test:
+    name: Test Suite (Python ${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Cache pip
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: pip-${{ runner.os }}-${{ matrix.python-version }}-${{ hashFiles('pyproject.toml') }}
+          restore-keys: pip-${{ runner.os }}-${{ matrix.python-version }}-
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+
+      - name: Run optimizer-loop test suite
+        env:
+          OPENAI_API_KEY: test-key
+        run: |
+          python -m pytest \
+            tests/test_optimizer_loop_database.py \
+            tests/property/ \
+            tests/test_sandbox_runner.py \
+            tests/test_llm_patch.py \
+            tests/test_search_strategy.py \
+            tests/test_config_validator.py \
+            tests/test_optimizer_loop.py \
+            tests/test_report_generator.py \
+            tests/test_optimizer_cli.py \
+            tests/test_audit_trail.py \
+            tests/test_dashboard.py \
+            tests/test_repo_manager.py \
+            tests/test_end_to_end.py \
+            tests/test_repo_mapper_integration.py \
+            tests/test_optimizer_prompt.py \
+            -v --tb=short -q \
+            --timeout=120
+
+      - name: Upload coverage report
+        if: matrix.python-version == '3.11'
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: .coverage
+          retention-days: 7
