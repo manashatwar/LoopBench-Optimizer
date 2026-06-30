@@ -14,6 +14,8 @@ import yaml
 if TYPE_CHECKING:
     from openevolve.llm.base import LLMInterface
 
+from openevolve.repo_mapper.models import RepoMapperConfig
+
 
 _ENV_VAR_PATTERN = re.compile(r"^\$\{([^}]+)\}$")  # ${VAR}
 
@@ -285,6 +287,9 @@ class PromptConfig:
     diff_summary_max_line_len: int = 100  # Truncate lines longer than this
     diff_summary_max_lines: int = 30  # Max lines per SEARCH/REPLACE block
 
+    # Repository context mapper configuration
+    repo_mapper: Optional['RepoMapperConfig'] = None
+
     # Backward compatibility - deprecated
     code_length_threshold: Optional[int] = (
         None  # Deprecated: use suggest_simplification_after_chars
@@ -383,6 +388,11 @@ class EvaluatorConfig:
     enable_artifacts: bool = True
     max_artifact_storage: int = 100 * 1024 * 1024  # 100MB per program
 
+    # Metric parser configuration
+    # Flexible extraction of performance metrics from CLI output using regex patterns
+    # Supports both simple (single metric) and advanced (multiple metrics) formats
+    metric_parser: Optional[Dict[str, Any]] = None
+
 
 @dataclass
 class EvolutionTraceConfig:
@@ -434,7 +444,7 @@ class Config:
     def from_yaml(cls, path: Union[str, Path]) -> "Config":
         """Load configuration from a YAML file"""
         config_path = Path(path).resolve()
-        with open(config_path, "r") as f:
+        with open(config_path, "r", encoding="utf-8") as f:
             config_dict = yaml.safe_load(f)
         config = cls.from_dict(config_dict)
 
@@ -467,7 +477,7 @@ class Config:
             data=config_dict,
             config=dacite.Config(
                 cast=[List, Union],
-                forward_references={"LLMInterface": Any},
+                forward_references={"LLMInterface": Any, "RepoMapperConfig": RepoMapperConfig},
             ),
         )
 
@@ -487,7 +497,7 @@ class Config:
 
     def to_yaml(self, path: Union[str, Path]) -> None:
         """Save configuration to a YAML file"""
-        with open(path, "w") as f:
+        with open(path, "w", encoding="utf-8") as f:
             yaml.dump(self.to_dict(), f, default_flow_style=False)
 
 

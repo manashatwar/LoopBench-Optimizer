@@ -4,6 +4,8 @@ import os
 import time
 import uuid
 from dataclasses import dataclass
+from pathlib import Path
+from typing import Optional
 
 from openevolve.config import Config
 from openevolve.database import Program, ProgramDatabase
@@ -40,11 +42,24 @@ async def run_iteration_with_shared_db(
     evaluator: Evaluator,
     llm_ensemble: LLMEnsemble,
     prompt_sampler: PromptSampler,
+    workspace_manager_config: Optional[dict] = None,
 ):
     """
-    Run a single iteration using shared memory database
+    Run a single iteration using shared memory database.
 
     This is optimized for use with persistent worker processes.
+
+    Args:
+        iteration: Current iteration index
+        config: OpenEvolve configuration
+        database: Shared program database
+        evaluator: Program evaluator
+        llm_ensemble: LLM ensemble for code generation
+        prompt_sampler: Prompt builder
+        workspace_manager_config: Optional dict of kwargs forwarded to
+            WorkspaceManager (e.g. ``{"repo_root": "/path", "auto_cleanup_orphans": True}``).
+            When provided each candidate is evaluated inside an isolated Git
+            worktree.  When None (default) the original behaviour is preserved.
     """
     logger = logging.getLogger(__name__)
 
@@ -163,7 +178,24 @@ async def run_iteration_with_shared_db(
 
         # Evaluate the child program
         child_id = str(uuid.uuid4())
-        result.child_metrics = await evaluator.evaluate_program(child_code, child_id)
+
+        if workspace_manager_config:
+            # Lazy import so WorkspaceManager is only required when actually used
+            from openevolve.workspace_manager import WorkspaceManager  # noqa: PLC0415
+
+            with WorkspaceManager(**workspace_manager_config) as worktree_path:
+                # Write candidate code into the worktree before evaluation
+                target_file = config.target_file if hasattr(config, "target_file") else None
+                if target_file:
+                    (Path(worktree_path) / target_file).write_text(
+                        child_code, encoding="utf-8"
+                    )
+                result.child_metrics = await evaluator.evaluate_program(
+                    child_code, child_id, workspace_path=worktree_path
+                )
+            # Worktree is automatically cleaned up here by __exit__
+        else:
+            result.child_metrics = await evaluator.evaluate_program(child_code, child_id)
 
         # Handle artifacts if they exist
         artifacts = evaluator.get_pending_artifacts(child_id)

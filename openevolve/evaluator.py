@@ -15,7 +15,6 @@ import traceback
 import uuid
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
-import traceback
 
 from openevolve.config import EvaluatorConfig
 from openevolve.database import ProgramDatabase
@@ -25,6 +24,7 @@ from openevolve.llm.ensemble import LLMEnsemble
 from openevolve.utils.async_utils import TaskPool, run_in_executor
 from openevolve.prompt.sampler import PromptSampler
 from openevolve.utils.format_utils import format_metrics_safe
+from openevolve.metric_parser import MetricParser, create_parser_from_config
 
 logger = logging.getLogger(__name__)
 
@@ -61,6 +61,19 @@ class Evaluator:
 
         # Pending artifacts storage for programs
         self._pending_artifacts: Dict[str, Dict[str, Union[str, bytes]]] = {}
+
+        # Initialize metric parser if configured
+        self.metric_parser: Optional[MetricParser] = None
+        if config.metric_parser:
+            try:
+                self.metric_parser = create_parser_from_config(config.metric_parser)
+                if self.metric_parser:
+                    logger.info("Metric parser initialized successfully")
+                else:
+                    logger.warning("Metric parser config provided but parser creation failed")
+            except Exception as e:
+                logger.error(f"Failed to initialize metric parser: {e}")
+                self.metric_parser = None
 
         logger.info(f"Initialized evaluator with {evaluation_file}")
 
@@ -133,13 +146,19 @@ class Evaluator:
         self,
         program_code: str,
         program_id: str = "",
+        workspace_path: Optional[str] = None,
     ) -> Dict[str, float]:
         """
-        Evaluate a program and return scores
+        Evaluate a program and return scores.
 
         Args:
             program_code: Code to evaluate
             program_id: Optional ID for logging
+            workspace_path: Optional path to a workspace directory (e.g. a Git
+                worktree created by WorkspaceManager).  When provided the program
+                file is written there instead of a system temp directory, enabling
+                fully isolated evaluation.  When None (default) the original
+                temp-file behaviour is preserved for backward compatibility.
 
         Returns:
             Dictionary of metric name to score
@@ -153,10 +172,20 @@ class Evaluator:
         # Retry logic for evaluation
         last_exception = None
         for attempt in range(self.config.max_retries + 1):
-            # Create a temporary file for the program
-            with tempfile.NamedTemporaryFile(suffix=self.program_suffix, delete=False) as temp_file:
-                temp_file.write(program_code.encode("utf-8"))
-                temp_file_path = temp_file.name
+            # Write the program to the requested location.
+            # When workspace_path is provided we put it there so the evaluator
+            # runs from the isolated worktree rather than a random temp dir.
+            if workspace_path is not None:
+                ws_dir = Path(workspace_path)
+                ws_dir.mkdir(parents=True, exist_ok=True)
+                suffix = self.program_suffix or ".py"
+                fname = f"program_{program_id}{suffix}" if program_id else f"program{suffix}"
+                temp_file_path = str(ws_dir / fname)
+                Path(temp_file_path).write_bytes(program_code.encode("utf-8"))
+            else:
+                with tempfile.NamedTemporaryFile(suffix=self.program_suffix, delete=False) as temp_file:
+                    temp_file.write(program_code.encode("utf-8"))
+                    temp_file_path = temp_file.name
 
             try:
                 # Run evaluation
@@ -315,6 +344,45 @@ class Evaluator:
             # Error case - return error metrics
             logger.warning(f"Unexpected evaluation result type: {type(result)}")
             return EvaluationResult(metrics={"error": 0.0})
+
+    def parse_cli_output(self, output: str) -> Dict[str, float]:
+        """
+        Parse CLI output to extract metrics using the configured metric parser.
+        
+        This method provides a flexible way to extract performance metrics from
+        benchmark output using regex patterns, replacing hardcoded score extraction.
+        
+        Args:
+            output: Raw stdout/stderr from CLI execution (e.g., Docker container, pytest)
+        
+        Returns:
+            Dictionary of extracted metrics and computed scores:
+            - Raw metric values (e.g., "latency": 12.5)
+            - Individual scores (e.g., "latency_score": 0.92)
+            - combined_score: Normalized score based on primary metric
+            
+        If no metric parser is configured or parsing fails, returns empty dict.
+        The caller should handle fallback behavior (e.g., using default score).
+        
+        Example:
+            >>> evaluator = Evaluator(config, evaluation_file)
+            >>> output = "Average latency: 12.5ms\\nThroughput: 1500 ops/sec"
+            >>> metrics = evaluator.parse_cli_output(output)
+            >>> # {"latency": 12.5, "latency_score": 0.92, "throughput": 1500.0, 
+            >>> #  "throughput_score": 0.97, "combined_score": 0.92}
+        """
+        if not self.metric_parser:
+            logger.debug("No metric parser configured, skipping CLI output parsing")
+            return {}
+        
+        try:
+            metrics = self.metric_parser.parse(output)
+            logger.debug(f"Parsed metrics from CLI output: {metrics}")
+            return metrics
+        except Exception as e:
+            logger.error(f"Error parsing CLI output with metric parser: {e}")
+            traceback.print_exc()
+            return {}
 
     def get_pending_artifacts(self, program_id: str) -> Optional[Dict[str, Union[str, bytes]]]:
         """

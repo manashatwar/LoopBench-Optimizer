@@ -29,6 +29,18 @@ class PromptSampler:
         self.system_template_override = None
         self.user_template_override = None
 
+        # Initialize repository context mapper if configured
+        self.repo_mapper = None
+        if config.repo_mapper:
+            try:
+                from openevolve.repo_mapper import RepoContextMapper
+                self.repo_mapper = RepoContextMapper(config.repo_mapper)
+                logger.info("Repository context mapper enabled")
+            except ImportError as e:
+                logger.warning(f"Could not import RepoContextMapper: {e}. Repository context will be disabled.")
+            except Exception as e:
+                logger.warning(f"Failed to initialize repository context mapper: {e}. Continuing without repository context.")
+
         # Only log once to reduce duplication
         if not hasattr(logger, "_prompt_sampler_logged"):
             logger.info("Initialized prompt sampler")
@@ -63,6 +75,8 @@ class PromptSampler:
         program_artifacts: Optional[Dict[str, Union[str, bytes]]] = None,
         feature_dimensions: Optional[List[str]] = None,
         current_changes_description: Optional[str] = None,
+        repo_path: Optional[str] = None,  # NEW: Repository path
+        target_file: Optional[str] = None,  # NEW: Target file for context
         **kwargs: Any,
     ) -> Dict[str, str]:
         """
@@ -80,11 +94,30 @@ class PromptSampler:
             diff_based_evolution: Whether to use diff-based evolution (True) or full rewrites (False)
             template_key: Optional override for template key
             program_artifacts: Optional artifacts from program evaluation
+            repo_path: Optional path to repository root for context generation
+            target_file: Optional target file path for context generation
             **kwargs: Additional keys to replace in the user prompt
 
         Returns:
             Dictionary with 'system' and 'user' keys
         """
+        # Generate repository context if repo mapper is available and paths provided
+        repo_context = ""
+        if self.repo_mapper and repo_path and target_file:
+            try:
+                from pathlib import Path
+                context_map = self.repo_mapper.get_context_map(
+                    repo_path=Path(repo_path),
+                    target_file=Path(target_file),
+                )
+                repo_context = context_map.to_prompt_section()
+                logger.debug(f"Generated repository context: {context_map.token_count} tokens, {len(context_map.relevant_files)} relevant files")
+            except Exception as e:
+                logger.warning(f"Failed to generate repository context: {e}. Continuing without context.")
+                repo_context = ""
+        
+        # Add repo_context to kwargs so it can be used in templates
+        kwargs["repo_context"] = repo_context
         # Select template based on evolution mode (with overrides)
         if template_key:
             # Use explicitly provided template key
