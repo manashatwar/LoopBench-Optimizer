@@ -1,16 +1,19 @@
-# Secrets — never commit
+# ────────────────────────────────────────────────────────────
+# LoopBench-Optimizer .gitignore
+# ────────────────────────────────────────────────────────────
+
+# Secrets — NEVER commit
 .env
 .env.*
+secrets.yaml
 
-# Virtual environment
+# Virtual environments
 .venv/
 venv/
+env/
+ENV/
 
-results/
-examples/lm_eval/prompts/system_message.txt
-examples/lm_eval/prompts/evaluator_system_message.txt
-
-# Python
+# Python artifacts
 __pycache__/
 *.py[cod]
 *$py.class
@@ -34,35 +37,50 @@ wheels/
 MANIFEST
 *.lock
 
-# Virtual environments
-venv/
-env/
-ENV/
-
 # IDE
 .idea/
 .vscode/
 *.swp
 *.swo
 
-# Output files
-examples/*/output/
+# Generated output directories
 openevolve_output*/
 loopbench_output*/
-*.log
+optimizer_output*/
+results/
 demo_output*/
-
 pr_sanity*/
+*.log
 
-# Test cache
+# Example outputs (keep example code, not generated artifacts)
+examples/*/output/
+examples/lm_eval/prompts/system_message.txt
+examples/lm_eval/prompts/evaluator_system_message.txt
+
+# Test & coverage cache
 .pytest_cache/
 .coverage
 htmlcov/
+.hypothesis/tmp/
+.hypothesis/unicode_data/
 
-# Misc
+# Type checker & linter cache
+.mypy_cache/
+.ruff_cache/
+
+# Repo context cache (runtime generated)
+.cache/
+
+# SQLite databases (runtime generated)
+*.db
+*.sqlite
+*.sqlite3
+
+# Stray directories from sandbox runs
+C/
+
+# macOS
 .DS_Store
-.venv
 
-# For SR
-secrets.yaml
+# SR / misc
 problems
