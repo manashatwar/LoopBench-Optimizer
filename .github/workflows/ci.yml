@@ -25,8 +25,9 @@ jobs:
       - name: Install ruff
         run: pip install ruff
 
-      - name: Run ruff (warnings only — non-blocking)
-        run: ruff check openevolve/ loopbench/ sandbox/ --output-format=github || true
+      - name: Run ruff (informational only)
+        continue-on-error: true
+        run: ruff check openevolve/ loopbench/ sandbox/ --output-format=github
 
   # ── Unit & Property Tests ───────────────────────────────────────────────────
   test:
@@ -55,6 +56,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -e ".[dev]"
+          pip install pytest-timeout hypothesis
 
       - name: Run optimizer-loop test suite
         env:
@@ -76,8 +78,9 @@ jobs:
             tests/test_end_to_end.py \
             tests/test_repo_mapper_integration.py \
             tests/test_optimizer_prompt.py \
-            -v --tb=short -q \
-            --timeout=120
+            -v --tb=short \
+            --timeout=120 \
+            -p no:warnings
 
       - name: Upload coverage report
         if: matrix.python-version == '3.11'
