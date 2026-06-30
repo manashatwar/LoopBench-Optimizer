@@ -27,17 +27,156 @@ Security:
 """
 
 import json
-import os
 import subprocess
 import tempfile
+import time
+import uuid
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any, Optional
 
 # Docker image name — built from sandbox/Dockerfile.sandbox
 SANDBOX_IMAGE = "loopbench-sandbox"
 
 # Timeout for the entire docker run (seconds)
 SANDBOX_TIMEOUT_S = 120
+
+
+def verify_output_streams(stdout: Optional[str], stderr: Optional[str]) -> bool:
+    """Return whether both process output streams were captured."""
+    return stdout is not None and stderr is not None
+
+
+def _stream_text(value: Any) -> Optional[str]:
+    """Normalize captured timeout output while preserving missing streams."""
+    if value is None or isinstance(value, str):
+        return value
+    if isinstance(value, bytes):
+        return value.decode(errors="replace")
+    return str(value)
+
+
+def _cleanup_container(container_name: str) -> None:
+    """Force-remove a named container; absence is an expected no-op."""
+    try:
+        subprocess.run(
+            ["docker", "rm", "-f", container_name],
+            capture_output=True,
+            text=True,
+            timeout=30,
+            check=False,
+        )
+    except (FileNotFoundError, subprocess.TimeoutExpired):
+        pass
+
+
+def _stop_container(container_name: str) -> None:
+    """Allow a timed-out container five seconds to stop gracefully."""
+    try:
+        subprocess.run(
+            ["docker", "stop", "--time", "5", container_name],
+            capture_output=True,
+            text=True,
+            timeout=10,
+            check=False,
+        )
+    except (FileNotFoundError, subprocess.TimeoutExpired):
+        pass
+
+
+def _execute_container(
+    docker_cmd: list[str],
+    score_file: Path,
+    timeout: float,
+) -> dict[str, Any]:
+    """Run Docker, verify stream capture, and then load computed metrics."""
+    container_name = f"loopbench-sandbox-{uuid.uuid4().hex[:12]}"
+    docker_cmd = [*docker_cmd[:2], "--name", container_name, *docker_cmd[2:]]
+    started_at = time.monotonic()
+
+    try:
+        proc = subprocess.run(
+            docker_cmd,
+            capture_output=True,
+            text=True,
+            timeout=timeout,
+        )
+    except subprocess.TimeoutExpired as exc:
+        execution_time = time.monotonic() - started_at
+        _stop_container(container_name)
+        return _error_result(
+            f"Container timed out after {timeout:g}s",
+            status="timeout",
+            stdout=_stream_text(exc.stdout),
+            stderr=_stream_text(exc.stderr),
+            execution_time=execution_time,
+            timeout=True,
+        )
+    except FileNotFoundError:
+        return _error_result(
+            "Docker not found - is Docker Desktop running?",
+            status="docker_unavailable",
+            execution_time=time.monotonic() - started_at,
+        )
+    finally:
+        _cleanup_container(container_name)
+
+    execution_time = time.monotonic() - started_at
+    if not verify_output_streams(proc.stdout, proc.stderr):
+        return _error_result(
+            "Docker output stream capture failed: both stdout and stderr are required",
+            status="output_capture_failed",
+            stdout=proc.stdout,
+            stderr=proc.stderr,
+            exit_code=proc.returncode,
+            execution_time=execution_time,
+        )
+
+    if proc.stdout:
+        print(proc.stdout)
+    if proc.stderr:
+        print(proc.stderr)
+
+    if not score_file.exists():
+        return _error_result(
+            f"score.json not written by container (exit={proc.returncode}). "
+            f"stdout: {proc.stdout[-500:]}",
+            stdout=proc.stdout,
+            stderr=proc.stderr,
+            exit_code=proc.returncode,
+            execution_time=execution_time,
+        )
+
+    try:
+        with open(score_file, encoding="utf-8") as file_handle:
+            score = json.load(file_handle)
+    except (OSError, json.JSONDecodeError) as exc:
+        return _error_result(
+            f"Unable to read score.json: {exc}",
+            stdout=proc.stdout,
+            stderr=proc.stderr,
+            exit_code=proc.returncode,
+            execution_time=execution_time,
+        )
+
+    if not isinstance(score, dict):
+        return _error_result(
+            "score.json is not a dictionary",
+            stdout=proc.stdout,
+            stderr=proc.stderr,
+            exit_code=proc.returncode,
+            execution_time=execution_time,
+        )
+
+    score.update(
+        {
+            "status": "passed" if score.get("all_passed") else "failed",
+            "stdout": proc.stdout,
+            "stderr": proc.stderr,
+            "exit_code": proc.returncode,
+            "execution_time": execution_time,
+        }
+    )
+    return score
 
 
 def build_sandbox_image(
@@ -91,6 +230,7 @@ def run_in_sandbox(
     test_file: str,
     sandbox_cfg: Optional[dict] = None,
     repo_root: Optional[str] = None,
+    worktree_path: Optional[str] = None,
 ) -> dict[str, Any]:
     """
     Run a test suite against an evolved program inside a Docker container.
@@ -100,12 +240,20 @@ def run_in_sandbox(
         test_file:     Absolute path to the pytest test file on the host
         sandbox_cfg:   Dict from loopbench.yaml sandbox section
         repo_root:     Repo root (for building the image if needed)
+        worktree_path: Optional path to a Git worktree (created by WorkspaceManager).
+                       When provided the worktree directory is mounted as /workspace
+                       inside the container instead of the default temp-copy approach,
+                       giving the container access to all supporting files in the
+                       worktree (helpers, fixtures, configs, etc.).
 
     Returns:
-        dict with keys: passed, failed, errors, total, speed_ms,
-                        correctness, speed_score, combined_score, all_passed
+        Score dictionary including stdout, stderr, exit_code, execution_time,
+        status, and the existing metric fields.
     """
     sandbox_cfg = sandbox_cfg or {}
+    timeout = float(sandbox_cfg.get("timeout", SANDBOX_TIMEOUT_S))
+    if timeout <= 0:
+        raise ValueError("sandbox timeout must be greater than zero")
     prog_path = Path(program_path).resolve()
     test_path = Path(test_file).resolve()
 
@@ -114,8 +262,61 @@ def run_in_sandbox(
         return _error_result("Docker image build failed")
 
     # ── Set up host directories ───────────────────────────────────────────────
-    # The workspace dir contains both the evolved program and the test file.
-    # We copy both into a temp dir so we can mount it cleanly read-only.
+    # When a worktree_path is provided we mount it directly — the worktree
+    # already contains the evolved program and all supporting files.  Otherwise
+    # we fall back to copying files into a temp workspace (original behaviour).
+    if worktree_path is not None:
+        wt_path = Path(worktree_path).resolve()
+        prog_path = Path(program_path).resolve()
+        test_path = Path(test_file).resolve()
+
+        # If the program/test file are already inside the worktree we mount the
+        # whole tree.  If not, copy them in first.
+        try:
+            prog_path.relative_to(wt_path)
+            prog_in_wt = True
+        except ValueError:
+            prog_in_wt = False
+
+        with tempfile.TemporaryDirectory(prefix="loopbench_results_") as results_tmp:
+            results_path = Path(results_tmp) / "results"
+            results_path.mkdir()
+
+            if not prog_in_wt:
+                import shutil as _shutil
+                _shutil.copy2(prog_path, wt_path / prog_path.name)
+
+            # Copy test file into worktree if not already there
+            try:
+                test_path.relative_to(wt_path)
+                test_in_wt = True
+            except ValueError:
+                test_in_wt = False
+
+            if not test_in_wt:
+                import shutil as _shutil
+                _shutil.copy2(test_path, wt_path / test_path.name)
+
+            container_program = f"/workspace/{prog_path.name}"
+            container_test = f"/workspace/{test_path.name}"
+            test_cmd = f"pytest {container_test} -v -s -q --tb=short"
+
+            docker_cmd = [
+                "docker", "run",
+                "--rm",
+                "--network=none",
+                "-v", f"{wt_path}:/workspace:ro",   # mount worktree directly
+                "-v", f"{results_path}:/results",
+                "-e", f"LOOPBENCH_PROGRAM_PATH={container_program}",
+                "-e", f"LOOPBENCH_TEST_CMD={test_cmd}",
+                SANDBOX_IMAGE,
+            ]
+
+            print(f"[sandbox] Running container (worktree) for: {prog_path.name}")
+            score_file = results_path / "score.json"
+            return _execute_container(docker_cmd, score_file, timeout)
+
+    # ── Original temp-copy approach (no worktree) ────────────────────────────
     with tempfile.TemporaryDirectory(prefix="loopbench_workspace_") as workspace:
         workspace_path = Path(workspace)
         results_path = workspace_path / "results"
@@ -150,39 +351,20 @@ def run_in_sandbox(
         ]
 
         print(f"[sandbox] Running container for: {prog_path.name}")
-        try:
-            proc = subprocess.run(
-                docker_cmd,
-                capture_output=True,
-                text=True,
-                timeout=SANDBOX_TIMEOUT_S,
-            )
-            if proc.stdout:
-                print(proc.stdout)
-            if proc.stderr:
-                print(proc.stderr)
-        except subprocess.TimeoutExpired:
-            return _error_result(f"Container timed out after {SANDBOX_TIMEOUT_S}s")
-        except FileNotFoundError:
-            return _error_result("Docker not found — is Docker Desktop running?")
-
-        # ── Read score.json from results dir ─────────────────────────────────
         score_file = results_path / "score.json"
-        if not score_file.exists():
-            return _error_result(
-                f"score.json not written by container (exit={proc.returncode}). "
-                f"stdout: {proc.stdout[-500:] if proc.stdout else ''}"
-            )
-
-        with open(score_file) as f:
-            score = json.load(f)
-
-        if isinstance(score, dict):
-            return score
-        return _error_result("score.json is not a dictionary")
+        return _execute_container(docker_cmd, score_file, timeout)
 
 
-def _error_result(message: str) -> dict[str, Any]:
+def _error_result(
+    message: str,
+    *,
+    status: str = "failed",
+    stdout: Optional[str] = None,
+    stderr: Optional[str] = None,
+    exit_code: Optional[int] = None,
+    execution_time: Optional[float] = None,
+    timeout: bool = False,
+) -> dict[str, Any]:
     """Return a zero-score result with an error message."""
     print(f"[sandbox] ERROR: {message}")
     return {
@@ -195,6 +377,12 @@ def _error_result(message: str) -> dict[str, Any]:
         "speed_score": 0.0,
         "combined_score": 0.0,
         "all_passed": False,
+        "status": status,
+        "stdout": stdout,
+        "stderr": stderr,
+        "exit_code": exit_code,
+        "execution_time": execution_time,
+        "timeout": timeout,
         "error": message,
     }
 

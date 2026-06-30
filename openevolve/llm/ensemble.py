@@ -5,13 +5,22 @@ Model ensemble for LLMs
 import asyncio
 import logging
 import random
+import time
 from typing import Dict, List, Optional, Tuple
 
-from openevolve.llm.base import LLMInterface
+from openevolve.llm.base import (
+    LLMInterface,
+    extract_patch_from_response,
+    retry_system_message,
+)
 from openevolve.llm.openai import OpenAILLM
 from openevolve.config import LLMModelConfig
 
 logger = logging.getLogger(__name__)
+
+# Retry parameters for patch generation (Requirements 2.5, 14.1)
+_PATCH_MAX_RETRIES = 3
+_PATCH_BACKOFF_BASE = 1.0  # seconds; doubles each attempt: 1s, 2s, 4s
 
 
 class LLMEnsemble:
@@ -33,7 +42,6 @@ class LLMEnsemble:
 
         # Set up random state for deterministic model selection
         self.random_state = random.Random()
-        # Initialize with seed from first model's config if available
         if (
             models_cfg
             and hasattr(models_cfg[0], "random_seed")
@@ -41,19 +49,22 @@ class LLMEnsemble:
         ):
             self.random_state.seed(models_cfg[0].random_seed)
             logger.debug(
-                f"LLMEnsemble: Set random seed to {models_cfg[0].random_seed} for deterministic model selection"
+                f"LLMEnsemble: Set random seed to {models_cfg[0].random_seed}"
             )
 
-        # Only log if we have multiple models or this is the first ensemble
         if len(models_cfg) > 1 or not hasattr(logger, "_ensemble_logged"):
             logger.info(
-                f"Initialized LLM ensemble with models: "
+                "Initialized LLM ensemble with models: "
                 + ", ".join(
                     f"{model.name} (weight: {weight:.2f})"
                     for model, weight in zip(models_cfg, self.weights)
                 )
             )
             logger._ensemble_logged = True
+
+    # ------------------------------------------------------------------
+    # Core generation
+    # ------------------------------------------------------------------
 
     async def generate(self, prompt: str, **kwargs) -> str:
         """Generate text using a randomly selected model based on weights"""
@@ -87,8 +98,110 @@ class LLMEnsemble:
     async def generate_all_with_context(
         self, system_message: str, messages: List[Dict[str, str]], **kwargs
     ) -> str:
-        """Generate text using a all available models and average their returned metrics"""
+        """Generate text using all available models"""
         responses = []
         for model in self.models:
-            responses.append(await model.generate_with_context(system_message, messages, **kwargs))
+            responses.append(
+                await model.generate_with_context(system_message, messages, **kwargs)
+            )
         return responses
+
+    # ------------------------------------------------------------------
+    # Patch generation — Task 6.2 (Requirements 2.3, 2.4, 2.5, 14.1)
+    # ------------------------------------------------------------------
+
+    async def generate_patch(
+        self,
+        prompt: str,
+        *,
+        max_retries: int = _PATCH_MAX_RETRIES,
+        backoff_base: float = _PATCH_BACKOFF_BASE,
+        **kwargs,
+    ) -> Optional[str]:
+        """Generate an LLM response and extract a unified-diff patch.
+
+        Calls the ensemble, extracts a patch via
+        :func:`~openevolve.llm.base.extract_patch_from_response`, and retries
+        with clarifying instructions when the response lacks a valid patch.
+
+        Retry schedule (exponential back-off):
+          attempt 1 → wait backoff_base * 1 s
+          attempt 2 → wait backoff_base * 2 s
+          attempt 3 → wait backoff_base * 4 s
+
+        Args:
+            prompt: Full prompt string.
+            max_retries: Maximum number of additional attempts (default 3).
+            backoff_base: Base delay in seconds (default 1 s).
+            **kwargs: Forwarded to :meth:`generate`.
+
+        Returns:
+            Extracted patch string, or ``None`` if all attempts failed.
+        """
+        current_prompt = prompt
+        last_error = "no valid patch found in response"
+
+        for attempt in range(max_retries + 1):
+            if attempt > 0:
+                delay = backoff_base * (2 ** (attempt - 1))
+                logger.info(
+                    "generate_patch: retry %d/%d after %.1fs (last error: %s)",
+                    attempt, max_retries, delay, last_error,
+                )
+                await asyncio.sleep(delay)
+                current_prompt = retry_system_message(prompt, last_error)
+
+            try:
+                response = await self.generate(current_prompt, **kwargs)
+            except Exception as exc:
+                last_error = f"LLM API error: {exc}"
+                logger.warning("generate_patch attempt %d failed: %s", attempt + 1, exc)
+                continue
+
+            patch = extract_patch_from_response(response)
+            if patch is not None:
+                logger.info(
+                    "generate_patch: valid patch extracted on attempt %d", attempt + 1
+                )
+                return patch
+
+            last_error = "no valid unified diff found in response"
+            logger.warning(
+                "generate_patch attempt %d: no valid patch in response (len=%d)",
+                attempt + 1, len(response),
+            )
+
+        logger.error(
+            "generate_patch: all %d attempt(s) failed. Last error: %s",
+            max_retries + 1, last_error,
+        )
+        return None
+
+    async def retry_with_clarification(
+        self,
+        original_prompt: str,
+        error: str,
+        *,
+        max_retries: int = _PATCH_MAX_RETRIES,
+        backoff_base: float = _PATCH_BACKOFF_BASE,
+        **kwargs,
+    ) -> Optional[str]:
+        """Retry patch generation with clarifying error context injected.
+
+        Args:
+            original_prompt: The prompt used in the failed attempt.
+            error: Description of the failure to feed back to the LLM.
+            max_retries: Maximum additional attempts (default 3).
+            backoff_base: Base exponential back-off delay in seconds.
+            **kwargs: Forwarded to :meth:`generate`.
+
+        Returns:
+            Extracted patch string, or ``None`` if all retries failed.
+        """
+        clarified_prompt = retry_system_message(original_prompt, error)
+        return await self.generate_patch(
+            clarified_prompt,
+            max_retries=max_retries,
+            backoff_base=backoff_base,
+            **kwargs,
+        )
