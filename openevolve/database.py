@@ -28,15 +28,12 @@ from sqlalchemy import (
     Text,
     create_engine,
     event,
-    select,
 )
 from sqlalchemy.engine import Engine
-from sqlalchemy.exc import IntegrityError as SQLAlchemyIntegrityError
 from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column
 from sqlalchemy.pool import NullPool, StaticPool
 
 from openevolve.config import DatabaseConfig
-from openevolve.utils.code_utils import calculate_edit_distance
 from openevolve.utils.metrics_utils import safe_numeric_average, get_fitness_score
 
 logger = logging.getLogger(__name__)
@@ -2072,7 +2069,7 @@ class ProgramDatabase:
         try:
             # Check if we're already in an event loop
             try:
-                loop = asyncio.get_running_loop()
+                asyncio.get_running_loop()
                 # We're in an async context, need to run in a new thread
                 import concurrent.futures
 
@@ -2592,7 +2589,7 @@ class ProgramDatabase:
         """
         if not self.archive:
             # Fallback to weighted sampling from island
-            logger.debug(f"Archive is empty, falling back to weighted island sampling")
+            logger.debug("Archive is empty, falling back to weighted island sampling")
             return self._sample_from_island_weighted(island_id)
 
         # Clean up stale references in archive

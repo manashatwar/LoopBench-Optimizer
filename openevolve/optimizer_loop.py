@@ -20,8 +20,6 @@ from __future__ import annotations
 
 import asyncio
 import logging
-import time
-import uuid
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -488,7 +486,7 @@ class OptimizerLoop:
 
         # 2. Establish baseline
         baseline_candidate = self.establish_baseline()
-        baseline_id = baseline_candidate["id"]
+        baseline_candidate["id"]
         baseline_score: float = baseline_candidate.get("score") or 0.0
 
         best_candidate = baseline_candidate

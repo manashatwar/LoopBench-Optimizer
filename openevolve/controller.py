@@ -2,7 +2,6 @@
 Main controller for OpenEvolve
 """
 
-import asyncio
 import logging
 import os
 import shutil
@@ -10,9 +9,9 @@ import signal
 import time
 import uuid
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, Optional
 
-from openevolve.config import Config, load_config
+from openevolve.config import Config
 from openevolve.database import Program, ProgramDatabase
 from openevolve.evaluator import Evaluator
 from openevolve.evolution_trace import EvolutionTracer

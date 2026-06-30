@@ -17,7 +17,7 @@ Implements Requirements: 2.1, 2.2, 2.3, 8.1, 8.2, 8.3, 9.2, 9.3, 9.5
 
 import logging
 from pathlib import Path
-from typing import Dict, List, Optional, Set
+from typing import List, Optional
 
 from openevolve.repo_mapper.models import (
     ImportGraph,

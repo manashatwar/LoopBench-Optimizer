@@ -3,7 +3,7 @@ Utilities for code parsing, diffing, and manipulation
 """
 
 import re
-from typing import Dict, List, Optional, Tuple, Union
+from typing import List, Optional, Tuple
 
 
 def parse_evolve_blocks(code: str) -> List[Tuple[int, int, str]]:

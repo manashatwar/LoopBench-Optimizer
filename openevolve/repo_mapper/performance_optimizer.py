@@ -12,14 +12,12 @@ Implements:
 
 import functools
 import logging
-from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor, as_completed
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
 from openevolve.repo_mapper.models import (
     FileDescriptor,
-    ImportGraph,
-    ImportRelation,
     RepoMapperConfig,
     RepositoryMap,
 )

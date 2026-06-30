@@ -5,8 +5,7 @@ Async utilities for OpenEvolve
 import asyncio
 import functools
 import logging
-import time
-from typing import Any, Callable, Dict, List, Optional, TypeVar, Union
+from typing import Any, Callable, List, Optional, TypeVar, Union
 
 logger = logging.getLogger(__name__)
 

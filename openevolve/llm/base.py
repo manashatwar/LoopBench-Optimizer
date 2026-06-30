@@ -4,7 +4,7 @@ Base LLM interface
 
 import re
 from abc import ABC, abstractmethod
-from typing import Any, Dict, List, Optional
+from typing import Dict, List, Optional
 
 
 # Unified diff markers required for a valid patch.

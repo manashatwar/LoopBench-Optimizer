@@ -18,7 +18,7 @@ Implements Requirements: 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 8.4, 8.5, 8.6
 import logging
 import re
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Dict, Optional
 
 from openevolve.repo_mapper.models import FileDescriptor, RepoMapperConfig
 from openevolve.repo_mapper.parser_interface import FileStructure, extract_structure
@@ -204,7 +204,6 @@ class FileAnalyzer:
             Role string.
         """
         stem = relative_path.stem.lower()
-        name = relative_path.name
 
         # 1. Exact stem lookup
         if stem in _ROLE_BY_STEM:

@@ -7,21 +7,18 @@ import importlib.util
 import json
 import logging
 import os
-import subprocess
 import sys
 import tempfile
 import time
 import traceback
-import uuid
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 from openevolve.config import EvaluatorConfig
 from openevolve.database import ProgramDatabase
 from openevolve.evaluation_result import EvaluationResult
-from openevolve.database import ProgramDatabase
 from openevolve.llm.ensemble import LLMEnsemble
-from openevolve.utils.async_utils import TaskPool, run_in_executor
+from openevolve.utils.async_utils import TaskPool
 from openevolve.prompt.sampler import PromptSampler
 from openevolve.utils.format_utils import format_metrics_safe
 from openevolve.metric_parser import MetricParser, create_parser_from_config
@@ -139,7 +136,7 @@ class Evaluator:
                 )
             else:
                 logger.debug(
-                    f"Cascade evaluation properly configured with available stage functions"
+                    "Cascade evaluation properly configured with available stage functions"
                 )
 
     async def evaluate_program(

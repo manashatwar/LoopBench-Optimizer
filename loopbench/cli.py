@@ -24,7 +24,6 @@ import logging
 import os
 import sys
 from pathlib import Path
-from typing import Optional
 
 import yaml
 
@@ -120,13 +119,12 @@ async def _run_async(args: argparse.Namespace) -> int:
                 sandbox_cfg=sandbox_cfg,
                 base_dir=str(base_dir),
             )
-            print(f"[LoopBench] Docker sandbox enabled ✅")
+            print("[LoopBench] Docker sandbox enabled ✅")
         except ImportError:
             print("[LoopBench] WARNING: sandbox/runner.py not found — running without Docker")
 
     # ── Build OpenEvolve config ───────────────────────────────────────────────
     import tempfile
-    import json
 
     # Write the remaining (openevolve-compatible) keys to a temp yaml
     # so we can use load_config() which handles all validation
@@ -212,7 +210,7 @@ def _cmd_init(args: argparse.Namespace) -> int:
     import shutil
     shutil.copy(template_path, output)
     print(f"[LoopBench] ✅ Created: {output}")
-    print(f"[LoopBench] Edit target.program and target.evaluator, then run:")
+    print("[LoopBench] Edit target.program and target.evaluator, then run:")
     print(f"  loopbench run --config {output}")
     return 0
 

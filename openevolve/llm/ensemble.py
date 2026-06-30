@@ -5,8 +5,7 @@ Model ensemble for LLMs
 import asyncio
 import logging
 import random
-import time
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional
 
 from openevolve.llm.base import (
     LLMInterface,

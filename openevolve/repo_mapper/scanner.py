@@ -7,10 +7,9 @@ Implements Requirements 1.1, 1.2, 1.3, 1.5, 9.1, 9.4.
 
 import fnmatch
 import logging
-import os
 import time
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Dict, List
 
 from openevolve.repo_mapper.models import FileNode, RepoMapperConfig, RepositoryMap
 

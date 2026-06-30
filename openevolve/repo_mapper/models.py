@@ -13,7 +13,7 @@ This module defines the core data structures used throughout the repo mapper sys
 
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Dict, List, Optional, Set, Tuple, Tuple
+from typing import Dict, List, Optional, Set, Tuple
 
 
 @dataclass

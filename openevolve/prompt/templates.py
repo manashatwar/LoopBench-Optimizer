@@ -2,11 +2,10 @@
 Prompt templates for OpenEvolve
 """
 
-import os
 import json
 import logging
 from pathlib import Path
-from typing import Dict, List, Optional, Union, Any
+from typing import Optional
 
 logger = logging.getLogger(__name__)
 
@@ -197,7 +196,7 @@ class TemplateManager:
                 self._load_from_directory(self.custom_dir)
             else:
                 logger.warning(
-                    f"Custom template directory does not exist, using default prompt."
+                    "Custom template directory does not exist, using default prompt."
                 )
 
     def _load_from_directory(self, directory: Path) -> None:

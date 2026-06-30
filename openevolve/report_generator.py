@@ -15,7 +15,6 @@ returns a plain dict and optionally writes these files to an output directory.
 
 from __future__ import annotations
 
-import json
 import textwrap
 from pathlib import Path
 from typing import Any, Dict, List, Optional
@@ -158,8 +157,8 @@ class FinalReportWriter:
             "",
             "## Performance",
             "",
-            f"| Metric | Value |",
-            f"|--------|-------|",
+            "| Metric | Value |",
+            "|--------|-------|",
             f"| Baseline Score | {baseline_score:.6f} |",
             f"| Best Score | {best_score:.6f} |",
             f"| Improvement | {improvement_pct:+.2f}% |",

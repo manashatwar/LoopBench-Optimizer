@@ -103,7 +103,7 @@ from .workspace_errors import (
     WorktreeCreationError,
     WorktreeRemovalError,
 )
-from .workspace_types import ApplyResult, WorkspaceState, WorktreeInfo
+from .workspace_types import ApplyResult, WorktreeInfo
 
 import os
 
@@ -899,7 +899,7 @@ class WorkspaceManager:
             
             return result
             
-        except subprocess.TimeoutExpired as e:
+        except subprocess.TimeoutExpired:
             logger.error(f"Git command timed out after {timeout}s: {' '.join(cmd)}")
             raise RuntimeError(
                 f"Git command timed out after {timeout}s.\n"

@@ -24,7 +24,7 @@ from pathlib import Path
 _REPO_ROOT = Path(__file__).parent.parent.resolve()
 sys.path.insert(0, str(_REPO_ROOT))
 
-from sandbox.runner import build_sandbox_image, run_in_sandbox
+from sandbox.runner import build_sandbox_image, run_in_sandbox  # noqa: E402
 
 # ── Paths ─────────────────────────────────────────────────────────────────────
 _INITIAL_PROGRAM = _REPO_ROOT / "examples" / "fibonacci_optimizer" / "initial_program.py"

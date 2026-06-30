@@ -12,7 +12,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from openevolve.controller import OpenEvolve
-from openevolve.config import Config, load_config, LLMModelConfig
+from openevolve.config import Config, load_config
 from openevolve.database import Program
 
 
@@ -188,14 +188,14 @@ async def _run_evolution_async(
             for temp_file in temp_files:
                 try:
                     os.unlink(temp_file)
-                except:
+                except Exception:
                     pass
             if temp_dir and os.path.exists(temp_dir):
                 import shutil
 
                 try:
                     shutil.rmtree(temp_dir)
-                except:
+                except Exception:
                     pass
 
 

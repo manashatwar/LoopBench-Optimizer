@@ -4,13 +4,17 @@ Command-line interface for OpenEvolve
 
 import argparse
 import asyncio
+import json
 import logging
 import os
 import sys
-from typing import Dict, List, Optional
+import time
+from pathlib import Path
+
+import yaml
 
 from openevolve import OpenEvolve
-from openevolve.config import Config, load_config
+from openevolve.config import load_config
 
 logger = logging.getLogger(__name__)
 
@@ -99,7 +103,7 @@ async def main_async() -> int:
         # Rebuild models list to apply CLI overrides
         if args.primary_model or args.secondary_model:
             config.llm.rebuild_models()
-            print(f"Applied CLI model overrides - active models:")
+            print("Applied CLI model overrides - active models:")
             for i, model in enumerate(config.llm.models):
                 print(f"  Model {i+1}: {model.name} (weight: {model.weight})")
 
@@ -148,8 +152,8 @@ async def main_async() -> int:
                     checkpoints, key=lambda x: int(x.split("_")[-1]) if "_" in x else 0
                 )[-1]
 
-        print(f"\nEvolution complete!")
-        print(f"Best program metrics:")
+        print("\nEvolution complete!")
+        print("Best program metrics:")
         for name, value in best_program.metrics.items():
             # Handle mixed types: format numbers as floats, others as strings
             if isinstance(value, (int, float)):
@@ -197,11 +201,6 @@ def main() -> int:
 # Commands: optimizer init | run | resume | export
 # Requirements: 9.1 – 9.8, 15.6, 15.7
 # =============================================================================
-
-import json
-import time
-import yaml
-from pathlib import Path
 
 
 # ---------------------------------------------------------------------------
@@ -436,7 +435,7 @@ def _opt_cmd_run(args) -> int:
     start = time.monotonic()
     result = None
 
-    print(f"🚀 Starting optimization run…")
+    print("🚀 Starting optimization run…")
     print(f"   Target    : {opt_cfg['target_file']}")
     print(f"   Max iter  : {opt_cfg['max_iterations']}")
     print(f"   Patience  : {opt_cfg['patience']}")
@@ -705,7 +704,7 @@ def _opt_cmd_dashboard(args) -> int:
             with open(data_json_path, "w", encoding="utf-8") as f:
                 json.dump(_serialisable(export), f, indent=2)
             print(f"✅ data.json written → {data_json_path}")
-            print(f"   Commit docs/ to GitHub Pages to share this run.")
+            print("   Commit docs/ to GitHub Pages to share this run.")
             db.close()
         except Exception as exc:
             print(f"❌ Failed to export data: {exc}", file=sys.stderr)
@@ -743,8 +742,8 @@ def _opt_cmd_dashboard(args) -> int:
         threading.Timer(0.5, lambda: webbrowser.open(url)).start()
 
     print(f"🌐 Dashboard serving at: {url}")
-    print(f"   Static GitHub Pages mode also available via docs/data.json")
-    print(f"   Press Ctrl+C to stop\n")
+    print("   Static GitHub Pages mode also available via docs/data.json")
+    print("   Press Ctrl+C to stop\n")
     try:
         server.serve_forever()
     except KeyboardInterrupt:

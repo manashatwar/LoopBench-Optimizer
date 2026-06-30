@@ -10,7 +10,7 @@ Implements Requirements: All requirements 1-10
 import logging
 import time
 from pathlib import Path
-from typing import Dict, Optional
+from typing import Dict
 
 from openevolve.repo_mapper.cache_manager import CacheEntry, CacheManager
 from openevolve.repo_mapper.context_builder import ContextBuilder
@@ -365,7 +365,7 @@ class RepoContextMapper:
                 self.profiler.record('scan_time', time.time() - scan_start)
                 self.profiler.record('files_scanned', len(repo_map.files))
             logger.info("Scanned %d files", len(repo_map.files))
-        except (FileNotFoundError, ValueError) as e:
+        except (FileNotFoundError, ValueError):
             # ValueError is raised by scanner for nonexistent paths
             raise RepositoryScanError(
                 f"Repository path does not exist: {repo_path}",
