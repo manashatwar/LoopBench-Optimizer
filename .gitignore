@@ -82,5 +82,8 @@ C/
 # macOS
 .DS_Store
 
+# Kiro IDE — specs, hooks, steering files (local tooling, not for repo)
+.kiro/
+
 # SR / misc
 problems
