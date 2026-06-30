@@ -3,6 +3,8 @@
 - Feature coordinates: {feature_coords}
 - Focus areas: {improvement_areas}
 
+{repo_context}
+
 {artifacts}
 
 # Program Evolution History

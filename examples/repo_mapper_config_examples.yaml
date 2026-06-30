@@ -1,0 +1,469 @@
+# Repository Context Mapper - Configuration Examples
+# ==================================================
+#
+# This file shows various configuration scenarios for the Repository Context Mapper.
+# Copy and adapt these examples to your use case.
+
+# ============================================================================
+# Example 1: Small Project Configuration (Default)
+# ============================================================================
+# Use this for small projects (< 10k LOC) where you want detailed context.
+#
+# Characteristics:
+# - Default token budget (1500 tokens ~= 6KB text)
+# - Caching enabled for repeated analyses
+# - Standard ignore patterns
+# - Moderate file limits
+
+small_project:
+  prompt:
+    repo_mapper:
+      # Token budget and file limits
+      token_budget: 1500  # ~6KB of context
+      max_relevant_files: 10  # Include up to 10 relevant files
+      
+      # File analysis
+      max_file_size_bytes: 1048576  # 1MB - skip files larger than this
+      max_file_descriptor_length: 200  # Truncate long descriptions
+      
+      # Scanning
+      ignore_patterns:
+        - '.git/'
+        - '__pycache__/'
+        - '.venv/'
+        - 'venv/'
+        - 'node_modules/'
+        - 'dist/'
+        - 'build/'
+        - '.mypy_cache/'
+        - '.pytest_cache/'
+      max_depth: 10  # Maximum directory depth
+      follow_symlinks: false
+      
+      # Caching (recommended for development)
+      enable_cache: true
+      # cache_dir: null  # Uses default: ~/.cache/openevolve/repo_mapper
+      
+      # Performance
+      max_workers: 4  # Parallel file analysis workers
+
+
+# ============================================================================
+# Example 2: Large Project Configuration (Aggressive Filtering)
+# ============================================================================
+# Use this for large projects (> 100k LOC) where you need to limit context.
+#
+# Characteristics:
+# - Reduced token budget (fewer files included)
+# - Aggressive ignore patterns
+# - Shorter descriptions
+# - More parallel workers
+
+large_project:
+  prompt:
+    repo_mapper:
+      # Token budget and file limits - REDUCED
+      token_budget: 1000  # ~4KB of context (more aggressive)
+      max_relevant_files: 5  # Only top 5 most relevant files
+      
+      # File analysis - MORE AGGRESSIVE
+      max_file_size_bytes: 524288  # 512KB - skip large generated files
+      max_file_descriptor_length: 100  # Shorter descriptions
+      
+      # Scanning - MORE FILTERS
+      ignore_patterns:
+        - '.git/'
+        - '__pycache__/'
+        - '.venv/'
+        - 'venv/'
+        - 'node_modules/'
+        - 'dist/'
+        - 'build/'
+        - '.mypy_cache/'
+        - '.pytest_cache/'
+        - 'migrations/'  # Database migrations
+        - 'static/'  # Static files
+        - 'media/'  # Media files
+        - 'vendor/'  # Third-party code
+        - 'third_party/'
+        - 'external/'
+        - 'docs/'  # Documentation
+        - 'examples/'  # Example code
+        - '*.min.js'  # Minified JS
+        - '*.min.css'  # Minified CSS
+      max_depth: 8  # Shallower depth
+      follow_symlinks: false
+      
+      # Caching - ESSENTIAL for large projects
+      enable_cache: true
+      
+      # Performance - MORE WORKERS
+      max_workers: 8  # More parallelism for large repos
+
+
+# ============================================================================
+# Example 3: Testing Configuration (No Cache)
+# ============================================================================
+# Use this for testing to ensure fresh analysis every time.
+#
+# Characteristics:
+# - Cache disabled
+# - Moderate token budget
+# - Standard settings
+
+testing:
+  prompt:
+    repo_mapper:
+      # Token budget
+      token_budget: 1500
+      max_relevant_files: 10
+      
+      # File analysis
+      max_file_size_bytes: 1048576  # 1MB
+      max_file_descriptor_length: 200
+      
+      # Scanning
+      ignore_patterns:
+        - '.git/'
+        - '__pycache__/'
+        - '.venv/'
+        - 'node_modules/'
+      max_depth: 10
+      follow_symlinks: false
+      
+      # Caching - DISABLED for testing
+      enable_cache: false
+      
+      # Performance
+      max_workers: 4
+
+
+# ============================================================================
+# Example 4: High-Context Configuration (LLM with Large Context Window)
+# ============================================================================
+# Use this with LLMs that have large context windows (e.g., Claude-100k, GPT-4-32k).
+#
+# Characteristics:
+# - Large token budget (more files, more detail)
+# - More relevant files
+# - Longer descriptions
+# - Standard ignore patterns
+
+high_context:
+  prompt:
+    repo_mapper:
+      # Token budget and file limits - INCREASED
+      token_budget: 5000  # ~20KB of context
+      max_relevant_files: 20  # Include many files
+      
+      # File analysis - MORE DETAIL
+      max_file_size_bytes: 2097152  # 2MB
+      max_file_descriptor_length: 300  # Detailed descriptions
+      
+      # Scanning
+      ignore_patterns:
+        - '.git/'
+        - '__pycache__/'
+        - '.venv/'
+        - 'node_modules/'
+      max_depth: 15  # Deep scanning
+      follow_symlinks: false
+      
+      # Caching
+      enable_cache: true
+      
+      # Performance
+      max_workers: 8
+
+
+# ============================================================================
+# Example 5: CI/CD Configuration (Fast, Cached)
+# ============================================================================
+# Use this in CI/CD pipelines where speed matters.
+#
+# Characteristics:
+# - Cache enabled (reuses scans across runs)
+# - Standard token budget
+# - Many workers for parallelism
+
+ci_cd:
+  prompt:
+    repo_mapper:
+      # Token budget
+      token_budget: 1500
+      max_relevant_files: 10
+      
+      # File analysis
+      max_file_size_bytes: 1048576  # 1MB
+      max_file_descriptor_length: 200
+      
+      # Scanning
+      ignore_patterns:
+        - '.git/'
+        - '__pycache__/'
+        - '.venv/'
+        - 'node_modules/'
+        - 'dist/'
+        - 'build/'
+      max_depth: 10
+      follow_symlinks: false
+      
+      # Caching - ENABLED for speed
+      enable_cache: true
+      # cache_dir: /tmp/repo_mapper_cache  # Custom cache location
+      
+      # Performance - MAXIMIZE for CI
+      max_workers: 16  # Use all available cores
+
+
+# ============================================================================
+# Example 6: Monorepo Configuration (Subdirectory Focus)
+# ============================================================================
+# Use this for monorepos where you want to analyze specific subdirectories.
+#
+# Characteristics:
+# - Standard configuration
+# - Note: Set repo_path to subdirectory at runtime, not in config
+# - Aggressive ignore patterns to skip other monorepo packages
+
+monorepo:
+  prompt:
+    repo_mapper:
+      # Token budget
+      token_budget: 1500
+      max_relevant_files: 10
+      
+      # File analysis
+      max_file_size_bytes: 1048576  # 1MB
+      max_file_descriptor_length: 200
+      
+      # Scanning - FILTER OTHER PACKAGES
+      ignore_patterns:
+        - '.git/'
+        - '__pycache__/'
+        - '.venv/'
+        - 'node_modules/'
+        - 'dist/'
+        - 'build/'
+        # Monorepo-specific ignores
+        - 'packages/*/node_modules/'  # Package dependencies
+        - 'packages/*/dist/'  # Package builds
+        - 'apps/*/node_modules/'  # App dependencies
+        - 'apps/*/dist/'  # App builds
+      max_depth: 10
+      follow_symlinks: false
+      
+      # Caching
+      enable_cache: true
+      
+      # Performance
+      max_workers: 4
+  
+  # NOTE: When calling, set repo_path to specific package:
+  # repo_path = Path("/path/to/monorepo/packages/my-package")
+
+
+# ============================================================================
+# Example 7: Minimal Configuration (Bare Bones)
+# ============================================================================
+# Use this for minimal context or extremely large projects.
+#
+# Characteristics:
+# - Very limited token budget
+# - Few files
+# - Short descriptions
+
+minimal:
+  prompt:
+    repo_mapper:
+      # Token budget and file limits - MINIMAL
+      token_budget: 500  # ~2KB of context
+      max_relevant_files: 3  # Only top 3 files
+      
+      # File analysis - MINIMAL
+      max_file_size_bytes: 262144  # 256KB
+      max_file_descriptor_length: 50  # Very short
+      
+      # Scanning
+      ignore_patterns:
+        - '.git/'
+        - '__pycache__/'
+        - '.venv/'
+      max_depth: 5  # Shallow
+      follow_symlinks: false
+      
+      # Caching
+      enable_cache: true
+      
+      # Performance
+      max_workers: 2  # Minimal parallelism
+
+
+# ============================================================================
+# Example 8: Custom Cache Location
+# ============================================================================
+# Use this when you need a specific cache directory.
+
+custom_cache:
+  prompt:
+    repo_mapper:
+      token_budget: 1500
+      max_relevant_files: 10
+      max_file_size_bytes: 1048576
+      max_file_descriptor_length: 200
+      
+      ignore_patterns:
+        - '.git/'
+        - '__pycache__/'
+        - '.venv/'
+      max_depth: 10
+      follow_symlinks: false
+      
+      # Custom cache directory
+      enable_cache: true
+      cache_dir: /path/to/custom/cache  # Custom location
+      
+      max_workers: 4
+
+
+# ============================================================================
+# Example 9: Python-Specific Project
+# ============================================================================
+# Optimized for Python projects with common patterns.
+
+python_project:
+  prompt:
+    repo_mapper:
+      token_budget: 1500
+      max_relevant_files: 10
+      max_file_size_bytes: 1048576
+      max_file_descriptor_length: 200
+      
+      # Python-specific ignore patterns
+      ignore_patterns:
+        - '.git/'
+        - '__pycache__/'
+        - '*.pyc'
+        - '.venv/'
+        - 'venv/'
+        - '.env/'
+        - 'env/'
+        - 'dist/'
+        - 'build/'
+        - '*.egg-info/'
+        - '.mypy_cache/'
+        - '.pytest_cache/'
+        - '.hypothesis/'
+        - '.tox/'
+        - 'htmlcov/'  # Coverage reports
+        - '.coverage'
+        - 'migrations/'  # Django/Alembic migrations
+      max_depth: 10
+      follow_symlinks: false
+      
+      enable_cache: true
+      max_workers: 4
+
+
+# ============================================================================
+# Example 10: Development Configuration (Debugging)
+# ============================================================================
+# Use this during development/debugging with verbose settings.
+
+development:
+  # Set log level to DEBUG for detailed output
+  log_level: DEBUG
+  
+  prompt:
+    repo_mapper:
+      token_budget: 2000  # Generous for debugging
+      max_relevant_files: 15
+      max_file_size_bytes: 2097152  # 2MB
+      max_file_descriptor_length: 300  # Detailed descriptions
+      
+      ignore_patterns:
+        - '.git/'
+        - '__pycache__/'
+        - '.venv/'
+      max_depth: 10
+      follow_symlinks: false
+      
+      # Cache disabled for debugging (always fresh)
+      enable_cache: false
+      
+      max_workers: 1  # Single-threaded for easier debugging
+
+
+# ============================================================================
+# How to Use These Configurations
+# ============================================================================
+#
+# Method 1: Load specific configuration from this file
+# -----------------------------------------------------
+# import yaml
+# from openevolve.config import Config
+#
+# with open('repo_mapper_config_examples.yaml') as f:
+#     configs = yaml.safe_load(f)
+#
+# # Load specific configuration
+# config = Config.from_dict(configs['large_project'])
+#
+#
+# Method 2: Create your own config.yaml
+# --------------------------------------
+# Copy one of the examples above into your config.yaml and customize.
+#
+# # config.yaml
+# prompt:
+#   repo_mapper:
+#     token_budget: 1500
+#     enable_cache: true
+#     ...
+#
+# # Load it
+# config = Config.from_yaml('config.yaml')
+#
+#
+# Method 3: Override in Python code
+# ----------------------------------
+# from openevolve.config import PromptConfig
+# from openevolve.repo_mapper.models import RepoMapperConfig
+#
+# config = PromptConfig(
+#     repo_mapper=RepoMapperConfig(
+#         token_budget=2000,
+#         enable_cache=False,
+#         max_relevant_files=5,
+#     )
+# )
+#
+#
+# Method 4: Environment-specific configs
+# ---------------------------------------
+# Create separate files for different environments:
+# - config.dev.yaml (development)
+# - config.test.yaml (testing)
+# - config.prod.yaml (production)
+#
+# # Load based on environment
+# import os
+# env = os.getenv('ENV', 'dev')
+# config = Config.from_yaml(f'config.{env}.yaml')
+
+# ============================================================================
+# Configuration Best Practices
+# ============================================================================
+#
+# 1. Start with defaults, then tune based on needs
+# 2. Enable caching in development (10-100x speedup)
+# 3. Adjust token_budget based on LLM context window:
+#    - GPT-3.5 (4k): 500-1000 tokens
+#    - GPT-4 (8k): 1000-1500 tokens
+#    - GPT-4-32k: 3000-5000 tokens
+#    - Claude-100k: 5000-10000 tokens
+# 4. Use aggressive filtering for large repos (>100k LOC)
+# 5. Disable cache in CI/CD if disk space is limited
+# 6. Increase max_workers on multi-core machines
+# 7. Monitor token usage and adjust accordingly
+# 8. Test configuration changes with demo script first

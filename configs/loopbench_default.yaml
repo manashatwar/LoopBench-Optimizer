@@ -88,3 +88,27 @@ evaluator:
   cascade_thresholds: [0.3, 0.6]
   parallel_evaluations: 2
   use_llm_feedback: false
+
+  # Metric Parser: Extract performance metrics from CLI output using regex
+  # Replaces hardcoded score extraction with flexible pattern matching
+  # Uncomment to enable metric parsing from evaluator stdout/stderr
+  # 
+  # metric_parser:
+  #   # Simple format (single metric):
+  #   regex: "Execution time:\\s+(\\d+\\.\\d+)\\s+seconds"
+  #   goal: "minimize"  # or "maximize"
+  #   unit: "seconds"
+  #   fallback_score: 0.0
+  #   
+  #   # Advanced format (multiple metrics):
+  #   # patterns:
+  #   #   - name: "latency"
+  #   #     regex: "Average latency:\\s+(\\d+\\.\\d+)ms"
+  #   #     goal: "minimize"
+  #   #     unit: "ms"
+  #   #   - name: "throughput"
+  #   #     regex: "Throughput:\\s+(\\d+)\\s+ops/sec"
+  #   #     goal: "maximize"
+  #   #     unit: "ops/sec"
+  #   # primary_metric: "latency"
+  #   # fallback_score: 0.0

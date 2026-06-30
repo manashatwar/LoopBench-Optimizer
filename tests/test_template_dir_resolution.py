@@ -40,7 +40,7 @@ class TestTemplateDirResolution(unittest.TestCase):
         """Absolute paths in template_dir should remain unchanged"""
         with tempfile.TemporaryDirectory() as tmpdir:
             config_file = Path(tmpdir) / "test_config.yaml"
-            absolute_template_path = "/absolute/path/to/templates"
+            absolute_template_path = str(Path("/absolute/path/to/templates").resolve())
 
             # Write config with absolute template_dir
             config_data = {

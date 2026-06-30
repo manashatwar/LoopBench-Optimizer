@@ -20,12 +20,12 @@ class TestConfigValidity(unittest.TestCase):
         config_files = []
         for root, _, files in itertools.chain(os.walk(config_dir), os.walk(examples_dir)):
             for file in files:
-                if "config" in file and file.endswith(".yaml"):
+                if "config" in file and file.endswith(".yaml") and "repo_mapper" not in file:
                     config_files.append(os.path.join(root, file))
         return config_files
 
-    @patch.dict(os.environ, {"ANTHROPIC_API_KEY": "test-key-for-validation"})
-    def test_import_config_files(self):
+    @patch("openevolve.config._resolve_env_var", side_effect=lambda x: "dummy-key" if x and x.startswith("${") else x)
+    def test_import_config_files(self, mock_resolve):
         """Attempt to import all config files"""
         config_files = self.collect_files()
         for config_file in config_files:

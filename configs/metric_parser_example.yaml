@@ -1,0 +1,107 @@
+# Example Configuration with Metric Parser
+# 
+# This demonstrates how to configure the metric parser to extract
+# performance metrics from benchmark output using regex patterns.
+
+# ── Target Configuration ──────────────────────────────────────────────────────
+target:
+  program: examples/fibonacci_optimizer/initial_program.py
+  evaluator: examples/fibonacci_optimizer/evaluator.py
+
+# ── Metric Parser Configuration ───────────────────────────────────────────────
+# The metric parser extracts performance metrics from CLI output using regex.
+# This replaces hardcoded scores with flexible pattern matching.
+
+# Option 1: Simple format (single metric)
+metric_parser:
+  regex: "Execution time for fib\\(35\\):\\s+(\\d+\\.\\d+)\\s+seconds"
+  goal: "minimize"  # or "maximize"
+  unit: "seconds"
+  fallback_score: 0.0  # Score to use if parsing fails
+
+# Option 2: Advanced format (multiple metrics)
+# Uncomment to use this format instead:
+#
+# metric_parser:
+#   patterns:
+#     - name: "execution_time"
+#       regex: "Execution time:\\s+(\\d+\\.\\d+)\\s+seconds"
+#       goal: "minimize"
+#       unit: "seconds"
+#       scale: 1.0  # Optional: scaling factor (e.g., 0.001 to convert ms to s)
+#     
+#     - name: "memory_usage"
+#       regex: "Peak memory:\\s+(\\d+)\\s+MB"
+#       goal: "minimize"
+#       unit: "MB"
+#     
+#     - name: "throughput"
+#       regex: "Throughput:\\s+(\\d+)\\s+ops/sec"
+#       goal: "maximize"
+#       unit: "ops/sec"
+#   
+#   primary_metric: "execution_time"  # Which metric to use for combined_score
+#   fallback_score: 0.0
+#   multiline: true  # Enable multiline regex matching
+#   ignore_case: false  # Case-sensitive by default
+
+# ── Metric Configuration (LoopBench-specific) ─────────────────────────────────
+metric:
+  name: "combined_score"  # The metric parser will set this automatically
+  threshold: 0.90  # Stop when score >= this value
+  direction: "maximize"
+
+# ── Sandbox Configuration ─────────────────────────────────────────────────────
+sandbox:
+  use_docker: false
+  command: "pytest"
+  network_off: true
+  readonly_mount: true
+
+# ── Evolution Configuration (OpenEvolve) ──────────────────────────────────────
+max_iterations: 50
+checkpoint_interval: 10
+diff_based_evolution: true
+
+llm:
+  models:
+    - name: "gemini-2.0-flash-lite"
+      weight: 0.8
+  api_base: "https://generativelanguage.googleapis.com/v1beta/openai/"
+  api_key: "${GEMINI_API_KEY}"
+  temperature: 0.7
+  max_tokens: 4096
+
+database:
+  population_size: 50
+  archive_size: 20
+  num_islands: 2
+
+evaluator:
+  timeout: 120
+  parallel_evaluations: 1
+  cascade_evaluation: false
+
+# ── Common Regex Patterns (Reference) ─────────────────────────────────────────
+# 
+# Pytest benchmark:
+#   regex: "Mean:\\s+(\\d+\\.\\d+)\\s+ms"
+# 
+# Time command:
+#   regex: "real\\s+(\\d+)m(\\d+\\.\\d+)s"  # Would need two capture groups - not supported yet
+#   regex: "real\\s+\\d+m(\\d+\\.\\d+)s"  # Extract just seconds part
+# 
+# Custom JSON output:
+#   regex: "\"latency\":\\s+(\\d+\\.\\d+)"
+# 
+# Throughput benchmarks:
+#   regex: "(\\d+)\\s+requests/sec"
+#   goal: "maximize"
+# 
+# Memory profiling:
+#   regex: "Peak memory usage:\\s+(\\d+\\.\\d+)\\s+MB"
+#   goal: "minimize"
+# 
+# Error rate:
+#   regex: "Error rate:\\s+(\\d+\\.\\d+)%"
+#   goal: "minimize"
