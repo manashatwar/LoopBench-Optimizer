@@ -3,11 +3,13 @@ Program database for OpenEvolve
 """
 
 import base64
+from contextlib import contextmanager
 import json
 import logging
 import os
 import random
 import shutil
+import sqlite3
 import time
 import uuid
 from dataclasses import asdict, dataclass, field, fields
@@ -16,12 +18,97 @@ from dataclasses import asdict, dataclass, field, fields
 from typing import Any, Dict, List, Optional, Set, Tuple, Union
 
 import numpy as np
+from sqlalchemy import (
+    Boolean,
+    Float,
+    ForeignKey,
+    Index,
+    Integer,
+    String,
+    Text,
+    create_engine,
+    event,
+    select,
+)
+from sqlalchemy.engine import Engine
+from sqlalchemy.exc import IntegrityError as SQLAlchemyIntegrityError
+from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column
+from sqlalchemy.pool import NullPool, StaticPool
 
 from openevolve.config import DatabaseConfig
 from openevolve.utils.code_utils import calculate_edit_distance
 from openevolve.utils.metrics_utils import safe_numeric_average, get_fitness_score
 
 logger = logging.getLogger(__name__)
+
+_SQLITE_SUFFIXES = {".db", ".sqlite", ".sqlite3"}
+
+
+class _AuditBase(DeclarativeBase):
+    """Base for OptimizerLoop audit tables."""
+
+
+class _AuditRun(_AuditBase):
+    """Optimization run audit record."""
+
+    __tablename__ = "runs"
+
+    id: Mapped[str] = mapped_column(String, primary_key=True)
+    target_repo: Mapped[str] = mapped_column(Text, nullable=False, default="")
+    start_time: Mapped[float] = mapped_column(Float, nullable=False)
+    end_time: Mapped[Optional[float]] = mapped_column(Float)
+    config_json: Mapped[str] = mapped_column(Text, nullable=False, default="{}")
+    status: Mapped[str] = mapped_column(String, nullable=False)
+    success_threshold: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
+    final_improvement: Mapped[Optional[float]] = mapped_column(Float)
+    metadata_json: Mapped[Optional[str]] = mapped_column(Text)
+
+
+class _AuditCandidate(_AuditBase):
+    """Candidate audit record with parent-child lineage."""
+
+    __tablename__ = "candidates"
+    __table_args__ = (
+        Index("idx_candidates_generation", "generation", "score"),
+        Index("idx_candidates_run", "run_id", "timestamp"),
+        Index("idx_candidates_parent", "parent_id"),
+    )
+
+    id: Mapped[str] = mapped_column(String, primary_key=True)
+    run_id: Mapped[str] = mapped_column(String, ForeignKey("runs.id", ondelete="CASCADE"), nullable=False)
+    generation: Mapped[int] = mapped_column(Integer, nullable=False)
+    parent_id: Mapped[Optional[str]] = mapped_column(String, ForeignKey("candidates.id"))
+    timestamp: Mapped[float] = mapped_column(Float, nullable=False)
+    patch_content: Mapped[str] = mapped_column(Text, nullable=False, default="")
+    program_json: Mapped[Optional[str]] = mapped_column(Text)
+
+    applied: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    tested: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    exit_code: Mapped[Optional[int]] = mapped_column(Integer)
+    stdout: Mapped[Optional[str]] = mapped_column(Text)
+    stderr: Mapped[Optional[str]] = mapped_column(Text)
+    execution_time: Mapped[Optional[float]] = mapped_column(Float)
+
+    metrics_json: Mapped[Optional[str]] = mapped_column(Text)
+    score: Mapped[Optional[float]] = mapped_column(Float)
+
+    failed: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    failure_phase: Mapped[Optional[str]] = mapped_column(String)
+    error_message: Mapped[Optional[str]] = mapped_column(Text)
+
+
+class _AuditLog(_AuditBase):
+    """Audit trail event."""
+
+    __tablename__ = "audit_log"
+    __table_args__ = (Index("idx_audit_run", "run_id", "timestamp"),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    run_id: Mapped[str] = mapped_column(String, ForeignKey("runs.id", ondelete="CASCADE"), nullable=False)
+    candidate_id: Mapped[Optional[str]] = mapped_column(String, ForeignKey("candidates.id"))
+    timestamp: Mapped[float] = mapped_column(Float, nullable=False)
+    event_type: Mapped[str] = mapped_column(String, nullable=False)
+    event_data: Mapped[str] = mapped_column(Text, nullable=False)
 
 
 def _safe_sum_metrics(metrics: Dict[str, Any]) -> float:
@@ -121,6 +208,10 @@ class ProgramDatabase:
 
     def __init__(self, config: DatabaseConfig):
         self.config = config
+        self._program_storage_path = self._resolve_program_storage_path(config.db_path)
+        self._audit_db_path = self._resolve_audit_db_path(config.db_path)
+        self._audit_engine: Optional[Engine] = None
+        self.current_run_id: Optional[str] = None
 
         # In-memory program storage
         self.programs: Dict[str, Program] = {}
@@ -160,9 +251,10 @@ class ProgramDatabase:
         # Track the last iteration number (for resuming)
         self.last_iteration: int = 0
 
-        # Load database from disk if path is provided
-        if config.db_path and os.path.exists(config.db_path):
-            self.load(config.db_path)
+        # Load JSON-backed program storage from disk if path is provided.
+        # SQLite-looking paths are reserved for the audit database.
+        if self._program_storage_path and os.path.exists(self._program_storage_path):
+            self.load(self._program_storage_path)
 
         # Prompt log
         self.prompts_by_program: Dict[str, Dict[str, Dict[str, str]]] = None
@@ -199,6 +291,9 @@ class ProgramDatabase:
 
         logger.info(f"Initialized program database with {len(self.programs)} programs")
 
+        # SQLite audit storage for optimizer-loop runs/candidates.
+        self._init_audit_tables()
+
         # Novelty judge setup
         from openevolve.embedding import EmbeddingClient
 
@@ -207,6 +302,978 @@ class ProgramDatabase:
             EmbeddingClient(config.embedding_model) if config.embedding_model else None
         )
         self.similarity_threshold = config.similarity_threshold
+
+    @staticmethod
+    def _looks_like_sqlite_path(path: Optional[str]) -> bool:
+        """Return True when a configured path is intended to be a SQLite file."""
+        if not path:
+            return False
+        return os.path.splitext(path)[1].lower() in _SQLITE_SUFFIXES
+
+    def _resolve_program_storage_path(self, db_path: Optional[str]) -> Optional[str]:
+        """Resolve the legacy JSON program-store path."""
+        if not db_path or db_path == ":memory:" or self._looks_like_sqlite_path(db_path):
+            return None
+        return db_path
+
+    def _resolve_audit_db_path(self, db_path: Optional[str]) -> str:
+        """Resolve the SQLite audit database path."""
+        if not db_path or db_path == ":memory:":
+            return ":memory:"
+        if self._looks_like_sqlite_path(db_path):
+            return db_path
+        return os.path.join(db_path, "optimizer_audit.sqlite3")
+
+    def _audit_database_url(self) -> str:
+        """Return the SQLAlchemy URL for the audit database."""
+        if self._audit_db_path == ":memory:":
+            return "sqlite:///:memory:"
+        parent_dir = os.path.dirname(self._audit_db_path) or "."
+        os.makedirs(parent_dir, exist_ok=True)
+        return f"sqlite:///{self._audit_db_path}"
+
+    def _get_audit_engine(self) -> Engine:
+        """Create or return the SQLAlchemy engine used for optimizer-loop audit data."""
+        if self._audit_engine is not None:
+            return self._audit_engine
+
+        connect_args = {"check_same_thread": False}
+        if self._audit_db_path == ":memory:":
+            self._audit_engine = create_engine(
+                self._audit_database_url(),
+                connect_args=connect_args,
+                poolclass=StaticPool,
+                future=True,
+            )
+        else:
+            self._audit_engine = create_engine(
+                self._audit_database_url(),
+                connect_args=connect_args,
+                poolclass=NullPool,
+                future=True,
+            )
+
+        @event.listens_for(self._audit_engine, "connect")
+        def _enable_sqlite_foreign_keys(dbapi_connection, connection_record):
+            cursor = dbapi_connection.cursor()
+            cursor.execute("PRAGMA foreign_keys=ON")
+            cursor.close()
+
+        return self._audit_engine
+
+    @contextmanager
+    def audit_session(self):
+        """
+        SQLAlchemy session context for audit database operations.
+
+        Any exception rolls back the transaction before being re-raised.
+        """
+        session = Session(self._get_audit_engine(), expire_on_commit=False)
+        try:
+            yield session
+        except Exception:
+            session.rollback()
+            raise
+        else:
+            session.commit()
+        finally:
+            session.close()
+
+    @contextmanager
+    def audit_connection(self):
+        """Yield a row-enabled DBAPI connection managed by the audit engine."""
+        pooled_connection = self._get_audit_engine().raw_connection()
+        connection = pooled_connection.driver_connection
+        connection.row_factory = sqlite3.Row
+        try:
+            yield connection
+        finally:
+            pooled_connection.close()
+
+    @contextmanager
+    def audit_transaction(self):
+        """Yield an audit connection and commit or roll back atomically."""
+        with self.audit_connection() as connection:
+            try:
+                yield connection
+            except Exception:
+                connection.rollback()
+                raise
+            else:
+                connection.commit()
+
+    def _init_audit_tables(self) -> None:
+        """Create optimizer-loop SQLite tables alongside existing program storage."""
+        _AuditBase.metadata.create_all(self._get_audit_engine())
+
+    def _json_dumps(self, value: Any) -> str:
+        """Serialize audit payloads while tolerating non-JSON-native config objects."""
+        return json.dumps(value, default=str)
+
+    def _json_loads(self, value: Optional[str], default: Any = None) -> Any:
+        """Deserialize JSON payloads stored in audit tables."""
+        if value is None:
+            return default
+        try:
+            return json.loads(value)
+        except (TypeError, json.JSONDecodeError):
+            return default
+
+    def _audit_config_payload(self) -> Dict[str, Any]:
+        """Return a serializable-enough snapshot of database config for run exports."""
+        try:
+            return asdict(self.config)
+        except Exception:
+            payload = {}
+            for key, value in vars(self.config).items():
+                if isinstance(value, (str, int, float, bool, list, tuple, dict, type(None))):
+                    payload[key] = value
+                else:
+                    payload[key] = str(value)
+            return payload
+
+    def _score_from_metrics(self, metrics: Optional[Dict[str, Any]]) -> Optional[float]:
+        """Choose a stable scalar score for audit queries."""
+        if not metrics:
+            return None
+        for key in ("combined_score", "score"):
+            value = metrics.get(key)
+            if isinstance(value, (int, float)) and not isinstance(value, bool):
+                return float(value)
+        numeric_average = safe_numeric_average(metrics)
+        return float(numeric_average) if numeric_average is not None else None
+
+    def create_run(
+        self,
+        run_id: Optional[str] = None,
+        *,
+        target_repo: str = "",
+        config: Optional[Dict[str, Any]] = None,
+        status: str = "running",
+        success_threshold: float = 0.0,
+        metadata: Optional[Dict[str, Any]] = None,
+    ) -> str:
+        """
+        Create an optimizer-loop run row.
+
+        Args:
+            run_id: Optional externally supplied run ID
+            target_repo: Repository under optimization
+            config: Serialized optimizer configuration
+            status: Run status
+            success_threshold: Threshold used for final success classification
+            metadata: Additional run metadata
+
+        Returns:
+            Run ID
+        """
+        run_id = run_id or str(uuid.uuid4())
+        config_payload = config if config is not None else self._audit_config_payload()
+
+        with self.audit_transaction() as conn:
+            conn.execute(
+                """
+                INSERT INTO runs (
+                    id, target_repo, start_time, config_json, status,
+                    success_threshold, metadata_json
+                )
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    run_id,
+                    target_repo,
+                    time.time(),
+                    self._json_dumps(config_payload),
+                    status,
+                    float(success_threshold),
+                    self._json_dumps(metadata) if metadata else None,
+                ),
+            )
+            conn.execute(
+                """
+                INSERT INTO audit_log (
+                    run_id, candidate_id, timestamp, event_type, event_data
+                )
+                VALUES (?, NULL, ?, ?, ?)
+                """,
+                (
+                    run_id,
+                    time.time(),
+                    "run_created",
+                    self._json_dumps({"status": status, "target_repo": target_repo}),
+                ),
+            )
+
+        self.current_run_id = run_id
+        return run_id
+
+    def _ensure_run(self, run_id: Optional[str] = None) -> str:
+        """Ensure there is a run row available for candidate/audit writes."""
+        if run_id:
+            if self.get_run(run_id) is None:
+                return self.create_run(run_id=run_id)
+            self.current_run_id = run_id
+            return run_id
+
+        if self.current_run_id and self.get_run(self.current_run_id) is not None:
+            return self.current_run_id
+
+        return self.create_run()
+
+    def complete_run(
+        self,
+        run_id: Optional[str] = None,
+        *,
+        status: str = "completed",
+        final_improvement: Optional[float] = None,
+    ) -> None:
+        """Mark a run complete and record its final improvement."""
+        run_id = self._ensure_run(run_id)
+        with self.audit_transaction() as conn:
+            conn.execute(
+                """
+                UPDATE runs
+                SET end_time = ?, status = ?, final_improvement = ?
+                WHERE id = ?
+                """,
+                (time.time(), status, final_improvement, run_id),
+            )
+            conn.execute(
+                """
+                INSERT INTO audit_log (
+                    run_id, candidate_id, timestamp, event_type, event_data
+                )
+                VALUES (?, NULL, ?, ?, ?)
+                """,
+                (
+                    run_id,
+                    time.time(),
+                    "run_completed",
+                    self._json_dumps({"status": status, "final_improvement": final_improvement}),
+                ),
+            )
+
+    def get_run(self, run_id: str) -> Optional[Dict[str, Any]]:
+        """Return a run row as a dictionary."""
+        with self.audit_connection() as conn:
+            row = conn.execute("SELECT * FROM runs WHERE id = ?", (run_id,)).fetchone()
+        if row is None:
+            return None
+        result = dict(row)
+        result["config"] = self._json_loads(result.pop("config_json", None), {})
+        result["metadata"] = self._json_loads(result.pop("metadata_json", None), {})
+        return result
+
+    def get_all_runs(self) -> List[Dict[str, Any]]:
+        """List all optimizer-loop runs in newest-first order."""
+        with self.audit_connection() as conn:
+            rows = conn.execute("SELECT id FROM runs ORDER BY start_time DESC").fetchall()
+        return [self.get_run(row["id"]) for row in rows]
+
+    def _candidate_from_row(self, row: sqlite3.Row) -> Dict[str, Any]:
+        """Convert a candidate SQLite row into an export-friendly dict."""
+        result = dict(row)
+        result["applied"] = bool(result["applied"])
+        result["tested"] = bool(result["tested"])
+        result["failed"] = bool(result["failed"])
+        result["metrics"] = self._json_loads(result.pop("metrics_json", None), {})
+        result["program"] = self._json_loads(result.pop("program_json", None), None)
+        return result
+
+    def get_candidate(self, candidate_id: str) -> Optional[Dict[str, Any]]:
+        """Return an audit candidate by ID."""
+        with self.audit_connection() as conn:
+            row = conn.execute(
+                "SELECT * FROM candidates WHERE id = ?", (candidate_id,)
+            ).fetchone()
+        return self._candidate_from_row(row) if row else None
+
+    def insert_candidate(
+        self,
+        candidate: Optional[Union[Program, Dict[str, Any]]] = None,
+        **fields: Any,
+    ) -> str:
+        """
+        Insert or update an optimizer-loop candidate row.
+
+        Parent IDs are enforced by SQLite foreign keys. Use ``parent_id=None`` for
+        baseline candidates.
+        """
+        if isinstance(candidate, Program):
+            fields.setdefault("program", candidate)
+        elif isinstance(candidate, dict):
+            merged_fields = dict(candidate)
+            merged_fields.update(fields)
+            fields = merged_fields
+        elif candidate is not None:
+            raise TypeError("candidate must be a Program, dict, or None")
+
+        program = fields.pop("program", None)
+        if program is not None and not isinstance(program, Program):
+            raise TypeError("program must be a Program")
+
+        metadata = program.metadata if program is not None else fields.get("metadata", {}) or {}
+        candidate_id = fields.pop("candidate_id", None) or fields.pop("id", None)
+        candidate_id = candidate_id or (program.id if program is not None else str(uuid.uuid4()))
+        run_id = fields.pop("run_id", None) or metadata.get("run_id")
+        run_id = self._ensure_run(run_id)
+
+        metrics = fields.pop("metrics", None)
+        if metrics is None and program is not None:
+            metrics = program.metrics
+
+        score = fields.pop("score", None)
+        if score is None:
+            score = self._score_from_metrics(metrics)
+
+        patch_content = (
+            fields.pop("patch_content", None)
+            or fields.pop("patch", None)
+            or fields.pop("patch_diff", None)
+            or metadata.get("patch_content")
+            or metadata.get("patch")
+            or metadata.get("patch_diff")
+            or ""
+        )
+        generation = fields.pop("generation", None)
+        if generation is None:
+            generation = program.generation if program is not None else 0
+
+        parent_id = fields.pop("parent_id", None)
+        if parent_id is None and program is not None:
+            parent_id = program.parent_id
+
+        timestamp = fields.pop("timestamp", None)
+        if timestamp is None:
+            timestamp = program.timestamp if program is not None else time.time()
+
+        applied = bool(fields.pop("applied", metadata.get("applied", False)))
+        tested = bool(fields.pop("tested", metadata.get("tested", False)))
+        exit_code = fields.pop("exit_code", metadata.get("exit_code"))
+        stdout = fields.pop("stdout", metadata.get("stdout"))
+        stderr = fields.pop("stderr", metadata.get("stderr"))
+        execution_time = fields.pop("execution_time", metadata.get("execution_time"))
+        failure_phase = fields.pop("failure_phase", metadata.get("failure_phase"))
+        error_message = fields.pop("error_message", metadata.get("error_message"))
+        failed = bool(fields.pop("failed", metadata.get("failed", False)))
+        failed = failed or bool(failure_phase or error_message)
+
+        program_json = self._json_dumps(program.to_dict()) if program is not None else None
+
+        with self.audit_transaction() as conn:
+            conn.execute(
+                """
+                INSERT INTO candidates (
+                    id, run_id, generation, parent_id, timestamp, patch_content,
+                    program_json, applied, tested, exit_code, stdout, stderr,
+                    execution_time, metrics_json, score, failed, failure_phase,
+                    error_message
+                )
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ON CONFLICT(id) DO UPDATE SET
+                    run_id = excluded.run_id,
+                    generation = excluded.generation,
+                    parent_id = excluded.parent_id,
+                    timestamp = excluded.timestamp,
+                    patch_content = excluded.patch_content,
+                    program_json = excluded.program_json,
+                    applied = excluded.applied,
+                    tested = excluded.tested,
+                    exit_code = excluded.exit_code,
+                    stdout = excluded.stdout,
+                    stderr = excluded.stderr,
+                    execution_time = excluded.execution_time,
+                    metrics_json = excluded.metrics_json,
+                    score = excluded.score,
+                    failed = excluded.failed,
+                    failure_phase = excluded.failure_phase,
+                    error_message = excluded.error_message
+                """,
+                (
+                    candidate_id,
+                    run_id,
+                    int(generation),
+                    parent_id,
+                    float(timestamp),
+                    patch_content,
+                    program_json,
+                    int(applied),
+                    int(tested),
+                    exit_code,
+                    stdout,
+                    stderr,
+                    execution_time,
+                    self._json_dumps(metrics or {}),
+                    score,
+                    int(failed),
+                    failure_phase,
+                    error_message,
+                ),
+            )
+            conn.execute(
+                """
+                INSERT INTO audit_log (
+                    run_id, candidate_id, timestamp, event_type, event_data
+                )
+                VALUES (?, ?, ?, ?, ?)
+                """,
+                (
+                    run_id,
+                    candidate_id,
+                    time.time(),
+                    "candidate_recorded",
+                    self._json_dumps(
+                        {
+                            "generation": generation,
+                            "parent_id": parent_id,
+                            "failed": failed,
+                            "failure_phase": failure_phase,
+                        }
+                    ),
+                ),
+            )
+
+        return candidate_id
+
+    def update_candidate_results(
+        self,
+        candidate_id: str,
+        *,
+        metrics: Optional[Dict[str, Any]] = None,
+        score: Optional[float] = None,
+        exit_code: Optional[int] = None,
+        stdout: Optional[str] = None,
+        stderr: Optional[str] = None,
+        execution_time: Optional[float] = None,
+        applied: Optional[bool] = None,
+        tested: Optional[bool] = None,
+        failed: Optional[bool] = None,
+        failure_phase: Optional[str] = None,
+        error_message: Optional[str] = None,
+    ) -> None:
+        """Update an existing candidate with test results and failure details."""
+        existing = self.get_candidate(candidate_id)
+        if existing is None:
+            raise KeyError(f"Candidate {candidate_id!r} does not exist")
+
+        metrics = existing["metrics"] if metrics is None else metrics
+        score = existing["score"] if score is None else score
+        if score is None:
+            score = self._score_from_metrics(metrics)
+
+        applied_value = existing["applied"] if applied is None else applied
+        tested_value = existing["tested"] if tested is None else tested
+        failed_value = existing["failed"] if failed is None else failed
+        failed_value = bool(failed_value or failure_phase or error_message)
+
+        with self.audit_transaction() as conn:
+            conn.execute(
+                """
+                UPDATE candidates
+                SET applied = ?, tested = ?, exit_code = ?, stdout = ?,
+                    stderr = ?, execution_time = ?, metrics_json = ?, score = ?,
+                    failed = ?, failure_phase = ?, error_message = ?
+                WHERE id = ?
+                """,
+                (
+                    int(bool(applied_value)),
+                    int(bool(tested_value)),
+                    exit_code if exit_code is not None else existing["exit_code"],
+                    stdout if stdout is not None else existing["stdout"],
+                    stderr if stderr is not None else existing["stderr"],
+                    (execution_time if execution_time is not None else existing["execution_time"]),
+                    self._json_dumps(metrics or {}),
+                    score,
+                    int(failed_value),
+                    failure_phase if failure_phase is not None else existing["failure_phase"],
+                    error_message if error_message is not None else existing["error_message"],
+                    candidate_id,
+                ),
+            )
+            conn.execute(
+                """
+                INSERT INTO audit_log (
+                    run_id, candidate_id, timestamp, event_type, event_data
+                )
+                VALUES (?, ?, ?, ?, ?)
+                """,
+                (
+                    existing["run_id"],
+                    candidate_id,
+                    time.time(),
+                    "candidate_results_updated",
+                    self._json_dumps(
+                        {
+                            "score": score,
+                            "failed": failed_value,
+                            "failure_phase": failure_phase,
+                            "error_message": error_message,
+                        }
+                    ),
+                ),
+            )
+
+    def record_failure(
+        self,
+        *,
+        candidate_id: Optional[str] = None,
+        run_id: Optional[str] = None,
+        generation: int = 0,
+        parent_id: Optional[str] = None,
+        failure_phase: str,
+        error_message: str,
+        patch_content: str = "",
+    ) -> str:
+        """Record a failed optimization attempt for later LLM feedback."""
+        candidate_id = candidate_id or str(uuid.uuid4())
+        if self.get_candidate(candidate_id):
+            self.update_candidate_results(
+                candidate_id,
+                failed=True,
+                failure_phase=failure_phase,
+                error_message=error_message,
+            )
+            return candidate_id
+
+        return self.insert_candidate(
+            candidate_id=candidate_id,
+            run_id=run_id,
+            generation=generation,
+            parent_id=parent_id,
+            patch_content=patch_content,
+            failed=True,
+            failure_phase=failure_phase,
+            error_message=error_message,
+        )
+
+    def add_audit_event(
+        self,
+        run_id: Optional[str],
+        event_type: str,
+        event_data: Dict[str, Any],
+        *,
+        candidate_id: Optional[str] = None,
+    ) -> None:
+        """Append an audit-trail event."""
+        run_id = self._ensure_run(run_id)
+        with self.audit_transaction() as conn:
+            conn.execute(
+                """
+                INSERT INTO audit_log (
+                    run_id, candidate_id, timestamp, event_type, event_data
+                )
+                VALUES (?, ?, ?, ?, ?)
+                """,
+                (
+                    run_id,
+                    candidate_id,
+                    time.time(),
+                    event_type,
+                    self._json_dumps(event_data),
+                ),
+            )
+
+    def log_event(
+        self,
+        event_type: str,
+        event_data: Optional[Dict[str, Any]] = None,
+        *,
+        run_id: Optional[str] = None,
+        candidate_id: Optional[str] = None,
+    ) -> None:
+        """Public alias for :meth:`add_audit_event` used by OptimizerLoop.
+
+        Supported event types (Requirements 12.1 – 12.5):
+          - ``generation_start``   — generation cycle begins
+          - ``patch_generated``    — LLM returned a patch (includes prompt)
+          - ``patch_applied``      — git apply succeeded/failed
+          - ``test_executed``      — Docker sandbox result captured
+          - ``metrics_extracted``  — MetricParser output
+          - ``candidate_scored``   — score written to database
+          - Any other string is accepted and stored verbatim.
+
+        Args:
+            event_type: Machine-readable event name.
+            event_data: Arbitrary dict of context (prompt text, scores, etc.).
+            run_id: Override current run (defaults to ``self.current_run_id``).
+            candidate_id: Associate event with a specific candidate row.
+        """
+        self.add_audit_event(
+            run_id=run_id or self.current_run_id,
+            event_type=event_type,
+            event_data=event_data or {},
+            candidate_id=candidate_id,
+        )
+
+    def get_audit_log(
+        self,
+        run_id: Optional[str] = None,
+        event_type: Optional[str] = None,
+        candidate_id: Optional[str] = None,
+    ) -> List[Dict[str, Any]]:
+        """Return audit log rows, optionally filtered.
+
+        Args:
+            run_id: Filter to a specific run (defaults to current run).
+            event_type: Filter to a specific event type.
+            candidate_id: Filter to events for a specific candidate.
+
+        Returns:
+            List of event dicts with keys: id, run_id, candidate_id,
+            timestamp, event_type, event_data.
+        """
+        run_id = run_id or self.current_run_id
+        params: List[Any] = []
+        clauses: List[str] = []
+
+        if run_id is not None:
+            clauses.append("run_id = ?")
+            params.append(run_id)
+        if event_type is not None:
+            clauses.append("event_type = ?")
+            params.append(event_type)
+        if candidate_id is not None:
+            clauses.append("candidate_id = ?")
+            params.append(candidate_id)
+
+        where = f"WHERE {' AND '.join(clauses)}" if clauses else ""
+
+        with self.audit_connection() as conn:
+            rows = conn.execute(
+                f"SELECT * FROM audit_log {where} ORDER BY timestamp, id",
+                tuple(params),
+            ).fetchall()
+
+        result = []
+        for row in rows:
+            event = dict(row)
+            event["event_data"] = self._json_loads(event.get("event_data"), {})
+            result.append(event)
+        return result
+
+    def export_audit_trail(
+        self,
+        run_id: Optional[str] = None,
+        output_path: Optional[str] = None,
+    ) -> str:
+        """Export the complete audit trail as a human-readable Markdown document.
+
+        Includes every patch, prompt, LLM response, test output, and metric
+        extraction result recorded for the run.
+
+        Task 14.2 — Requirement 12.6
+
+        Args:
+            run_id: Run to export (defaults to current run).
+            output_path: If provided, write the markdown to this file path.
+
+        Returns:
+            Markdown string.
+        """
+        run_id = run_id or self.current_run_id
+        if run_id is None:
+            raise ValueError("run_id is required when no current run exists")
+
+        run = self.get_run(run_id)
+        if run is None:
+            raise KeyError(f"Run {run_id!r} not found")
+
+        events = self.get_audit_log(run_id=run_id)
+        candidates_by_id: Dict[str, Any] = {}
+        with self.audit_connection() as conn:
+            rows = conn.execute(
+                "SELECT * FROM candidates WHERE run_id = ? ORDER BY generation, timestamp",
+                (run_id,),
+            ).fetchall()
+        for row in rows:
+            c = self._candidate_from_row(row)
+            candidates_by_id[c["id"]] = c
+
+        lines: List[str] = [
+            f"# Audit Trail — Run {run_id}",
+            "",
+            f"**Status**: {run.get('status', 'N/A')}  ",
+            f"**Target Repo**: {run.get('target_repo', 'N/A')}  ",
+            f"**Start**: {run.get('start_time', 'N/A')}  ",
+            f"**End**: {run.get('end_time', 'N/A')}  ",
+            f"**Final Improvement**: {run.get('final_improvement', 'N/A')}  ",
+            "",
+        ]
+
+        # Candidates summary
+        lines += [
+            f"## Candidates ({len(candidates_by_id)} total)",
+            "",
+            "| Generation | ID | Score | Failed | Phase |",
+            "|------------|-----|-------|--------|-------|",
+        ]
+        for c in sorted(candidates_by_id.values(), key=lambda x: x.get("generation", 0)):
+            score = c.get("score")
+            score_str = f"{score:.4f}" if isinstance(score, float) else str(score or "—")
+            lines.append(
+                f"| {c.get('generation', '?')} "
+                f"| `{c.get('id', '?')[:8]}…` "
+                f"| {score_str} "
+                f"| {c.get('failed', False)} "
+                f"| {c.get('failure_phase') or '—'} |"
+            )
+        lines.append("")
+
+        # Patch details per candidate
+        lines.append("## Patches")
+        for c in sorted(candidates_by_id.values(), key=lambda x: x.get("generation", 0)):
+            patch = c.get("patch_content") or ""
+            if not patch.strip():
+                continue
+            lines += [
+                f"### Generation {c.get('generation', '?')} — `{c.get('id', '?')[:8]}…`",
+                "",
+                "```diff",
+                patch.rstrip(),
+                "```",
+                "",
+            ]
+
+        # Test outputs per candidate
+        lines.append("## Test Outputs")
+        for c in sorted(candidates_by_id.values(), key=lambda x: x.get("generation", 0)):
+            stdout = c.get("stdout") or ""
+            stderr = c.get("stderr") or ""
+            if not stdout.strip() and not stderr.strip():
+                continue
+            lines += [
+                f"### Generation {c.get('generation', '?')} — `{c.get('id', '?')[:8]}…`",
+                "",
+            ]
+            if stdout.strip():
+                lines += ["**stdout:**", "```", stdout.rstrip(), "```", ""]
+            if stderr.strip():
+                lines += ["**stderr:**", "```", stderr.rstrip(), "```", ""]
+
+        # Metrics per candidate
+        lines.append("## Metrics")
+        for c in sorted(candidates_by_id.values(), key=lambda x: x.get("generation", 0)):
+            metrics = c.get("metrics") or {}
+            if not metrics:
+                continue
+            lines += [
+                f"### Generation {c.get('generation', '?')} — `{c.get('id', '?')[:8]}…`",
+                "",
+            ]
+            for k, v in metrics.items():
+                val_str = f"{v:.6f}" if isinstance(v, float) else str(v)
+                lines.append(f"- **{k}**: {val_str}")
+            lines.append("")
+
+        # Full event log
+        lines += [
+            f"## Event Log ({len(events)} events)",
+            "",
+            "| # | Timestamp | Type | Candidate | Details |",
+            "|---|-----------|------|-----------|---------|",
+        ]
+        for i, evt in enumerate(events, 1):
+            data_str = str(evt.get("event_data", ""))[:120].replace("|", "\\|")
+            cid = evt.get("candidate_id") or "—"
+            if len(cid) > 10:
+                cid = cid[:8] + "…"
+            lines.append(
+                f"| {i} | {evt.get('timestamp', '?'):.2f} "  # type: ignore[arg-type]
+                f"| `{evt.get('event_type', '?')}` "
+                f"| `{cid}` "
+                f"| {data_str} |"
+            )
+
+        markdown = "\n".join(lines)
+
+        if output_path is not None:
+            import os
+            parent = os.path.dirname(output_path)
+            if parent:
+                os.makedirs(parent, exist_ok=True)
+            with open(output_path, "w", encoding="utf-8") as f:
+                f.write(markdown)
+
+        return markdown
+
+    def get_best_candidate(
+        self,
+        before_generation: Optional[int] = None,
+        run_id: Optional[str] = None,
+    ) -> Optional[Dict[str, Any]]:
+        """Retrieve the highest-scoring audit candidate, newest first on ties."""
+        run_clause = ""
+        params: List[Any] = []
+        if run_id is not None:
+            run_clause += " AND run_id = ?"
+            params.append(run_id)
+        if before_generation is not None:
+            run_clause += " AND generation <= ?"
+            params.append(before_generation)
+
+        with self.audit_connection() as conn:
+            row = conn.execute(
+                f"""
+                SELECT * FROM candidates
+                WHERE score IS NOT NULL{run_clause}
+                ORDER BY score DESC, timestamp DESC
+                LIMIT 1
+                """,
+                tuple(params),
+            ).fetchone()
+        return self._candidate_from_row(row) if row else None
+
+    def get_generation_history(
+        self,
+        generation: int,
+        run_id: Optional[str] = None,
+    ) -> List[Dict[str, Any]]:
+        """Return candidates from a specific generation."""
+        params: List[Any] = [generation]
+        run_clause = ""
+        if run_id is not None:
+            run_clause = " AND run_id = ?"
+            params.append(run_id)
+
+        with self.audit_connection() as conn:
+            rows = conn.execute(
+                f"""
+                SELECT * FROM candidates
+                WHERE generation = ?{run_clause}
+                ORDER BY timestamp
+                """,
+                tuple(params),
+            ).fetchall()
+        return [self._candidate_from_row(row) for row in rows]
+
+    def get_recent_failures(
+        self,
+        window: int = 5,
+        run_id: Optional[str] = None,
+        *,
+        as_dict: bool = False,
+    ) -> List[Union[str, Dict[str, Any]]]:
+        """Return the most recent candidate failures for LLM feedback."""
+        if window <= 0:
+            return []
+
+        params: List[Any] = []
+        run_clause = ""
+        if run_id is not None:
+            run_clause = " AND run_id = ?"
+            params.append(run_id)
+        params.append(int(window))
+
+        with self.audit_connection() as conn:
+            rows = conn.execute(
+                f"""
+                SELECT * FROM candidates
+                WHERE failed = 1{run_clause}
+                ORDER BY timestamp DESC
+                LIMIT ?
+                """,
+                tuple(params),
+            ).fetchall()
+        failures = [self._candidate_from_row(row) for row in rows]
+        if as_dict:
+            return failures
+
+        messages = []
+        for failure in failures:
+            phase = failure.get("failure_phase") or "unknown"
+            message = failure.get("error_message") or ""
+            messages.append(
+                f"Generation {failure['generation']} candidate {failure['id']} "
+                f"failed during {phase}: {message}"
+            )
+        return messages
+
+    def export_run(
+        self,
+        run_id: Optional[str] = None,
+        path: Optional[str] = None,
+    ) -> Dict[str, Any]:
+        """Export a complete optimization run as a JSON-serializable dictionary."""
+        run_id = run_id or self.current_run_id
+        if run_id is None:
+            raise ValueError("run_id is required when no current run exists")
+
+        run = self.get_run(run_id)
+        if run is None:
+            raise KeyError(f"Run {run_id!r} does not exist")
+
+        with self.audit_connection() as conn:
+            candidate_rows = conn.execute(
+                """
+                SELECT * FROM candidates
+                WHERE run_id = ?
+                ORDER BY generation, timestamp
+                """,
+                (run_id,),
+            ).fetchall()
+            audit_rows = conn.execute(
+                """
+                SELECT * FROM audit_log
+                WHERE run_id = ?
+                ORDER BY timestamp, id
+                """,
+                (run_id,),
+            ).fetchall()
+
+        candidates = [self._candidate_from_row(row) for row in candidate_rows]
+        audit_log = []
+        for row in audit_rows:
+            event = dict(row)
+            event["event_data"] = self._json_loads(event.get("event_data"), {})
+            audit_log.append(event)
+
+        export = {
+            "run": run,
+            "candidates": candidates,
+            "programs": [program.to_dict() for program in self.programs.values()],
+            "best_candidate": self.get_best_candidate(run_id=run_id),
+            "failures": self.get_recent_failures(
+                window=max(len(candidates), 1),
+                run_id=run_id,
+                as_dict=True,
+            ),
+            "audit_log": audit_log,
+        }
+
+        if path is not None:
+            parent_dir = os.path.dirname(path)
+            if parent_dir:
+                os.makedirs(parent_dir, exist_ok=True)
+            with open(path, "w") as f:
+                json.dump(export, f, indent=2)
+
+        return export
+
+    def close(self) -> None:
+        """Release SQLAlchemy audit-engine resources."""
+        if self._audit_engine is not None:
+            self._audit_engine.dispose()
+            self._audit_engine = None
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc, tb):
+        self.close()
+        return False
+
+    def _mirror_program_to_audit(self, program: Program) -> None:
+        """Best-effort mirror from legacy Program records into candidate rows."""
+        try:
+            self.insert_candidate(program=program)
+        except sqlite3.IntegrityError as exc:
+            logger.debug(
+                "Skipping audit mirror for program %s because of referential integrity: %s",
+                program.id,
+                exc,
+            )
+        except Exception as exc:
+            logger.debug("Skipping audit mirror for program %s: %s", program.id, exc)
 
     def add(
         self, program: Program, iteration: int = None, target_island: Optional[int] = None
@@ -360,8 +1427,9 @@ class ProgramDatabase:
         self._update_island_best_program(program, island_idx)
 
         # Save to disk if configured
-        if self.config.db_path:
+        if self._program_storage_path:
             self._save_program(program)
+        self._mirror_program_to_audit(program)
 
         logger.debug(f"Added program {program.id} to island {island_idx}")
 
@@ -592,10 +1660,10 @@ class ProgramDatabase:
         Save the database to disk
 
         Args:
-            path: Path to save to (uses config.db_path if None)
+            path: Path to save to (uses configured JSON storage path if None)
             iteration: Current iteration number
         """
-        save_path = path or self.config.db_path
+        save_path = path or self._program_storage_path
         if not save_path:
             logger.warning("No database path specified, skipping save")
             return
@@ -811,10 +1879,10 @@ class ProgramDatabase:
 
         Args:
             program: Program to save
-            base_path: Base path to save to (uses config.db_path if None)
+            base_path: Base path to save to (uses configured JSON storage path if None)
             prompts: Optional prompts to save with the program, in the format {template_key: { 'system': str, 'user': str }}
         """
-        save_path = base_path or self.config.db_path
+        save_path = base_path or self._program_storage_path
         if not save_path:
             return
 
@@ -2561,3 +3629,12 @@ class ProgramDatabase:
         if program_id not in self.prompts_by_program:
             self.prompts_by_program[program_id] = {}
         self.prompts_by_program[program_id][template_key] = prompt
+
+
+class CandidateDatabase(ProgramDatabase):
+    """Optimizer-loop-facing database name with ProgramDatabase compatibility."""
+
+    def __init__(self, config: Union[DatabaseConfig, str]):
+        if isinstance(config, str):
+            config = DatabaseConfig(db_path=config, in_memory=False)
+        super().__init__(config)
