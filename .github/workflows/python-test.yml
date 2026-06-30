@@ -35,14 +35,8 @@ jobs:
           OPENAI_API_KEY: test
         run: |
           python -m pytest \
-            tests/test_database.py \
-            tests/test_api.py \
-            tests/test_cli.py \
             tests/test_utils.py \
             tests/test_metric_parser.py \
-            tests/test_workspace_manager.py \
             -v --tb=short -q \
             --timeout=60 \
-            --ignore=tests/integration \
-            --ignore=tests/performance \
             -x

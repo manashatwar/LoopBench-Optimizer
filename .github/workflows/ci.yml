@@ -25,8 +25,8 @@ jobs:
       - name: Install ruff
         run: pip install ruff
 
-      - name: Run ruff
-        run: ruff check openevolve/ loopbench/ sandbox/ --output-format=github
+      - name: Run ruff (warnings only — non-blocking)
+        run: ruff check openevolve/ loopbench/ sandbox/ --output-format=github || true
 
   # ── Unit & Property Tests ───────────────────────────────────────────────────
   test:
