@@ -1,20 +1,46 @@
-# LoopBench Optimizer
-
 <div align="center">
 
-<img src="openevolve-logo.png" alt="LoopBench Optimizer Logo" width="400">
+# ⚡ LoopBench Optimizer
 
-**⚡ Autonomous evolutionary code optimization — powered by LLMs**
+**Autonomous evolutionary code optimization — powered by LLMs**
 
 *Point it at any GitHub repository. Watch it evolve your code to run faster.*
 
 [![License](https://img.shields.io/github/license/algorithmicsuperintelligence/openevolve)](LICENSE)
 [![Python](https://img.shields.io/badge/python-3.11+-blue)](pyproject.toml)
-[![Tests](https://img.shields.io/badge/tests-457%20passing-brightgreen)](tests/)
 [![CI](https://github.com/manashatwar/LoopBench-Optimizer/actions/workflows/ci.yml/badge.svg)](https://github.com/manashatwar/LoopBench-Optimizer/actions/workflows/ci.yml)
 [![Sandbox Image](https://github.com/manashatwar/LoopBench-Optimizer/actions/workflows/sandbox-image.yml/badge.svg)](https://github.com/manashatwar/LoopBench-Optimizer/actions/workflows/sandbox-image.yml)
 
 </div>
+
+---
+
+## Architecture
+
+```mermaid
+flowchart LR
+    U([User]) -->|"loopbench run --target repo --metric latency"| CLI[loopbench CLI]
+    CLI --> RM[Resolve repo<br/>clone or local]
+    RM --> DET[Detect language<br/>+ test command]
+    DET --> LOOP
+
+    subgraph LOOP [OptimizerLoop - repeats per generation]
+      direction TB
+      MAP[1 - Map repo context] --> GEN[2 - Generate edit<br/>full / search-replace]
+      GEN --> APP[3 - Apply in git worktree<br/>+ compute diff via difflib]
+      APP --> TEST[4 - Test in Docker sandbox]
+      TEST --> EXT[5 - Extract metrics]
+      EXT --> REC[6 - Record to SQLite]
+      REC --> SEL[7 - Select best baseline]
+      SEL -.next generation.-> MAP
+    end
+
+    LOOP --> OUT
+    subgraph OUT [Artifacts]
+      direction LR
+      P[best.patch] --- D[docs/data.json] --- T[test_log.txt]
+    end
+```
 
 ---
 
@@ -80,6 +106,20 @@ guaranteed valid:
 
 Verified in practice: a **1,233-line** file routed to `search_replace` produced a
 **27-line surgical patch** (only the hot function changed) with a measured speedup.
+
+```mermaid
+flowchart TD
+    G[LLM generates edit] --> Q{rewrite_mode}
+    Q -->|full| F[Complete file returned]
+    Q -->|search_replace| S[SEARCH/REPLACE blocks<br/>applied by content match]
+    Q -->|auto| A{file size}
+    A -->|<= 300 lines| F
+    A -->|> 300 lines| S
+    F --> DIFF[Compute unified diff<br/>with difflib]
+    S --> DIFF
+    DIFF --> SB[Run tests in Docker sandbox]
+    SB --> SC[Score - keep if it beats baseline]
+```
 
 ---
 
