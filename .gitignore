@@ -54,8 +54,6 @@ pr_sanity*/
 
 # Example outputs (keep example code, not generated artifacts)
 examples/*/output/
-examples/lm_eval/prompts/system_message.txt
-examples/lm_eval/prompts/evaluator_system_message.txt
 
 # Test & coverage cache
 .pytest_cache/
