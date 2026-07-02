@@ -18,27 +18,30 @@
 ## Architecture
 
 ```mermaid
-flowchart LR
-    U([User]) -->|"loopbench run --target repo --metric latency"| CLI[loopbench CLI]
-    CLI --> RM[Resolve repo<br/>clone or local]
-    RM --> DET[Detect language<br/>+ test command]
-    DET --> LOOP
+flowchart TB
+    U([Developer]) -->|"loopbench run --target REPO --metric latency"| CLI[loopbench CLI]
+    CLI --> RM[Resolve repo<br/>clone URL or local path]
+    RM --> DET[Detect language and test command]
+    DET --> BASE[Establish baseline score]
+    BASE --> MAP
 
-    subgraph LOOP [OptimizerLoop - repeats per generation]
+    subgraph LOOP [OptimizerLoop - repeats each generation]
       direction TB
-      MAP[1 - Map repo context] --> GEN[2 - Generate edit<br/>full / search-replace]
-      GEN --> APP[3 - Apply in git worktree<br/>+ compute diff via difflib]
-      APP --> TEST[4 - Test in Docker sandbox]
-      TEST --> EXT[5 - Extract metrics]
-      EXT --> REC[6 - Record to SQLite]
-      REC --> SEL[7 - Select best baseline]
-      SEL -.next generation.-> MAP
+      MAP[1 Map repo context] --> GEN[2 Generate edit with LLM]
+      GEN --> APP[3 Apply edit and compute valid diff]
+      APP --> TEST[4 Test in Docker sandbox]
+      TEST --> REC[5 Score and record to SQLite]
+      REC --> SEL[6 Select best baseline]
+      SEL -.->|next generation| MAP
     end
 
-    LOOP --> OUT
-    subgraph OUT [Artifacts]
-      direction LR
-      P[best.patch] --- D[docs/data.json] --- T[test_log.txt]
+    SEL --> OUT
+    subgraph OUT [Output artifacts]
+      direction TB
+      A1[best.patch]
+      A2[report/validation_report.md]
+      A3[docs/data.json]
+      A4[test_log.txt]
     end
 ```
 
@@ -149,11 +152,14 @@ loopbench run --target https://github.com/user/slow-repo --metric latency
 loopbench run --target . --target-file src/hotpath.py --metric latency -i 5
 ```
 
-Minutes later you get three artifacts in `loopbench_output/`:
+Minutes later you get four artifacts:
 
-- **`best.patch`** — a verified, ready-to-apply unified diff of the best improvement
-- **`docs/data.json`** — dashboard data showing the before/after improvement
-- **`test_log.txt`** — proof that the winning patch kept all tests passing
+| Artifact | Path | What it is |
+|----------|------|------------|
+| Patch | `loopbench_output/best.patch` | Verified, ready-to-apply unified diff of the best improvement |
+| Validation report | `loopbench_output/report/validation_report.md` | Before/after metrics and patch status |
+| Dashboard data | `docs/data.json` | Feeds the GitHub Pages dashboard |
+| Test log | `loopbench_output/test_log.txt` | Proof the winning patch kept every test passing |
 
 > Requires Docker Desktop running (tests execute in an isolated sandbox).
 
@@ -175,20 +181,6 @@ guaranteed valid:
 
 Verified in practice: a **1,233-line** file routed to `search_replace` produced a
 **27-line surgical patch** (only the hot function changed) with a measured speedup.
-
-```mermaid
-flowchart TD
-    G[LLM generates edit] --> Q{rewrite_mode}
-    Q -->|full| F[Complete file returned]
-    Q -->|search_replace| S[SEARCH/REPLACE blocks<br/>applied by content match]
-    Q -->|auto| A{file size}
-    A -->|<= 300 lines| F
-    A -->|> 300 lines| S
-    F --> DIFF[Compute unified diff<br/>with difflib]
-    S --> DIFF
-    DIFF --> SB[Run tests in Docker sandbox]
-    SB --> SC[Score - keep if it beats baseline]
-```
 
 ---
 
