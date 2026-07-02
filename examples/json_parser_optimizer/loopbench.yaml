@@ -1,0 +1,66 @@
+# LoopBench Demo — JSON Parser Optimizer
+#
+# Usage:
+#   loopbench check --config examples/json_parser_optimizer/loopbench.yaml
+#   loopbench run   --config examples/json_parser_optimizer/loopbench.yaml
+
+target:
+  program: initial_program.py
+  evaluator: evaluator.py
+
+sandbox:
+  use_docker: true
+  command: "pytest test_json_parser.py -v -s -q --tb=short"
+  network_off: true
+  readonly_mount: true
+
+metric:
+  name: "combined_score"
+  threshold: 0.90
+  direction: "maximize"
+
+constraints:
+  max_iterations: 20
+  max_token_cost_usd: 3.0
+
+max_iterations: 5
+checkpoint_interval: 1
+log_level: "INFO"
+diff_based_evolution: true
+max_code_length: 8000
+
+llm:
+  models:
+    - name: "gemini-2.5-flash"
+      weight: 1.0
+  api_base: "https://generativelanguage.googleapis.com/v1beta/openai/"
+  api_key: "${GEMINI_API_KEY}"
+  temperature: 0.7
+  max_tokens: 4096
+  timeout: 90
+  retries: 5
+  retry_delay: 65
+
+prompt:
+  system_message: >
+    You are an expert Python performance engineer. Rewrite the JSON parser
+    inside the EVOLVE-BLOCK to be as fast as possible while keeping all pytest
+    tests green (correctness is verified against json.loads). The current
+    implementation re-slices the input string on every token (O(n^2)) and builds
+    tokens with repeated concatenation. Prefer index-based scanning and efficient
+    token accumulation. Keep run_parse(text) unchanged. Do NOT change behavior:
+    trailing data must still raise, and results must equal json.loads output.
+  num_top_programs: 2
+  num_diverse_programs: 1
+
+database:
+  population_size: 20
+  archive_size: 10
+  num_islands: 1
+  elite_selection_ratio: 0.2
+  exploitation_ratio: 0.7
+
+evaluator:
+  timeout: 180
+  cascade_evaluation: false
+  parallel_evaluations: 1

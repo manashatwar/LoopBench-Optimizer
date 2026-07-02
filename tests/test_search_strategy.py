@@ -84,6 +84,30 @@ class TestScoreOf:
         c = SimpleCandidate(id=0, score=None)
         assert _score_of(c) == 0.0
 
+    # Regression: OptimizerLoop stores candidates as plain dicts. _score_of must
+    # read their score, not silently return 0.0 (which broke greedy selection
+    # and let the reported "best" regress below the baseline).
+    def test_dict_candidate_score(self):
+        assert _score_of({"id": "x", "score": 0.82}) == pytest.approx(0.82)
+
+    def test_dict_candidate_metrics_combined_score(self):
+        assert _score_of({"metrics": {"combined_score": 0.7}}) == pytest.approx(0.7)
+
+    def test_dict_candidate_no_score_returns_zero(self):
+        assert _score_of({"id": "x"}) == 0.0
+
+    def test_greedy_picks_highest_scoring_dict(self):
+        # A failing (0.0) candidate inserted LAST must not win over an earlier
+        # higher-scoring one — the exact scenario behind the regression.
+        history = [
+            {"id": "baseline", "generation": 0, "score": 0.56},
+            {"id": "gen1", "generation": 1, "score": 0.0},
+            {"id": "gen2", "generation": 2, "score": 0.0},
+        ]
+        best = GreedySearch().select_baseline(history, generation=2)
+        assert best["id"] == "baseline"
+        assert _score_of(best) == pytest.approx(0.56)
+
 
 # ---------------------------------------------------------------------------
 # Task 8.1 — SearchStrategy is abstract

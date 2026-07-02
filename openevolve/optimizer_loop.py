@@ -821,6 +821,11 @@ class OptimizerLoop:
 
         best_candidate = baseline_candidate
         best_score: float = baseline_score
+        # The candidate the next generation is built from. The search strategy
+        # may move this around for exploration; it is kept SEPARATE from
+        # ``best_candidate`` so the reported best is always the highest-scoring
+        # candidate and never regresses below the baseline.
+        current_baseline = baseline_candidate
         generations_without_improvement: int = 0
         total_generations: int = 0
         final_status = "completed"
@@ -829,7 +834,7 @@ class OptimizerLoop:
         for generation in range(1, self.max_iterations + 1):
             total_generations = generation
             try:
-                candidate = self.execute_generation(generation, best_candidate)
+                candidate = self.execute_generation(generation, current_baseline)
             except (KeyboardInterrupt, SystemExit):
                 logger.warning("Critical interrupt at generation %d — saving partial results", generation)
                 final_status = "interrupted"
@@ -865,15 +870,17 @@ class OptimizerLoop:
                 )
                 break
 
-            # 3e. Select next baseline using search strategy
+            # 3e. Select the baseline for the NEXT generation using the search
+            # strategy. This only steers exploration — it must not overwrite
+            # ``best_candidate`` (the highest-scoring candidate found so far).
             if self._candidate_history:
                 try:
-                    next_baseline = self.search_strategy.select_baseline(
+                    current_baseline = self.search_strategy.select_baseline(
                         self._candidate_history, generation
                     )
-                    best_candidate = next_baseline
                 except Exception as exc:
                     logger.warning("Strategy.select_baseline failed gen=%d: %s — keeping current best", generation, exc)
+                    current_baseline = best_candidate
 
         # 4. Complete run in db
         improvement = (best_score - baseline_score) / max(abs(baseline_score), 1e-9)

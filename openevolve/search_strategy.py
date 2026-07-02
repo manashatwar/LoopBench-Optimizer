@@ -36,10 +36,27 @@ class _HasScore:
 def _score_of(candidate: Any) -> float:
     """Return a comparable float score for *candidate*.
 
-    Handles both direct ``.score`` attributes and ``.metrics`` dicts (for
-    OpenEvolve ``Program`` objects).
+    Handles dict candidates (OptimizerLoop stores candidates as dicts), direct
+    ``.score`` attributes, and ``.metrics`` dicts (for OpenEvolve ``Program``
+    objects).
     """
-    # Direct score attribute (OptimizerLoop Candidate dataclass)
+    # Dict candidate (OptimizerLoop stores each candidate as a dict)
+    if isinstance(candidate, dict):
+        score = candidate.get("score")
+        if isinstance(score, (int, float)):
+            return float(score)
+        metrics = candidate.get("metrics")
+        if isinstance(metrics, dict):
+            for key in ("combined_score", "score"):
+                val = metrics.get(key)
+                if isinstance(val, (int, float)):
+                    return float(val)
+            numeric = [v for v in metrics.values() if isinstance(v, (int, float))]
+            if numeric:
+                return sum(numeric) / len(numeric)
+        return 0.0
+
+    # Direct score attribute (Candidate dataclass / objects)
     score = getattr(candidate, "score", None)
     if isinstance(score, (int, float)):
         return float(score)
