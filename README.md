@@ -23,9 +23,9 @@
 LoopBench Optimizer runs a closed-loop, multi-generation optimization cycle:
 
 1. **Map** — builds an LLM-ready context map of your repository
-2. **Generate** — uses an LLM to produce a unified diff patch
-3. **Apply** — applies the patch to an isolated git worktree
-4. **Test** — runs your test suite inside a Docker sandbox
+2. **Generate** — asks an LLM to improve the target file (see [Editing Strategies](#editing-strategies))
+3. **Apply** — applies the change in an isolated git worktree and computes a valid `.patch`
+4. **Test** — runs your test suite inside a Docker sandbox (`--network=none`, read-only mount)
 5. **Extract** — parses performance metrics from test output
 6. **Record** — stores the attempt in a SQLite audit database
 7. **Select** — picks the best candidate as the next baseline
@@ -34,22 +34,63 @@ Each generation learns from previous failures, compounding improvements over tim
 
 ---
 
-## Quick Start
+## Quick Start — one command
+
+Point LoopBench at any repo (GitHub URL or local path) and let it evolve your code:
 
 ```bash
 # Install
 pip install -e .
 
-# Generate a config template
-optimizer init --output optimizer.yaml
+# Set your LLM key in .env (any OpenAI-compatible provider — Groq, Gemini, OpenAI…)
+#   GEMINI_API_KEY="..."
+#   LLM_API_BASE="https://api.groq.com/openai/v1"
+#   LLM_MODEL="llama-3.3-70b-versatile"
 
-# Edit optimizer.yaml (set your repo URL, API key, etc.)
+# Run the optimizer end-to-end
+loopbench run --target https://github.com/user/slow-repo --metric latency
 
-# Run optimization
-optimizer run --config optimizer.yaml
+# …or a local path, naming the file to optimize
+loopbench run --target . --target-file src/hotpath.py --metric latency -i 5
+```
 
-# View results in the dashboard
-optimizer dashboard --run-id <id> --open
+Minutes later you get three artifacts in `loopbench_output/`:
+
+- **`best.patch`** — a verified, ready-to-apply unified diff of the best improvement
+- **`docs/data.json`** — dashboard data showing the before/after improvement
+- **`test_log.txt`** — proof that the winning patch kept all tests passing
+
+> Requires Docker Desktop running (tests execute in an isolated sandbox).
+
+---
+
+## Editing Strategies
+
+LLMs are unreliable at emitting byte-exact unified diffs (they fail 20–30% of the
+time with "corrupt patch" errors). LoopBench avoids this entirely — the LLM never
+hand-writes diff line numbers. Instead it uses one of three modes (`rewrite_mode`),
+and the `.patch` is always computed programmatically with `difflib` so it is
+guaranteed valid:
+
+| Mode | How the LLM edits | Best for |
+|------|-------------------|----------|
+| `full` | Returns the complete improved file | Small files |
+| `search_replace` | Returns Aider-style `SEARCH`/`REPLACE` blocks, applied by content match with fuzzy fallback | Large files (surgical, token-efficient) |
+| `auto` *(default for `loopbench run`)* | Picks `full` for files ≤ 300 lines, `search_replace` for larger | Any repo |
+
+Verified in practice: a **1,233-line** file routed to `search_replace` produced a
+**27-line surgical patch** (only the hot function changed) with a measured speedup.
+
+---
+
+## Alternative: config-driven runs
+
+For repeatable runs with a full 6-section config, use the `optimizer` CLI:
+
+```bash
+optimizer init --output optimizer.yaml   # generate a template
+optimizer run --config optimizer.yaml    # run
+optimizer dashboard --run-id <id> --open # view results
 ```
 
 ---
@@ -81,8 +122,9 @@ LoopBench-Optimizer/
 │   ├── entrypoint.sh            # container entrypoint
 │   └── Dockerfile.sandbox       # test execution image
 │
-├── loopbench/                   # LoopBench CLI (legacy evaluator-first interface)
-│   └── cli.py                   # loopbench run/init/check
+├── loopbench/                   # LoopBench CLI — the `loopbench run` hero command
+│   ├── cli.py                   # run (--target/--metric) / init / check
+│   └── hero.py                  # clone → optimize → emit patch + dashboard + log
 │
 ├── docs/                        # Static GitHub Pages dashboard
 │   └── index.html               # Single-file React dashboard (no build step)
@@ -94,10 +136,12 @@ LoopBench-Optimizer/
 ├── examples/                    # Example optimization problems
 │   └── ...
 │
-├── tests/                       # Test suite (457 tests)
-│   ├── property/                # Hypothesis property-based tests (Properties 1–9)
+├── tests/                       # Test suite (unit + property + integration)
+│   ├── property/                # Hypothesis property-based tests
 │   ├── integration/
 │   ├── test_optimizer_loop*.py  # OptimizerLoop tests
+│   ├── test_search_replace_edits.py  # SEARCH/REPLACE block parsing + apply
+│   ├── test_hero_command.py     # loopbench run --target unit tests
 │   ├── test_search_strategy.py
 │   ├── test_config_validator.py
 │   ├── test_report_generator.py
@@ -115,6 +159,28 @@ LoopBench-Optimizer/
 ---
 
 ## CLI Commands
+
+### `loopbench` — the hero command
+
+```bash
+# Optimize any repo end-to-end (clone URL or local path)
+loopbench run --target https://github.com/user/repo --metric latency
+loopbench run --target . --target-file src/main.py --metric latency -i 5
+
+# Options
+#   --target        GitHub URL or local path
+#   --target-file   file to optimize (relative to repo root)
+#   --metric        metric name to optimize (default: combined_score)
+#   --test-command  override the auto-detected test command
+#   -i / --iterations   max generations (default: 5)
+#   -o / --output   output directory (default: loopbench_output/)
+
+# Scaffold / validate an evaluator-first config (optional)
+loopbench init  --name my_project
+loopbench check --config loopbench.yaml
+```
+
+### `optimizer` — config-driven runs
 
 ```bash
 # Generate a config template (all 6 required sections)
@@ -145,7 +211,7 @@ The dashboard runs in two modes:
 ```bash
 optimizer dashboard --run-id <id> --no-server
 git add docs/data.json && git push
-# View at: https://your-org.github.io/LoopBench-Optimizer/
+# View at: https://manashatwar.github.io/LoopBench-Optimizer/
 ```
 
 **Local live server** — monitor an active run in real time:
@@ -167,9 +233,11 @@ repository:
   auth_token: "${GITHUB_TOKEN}"
 
 llm:
+  # Any OpenAI-compatible provider (Groq, Gemini, OpenAI, Ollama, …)
   provider: "openai"
-  model: "gpt-4"
-  api_key: "${OPENAI_API_KEY}"
+  model: "llama-3.3-70b-versatile"
+  api_base: "https://api.groq.com/openai/v1"
+  api_key: "${GEMINI_API_KEY}"   # var name is read from .env
 
 docker:
   test_command: "pytest --benchmark-only -v"
@@ -222,12 +290,16 @@ pytest tests/test_end_to_end.py -v
 
 Built on top of the [OpenEvolve](https://github.com/algorithmicsuperintelligence/openevolve) evolutionary coding agent. The fork adds:
 
+- **One-command optimization** — `loopbench run --target <url|path> --metric <name>`
 - **Repository-level optimization** (full repo context, not just single files)
+- **Robust LLM editing** — full-rewrite + search/replace edit blocks with `auto`
+  size-based routing; the `.patch` is always computed with `difflib` (no corrupt patches)
 - **Git worktree isolation** per generation
+- **Docker sandbox** test execution (`--network=none`, read-only mount)
 - **7-phase orchestration** with explicit phase tracking
 - **SQLite audit trail** with full lineage
 - **GitHub Pages dashboard** (no server required for sharing)
-- **`optimizer` CLI** with init/run/resume/export/dashboard commands
+- **Provider-agnostic LLM** via `LLM_API_BASE` / `LLM_MODEL` (Groq, Gemini, OpenAI, …)
 
 ---
 
