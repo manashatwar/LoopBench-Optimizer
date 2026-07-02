@@ -41,6 +41,92 @@ def _extract_code_block(text: str) -> str:
         return max(blocks, key=len).rstrip("\n") + "\n"
     return text.strip() + "\n"
 
+
+# Sentinel markers for Aider-style edit blocks.
+_SR_SEARCH = "<<<<<<< SEARCH"
+_SR_DIVIDER = "======="
+_SR_REPLACE = ">>>>>>> REPLACE"
+
+
+def _parse_search_replace_blocks(text: str):
+    """Parse Aider-style SEARCH/REPLACE blocks from an LLM response.
+
+    Returns a list of ``(search, replace)`` string pairs. Tolerates the blocks
+    being wrapped in Markdown code fences.
+    """
+    if not text:
+        return []
+    pairs = []
+    lines = text.splitlines()
+    i = 0
+    n = len(lines)
+    while i < n:
+        if lines[i].strip() == _SR_SEARCH:
+            search_lines = []
+            i += 1
+            while i < n and lines[i].strip() != _SR_DIVIDER:
+                search_lines.append(lines[i])
+                i += 1
+            # skip the divider
+            i += 1
+            replace_lines = []
+            while i < n and lines[i].strip() != _SR_REPLACE:
+                replace_lines.append(lines[i])
+                i += 1
+            # skip the closing marker
+            i += 1
+            pairs.append(("\n".join(search_lines), "\n".join(replace_lines)))
+        else:
+            i += 1
+    return pairs
+
+
+def _apply_search_replace(original: str, blocks):
+    """Apply SEARCH/REPLACE ``blocks`` to ``original``.
+
+    Tries an exact substring replacement first, then a whitespace-tolerant
+    fuzzy match (trailing whitespace per line ignored). Returns
+    ``(new_content, error)`` where ``error`` is None on success.
+    """
+    if not blocks:
+        return original, "no SEARCH/REPLACE blocks found"
+
+    content = original
+    for idx, (search, replace) in enumerate(blocks):
+        if search == "":
+            # Empty search = prepend (rare); skip to stay safe.
+            return content, f"block {idx + 1} has an empty SEARCH section"
+
+        if search in content:
+            content = content.replace(search, replace, 1)
+            continue
+
+        # Fuzzy: compare with trailing whitespace stripped per line.
+        def _norm(s: str) -> str:
+            return "\n".join(line.rstrip() for line in s.splitlines())
+
+        norm_search = _norm(search)
+        content_lines = content.splitlines(keepends=True)
+        joined = "".join(content_lines)
+        matched = False
+        # Slide a window over the content lines to find a fuzzy match.
+        search_line_count = len(search.splitlines())
+        raw_lines = content.split("\n")
+        for start in range(len(raw_lines) - search_line_count + 1):
+            window = "\n".join(raw_lines[start:start + search_line_count])
+            if _norm(window) == norm_search:
+                new_block = replace
+                raw_lines[start:start + search_line_count] = new_block.split("\n")
+                content = "\n".join(raw_lines)
+                matched = True
+                break
+        if not matched:
+            return content, f"block {idx + 1} SEARCH text not found in file"
+
+    if content == original:
+        return content, "SEARCH/REPLACE produced no change"
+    return content, None
+
 # ---------------------------------------------------------------------------
 # Lazy imports so unit tests can stub heavy components without full env setup
 # ---------------------------------------------------------------------------
@@ -140,7 +226,11 @@ class OptimizerLoop:
         # "diff": LLM returns a unified diff applied via git apply (fragile).
         # "full": LLM returns the complete improved file; the diff is computed
         #         with difflib (always valid) and tested via the sandbox.
+        # "search_replace": LLM returns Aider-style SEARCH/REPLACE blocks applied
+        #         by string matching (token-efficient for large files).
+        # "auto": pick "full" for small files, "search_replace" for large ones.
         self.rewrite_mode: str = config.get("rewrite_mode", "diff")
+        self.full_rewrite_max_lines: int = int(config.get("full_rewrite_max_lines", 300))
 
         # ── Internal state ────────────────────────────────────────────────────
         self._run_id: Optional[str] = None
@@ -243,9 +333,22 @@ class OptimizerLoop:
         """
         run_in_sandbox, verify_output_streams = _import_sandbox()
 
-        # Full-file rewrite mode: robust path that avoids fragile diff parsing.
-        if self.rewrite_mode == "full":
+        # Robust generation modes that avoid fragile unified-diff parsing.
+        mode = self.rewrite_mode
+        if mode == "auto":
+            try:
+                line_count = len(Path(self.target_file).read_text(encoding="utf-8").splitlines())
+            except OSError:
+                line_count = 0
+            mode = "full" if line_count <= self.full_rewrite_max_lines else "search_replace"
+            logger.info(
+                "auto mode → %s (target has %d lines, threshold=%d)",
+                mode, line_count, self.full_rewrite_max_lines,
+            )
+        if mode == "full":
             return self._execute_generation_full_rewrite(generation, baseline_candidate)
+        if mode == "search_replace":
+            return self._execute_generation_search_replace(generation, baseline_candidate)
 
         baseline_id = baseline_candidate["id"]
         baseline_metrics = baseline_candidate.get("metrics") or {}
@@ -516,48 +619,55 @@ class OptimizerLoop:
             "```\n"
         )
 
-    def _execute_generation_full_rewrite(
-        self, generation: int, baseline_candidate: Dict[str, Any]
+    def _build_search_replace_prompt(
+        self, original: str, baseline_metrics: Dict[str, Any], failures: list
+    ) -> str:
+        metrics_str = ", ".join(f"{k}={v}" for k, v in baseline_metrics.items()) or "N/A"
+        failures_str = "\n".join(f"- {m}" for m in failures) or "None"
+        return (
+            "You are optimizing a Python file for performance while keeping all "
+            "tests passing. Edit ONLY the minimal region(s) needed.\n\n"
+            f"Current performance metrics: {metrics_str}\n"
+            f"Recent failed attempts:\n{failures_str}\n\n"
+            "Return one or more SEARCH/REPLACE blocks in EXACTLY this format:\n\n"
+            "<<<<<<< SEARCH\n"
+            "<exact lines copied verbatim from the file>\n"
+            "=======\n"
+            "<the replacement lines>\n"
+            ">>>>>>> REPLACE\n\n"
+            "Rules:\n"
+            "  1. The SEARCH section MUST match the current file text exactly.\n"
+            "  2. Keep public function/class names and signatures unchanged.\n"
+            "  3. Emit only the blocks — no prose, no full-file dump.\n\n"
+            "Here is the current file:\n\n"
+            "```python\n"
+            f"{original}\n"
+            "```\n"
+        )
+
+    def _finalize_rewrite_candidate(
+        self,
+        generation: int,
+        baseline_id: str,
+        original: str,
+        new_content: str,
     ) -> Dict[str, Any]:
-        """Generate a full replacement file, compute a valid diff, test it."""
+        """Shared tail: compute diff, test in sandbox, score, record candidate."""
         import difflib
         import tempfile
 
         run_in_sandbox, verify_output_streams = _import_sandbox()
-        baseline_id = baseline_candidate["id"]
-        baseline_metrics = baseline_candidate.get("metrics") or {}
-
         target_path = Path(self.target_file)
-        try:
-            original = target_path.read_text(encoding="utf-8")
-        except OSError as exc:
-            cid = self.db.insert_candidate(
-                generation=generation, parent_id=baseline_id, patch_content="",
-                failed=True, failure_phase="generate",
-                error_message=f"cannot read target file: {exc}",
-            )
-            return self.db.get_candidate(cid)
 
-        # Phase 2: generate the full improved file
-        failures = self.db.get_recent_failures(window=5, run_id=self._run_id)
-        prompt = self._build_full_rewrite_prompt(original, baseline_metrics, failures)
-        try:
-            response = asyncio.run(self.llm_ensemble.generate(prompt))
-        except Exception as exc:
-            cid = self.db.insert_candidate(
-                generation=generation, parent_id=baseline_id, patch_content="",
-                failed=True, failure_phase="generate", error_message=str(exc),
-            )
-            return self.db.get_candidate(cid)
-
-        new_content = _extract_code_block(response) or ""
         if not new_content.strip() or new_content.strip() == original.strip():
             cid = self.db.insert_candidate(
                 generation=generation, parent_id=baseline_id, patch_content="",
                 failed=True, failure_phase="generate",
                 error_message="LLM produced no usable change",
             )
-            return self.db.get_candidate(cid)
+            candidate = self.db.get_candidate(cid)
+            self._candidate_history.append(candidate)
+            return candidate
 
         # Compute a guaranteed-valid unified diff
         try:
@@ -571,8 +681,8 @@ class OptimizerLoop:
             fromfile=f"a/{rel_str}", tofile=f"b/{rel_str}",
         ))
 
-        # Phase 4: test the improved file via the sandbox (temp-copy mode)
-        with tempfile.TemporaryDirectory(prefix="loopbench_full_") as td:
+        # Test the improved file via the sandbox (temp-copy mode)
+        with tempfile.TemporaryDirectory(prefix="loopbench_rw_") as td:
             improved = Path(td) / target_path.name
             improved.write_text(new_content, encoding="utf-8")
             result = run_in_sandbox(
@@ -582,7 +692,6 @@ class OptimizerLoop:
                 repo_root=self.repo_path,
             )
 
-        # Phase 5/6: score + record
         streams_ok = verify_output_streams(result.get("stdout"), result.get("stderr"))
         metrics: Dict[str, Any] = {}
         for key in ("combined_score", "correctness", "speed_score", "speed_ms"):
@@ -604,10 +713,88 @@ class OptimizerLoop:
         candidate = self.db.get_candidate(cid)
         self._candidate_history.append(candidate)
         logger.info(
-            "Full-rewrite candidate recorded id=%s gen=%d score=%.4f failed=%s",
+            "Rewrite candidate recorded id=%s gen=%d score=%.4f failed=%s",
             cid, generation, score, failed,
         )
         return candidate
+
+    def _read_target_or_fail(self, generation: int, baseline_id: str):
+        """Return (original, None) or (None, failure_candidate)."""
+        try:
+            return Path(self.target_file).read_text(encoding="utf-8"), None
+        except OSError as exc:
+            cid = self.db.insert_candidate(
+                generation=generation, parent_id=baseline_id, patch_content="",
+                failed=True, failure_phase="generate",
+                error_message=f"cannot read target file: {exc}",
+            )
+            return None, self.db.get_candidate(cid)
+
+    def _generate_or_fail(self, generation: int, baseline_id: str, prompt: str):
+        """Return (response, None) or (None, failure_candidate)."""
+        try:
+            return asyncio.run(self.llm_ensemble.generate(prompt)), None
+        except Exception as exc:
+            cid = self.db.insert_candidate(
+                generation=generation, parent_id=baseline_id, patch_content="",
+                failed=True, failure_phase="generate", error_message=str(exc),
+            )
+            return None, self.db.get_candidate(cid)
+
+    def _execute_generation_full_rewrite(
+        self, generation: int, baseline_candidate: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """Generate a full replacement file, compute a valid diff, test it."""
+        baseline_id = baseline_candidate["id"]
+        baseline_metrics = baseline_candidate.get("metrics") or {}
+
+        original, fail = self._read_target_or_fail(generation, baseline_id)
+        if fail is not None:
+            return fail
+
+        failures = self.db.get_recent_failures(window=5, run_id=self._run_id)
+        prompt = self._build_full_rewrite_prompt(original, baseline_metrics, failures)
+        response, fail = self._generate_or_fail(generation, baseline_id, prompt)
+        if fail is not None:
+            return fail
+
+        new_content = _extract_code_block(response) or ""
+        return self._finalize_rewrite_candidate(
+            generation, baseline_id, original, new_content
+        )
+
+    def _execute_generation_search_replace(
+        self, generation: int, baseline_candidate: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """Generate SEARCH/REPLACE blocks, apply by matching, compute diff, test."""
+        baseline_id = baseline_candidate["id"]
+        baseline_metrics = baseline_candidate.get("metrics") or {}
+
+        original, fail = self._read_target_or_fail(generation, baseline_id)
+        if fail is not None:
+            return fail
+
+        failures = self.db.get_recent_failures(window=5, run_id=self._run_id)
+        prompt = self._build_search_replace_prompt(original, baseline_metrics, failures)
+        response, fail = self._generate_or_fail(generation, baseline_id, prompt)
+        if fail is not None:
+            return fail
+
+        blocks = _parse_search_replace_blocks(response or "")
+        new_content, err = _apply_search_replace(original, blocks)
+        if err is not None:
+            cid = self.db.insert_candidate(
+                generation=generation, parent_id=baseline_id, patch_content="",
+                failed=True, failure_phase="apply",
+                error_message=f"search/replace failed: {err}",
+            )
+            candidate = self.db.get_candidate(cid)
+            self._candidate_history.append(candidate)
+            return candidate
+
+        return self._finalize_rewrite_candidate(
+            generation, baseline_id, original, new_content
+        )
 
     # -------------------------------------------------------------------------
     # Task 10.4 – Multi-generation loop with early stopping

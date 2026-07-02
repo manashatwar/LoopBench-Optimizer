@@ -280,7 +280,8 @@ def run_target_pipeline(args: argparse.Namespace) -> int:
             "db_path": db_path,
             "search_strategy": {"strategy": "greedy"},
             "metric_patterns": None,
-            "rewrite_mode": "full",
+            "rewrite_mode": "auto",
+            "full_rewrite_max_lines": 300,
             "sandbox_cfg": {"test_command": test_cmd, "timeout": 120},
         }
 
