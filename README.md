@@ -42,6 +42,75 @@ flowchart LR
     end
 ```
 
+### One generation, step by step
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant L as OptimizerLoop
+    participant M as RepoContextMapper
+    participant E as LLMEnsemble
+    participant W as WorkspaceManager
+    participant S as Docker Sandbox
+    participant DB as CandidateDatabase
+
+    L->>M: get_context_map(repo, target)
+    M-->>L: ContextMap (relevant files)
+    L->>E: generate(prompt)
+    E-->>L: improved file / SEARCH-REPLACE blocks
+    L->>L: apply edit + compute diff via difflib
+    L->>W: create_worktree()
+    W-->>L: isolated worktree path
+    L->>S: run tests (--network=none, read-only mount)
+    S-->>L: score.json (passed, speed_ms, combined_score)
+    L->>DB: insert_candidate(patch, metrics, score)
+    L->>W: remove_worktree()
+    Note over L: keep candidate if score beats current baseline
+```
+
+### Core components
+
+```mermaid
+classDiagram
+    class OptimizerLoop {
+      +str repo_path
+      +str target_file
+      +str test_file
+      +int max_iterations
+      +str rewrite_mode
+      +run() dict
+      +establish_baseline() dict
+      +execute_generation(gen, baseline) dict
+    }
+    class WorkspaceManager {
+      +str repo_root
+      +str worktree_pattern
+      +create_worktree() str
+      +apply_patch(worktree, patch) ApplyResult
+      +remove_worktree(path)
+      +cleanup_orphans() int
+    }
+    class LLMEnsemble {
+      +generate(prompt) str
+      +generate_patch(prompt) str
+    }
+    class CandidateDatabase {
+      +create_run() str
+      +insert_candidate() str
+      +export_run(run_id) dict
+      +get_best_candidate() dict
+    }
+    class Sandbox {
+      +run_in_sandbox(program, test) dict
+      +verify_output_streams() bool
+    }
+
+    OptimizerLoop --> LLMEnsemble : generates edits
+    OptimizerLoop --> WorkspaceManager : isolates edits
+    OptimizerLoop --> Sandbox : runs tests
+    OptimizerLoop --> CandidateDatabase : records lineage
+```
+
 ---
 
 ## What It Does
@@ -326,7 +395,7 @@ pytest tests/test_end_to_end.py -v
 
 ---
 
-## Architecture
+## What This Fork Adds
 
 Built on top of the [OpenEvolve](https://github.com/algorithmicsuperintelligence/openevolve) evolutionary coding agent. The fork adds:
 
