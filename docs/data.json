@@ -1,12 +1,12 @@
 {
   "run": {
-    "id": "36e2c46d-92fd-427e-94ac-800ba2a01a7f",
+    "id": "2f70c527-17a5-4c2b-8931-446135a56511",
     "target_repo": "C:\\Users\\manis\\LoopBench-Optimizer",
-    "start_time": 1783020340.6470602,
-    "end_time": 1783020355.3331451,
+    "start_time": 1783032660.5628874,
+    "end_time": 1783032674.3696697,
     "status": "successful",
     "success_threshold": 0.05,
-    "final_improvement": 1.7939945460844686,
+    "final_improvement": 1.533640581017363,
     "config": {
       "repo_path": "C:\\Users\\manis\\LoopBench-Optimizer",
       "target_file": "C:\\Users\\manis\\LoopBench-Optimizer\\examples\\fibonacci_optimizer\\initial_program.py",
@@ -14,12 +14,13 @@
       "max_iterations": 3,
       "patience": 5,
       "success_threshold": 0.05,
-      "db_path": "C:\\Users\\manis\\AppData\\Local\\Temp\\loopbench_db_9qxytsu6\\loopbench.db",
+      "db_path": "C:\\Users\\manis\\AppData\\Local\\Temp\\loopbench_db_j3sy_hd6\\loopbench.db",
       "search_strategy": {
         "strategy": "greedy"
       },
       "metric_patterns": null,
-      "rewrite_mode": "full",
+      "rewrite_mode": "auto",
+      "full_rewrite_max_lines": 300,
       "sandbox_cfg": {
         "test_command": "pytest -v",
         "timeout": 120
@@ -29,42 +30,42 @@
   },
   "candidates": [
     {
-      "id": "9f4e02cc-b3b4-45c0-8513-d5bcaba1ca45",
-      "run_id": "36e2c46d-92fd-427e-94ac-800ba2a01a7f",
+      "id": "c8eb3eea-dda0-4ae4-a529-6697637126c5",
+      "run_id": "2f70c527-17a5-4c2b-8931-446135a56511",
       "generation": 0,
       "parent_id": null,
-      "timestamp": 1783020346.344225,
+      "timestamp": 1783032665.8855598,
       "patch_content": "",
       "applied": true,
       "tested": true,
       "exit_code": 0,
-      "stdout": "[sandbox] Starting test run at 2026-07-02T19:25:43Z\n[sandbox] Program: /workspace/initial_program.py\n[sandbox] Command: pytest /workspace/test_fibonacci.py -v -s -q --tb=short\n\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\n============================= test session starts ==============================\nplatform linux -- Python 3.12.13, pytest-8.3.5, pluggy-1.6.0\nrootdir: /workspace\nplugins: metadata-3.1.1, json-report-1.5.0\ncollected 13 items\n\n../workspace/test_fibonacci.py ............\nLOOPBENCH_SPEED_MS=154.1221\n.\n\n=============================== warnings summary ===============================\n../usr/local/lib/python3.12/site-packages/_pytest/cacheprovider.py:475\n  /usr/local/lib/python3.12/site-packages/_pytest/cacheprovider.py:475: PytestCacheWarning: could not create cache path /workspace/.pytest_cache/v/cache/nodeids: [Errno 30] Read-only file system: '/workspace/pytest-cache-files-a1z_9edp'\n    config.cache.set(\"cache/nodeids\", sorted(self.cached_nodeids))\n\n../usr/local/lib/python3.12/site-packages/_pytest/stepwise.py:51\n  /usr/local/lib/python3.12/site-packages/_pytest/stepwise.py:51: PytestCacheWarning: could not create cache path /workspace/.pytest_cache/v/cache/stepwise: [Errno 30] Read-only file system: '/workspace/pytest-cache-files-g90bezy_'\n    session.config.cache.set(STEPWISE_CACHE_DIR, [])\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n--------------------------------- JSON report ----------------------------------\nreport saved to: /results/pytest_report.json\n======================== 13 passed, 2 warnings in 1.96s ========================\n\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\n[sandbox] pytest exit code: 0\n[sandbox] score.json written: passed=13, failed=0, score=0.3579\n[sandbox] Done.\n",
+      "stdout": "[sandbox] Starting test run at 2026-07-02T22:51:02Z\n[sandbox] Program: /workspace/initial_program.py\n[sandbox] Command: pytest /workspace/test_fibonacci.py -v -s -q --tb=short\n\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\n============================= test session starts ==============================\nplatform linux -- Python 3.12.13, pytest-8.3.5, pluggy-1.6.0\nrootdir: /workspace\nplugins: metadata-3.1.1, json-report-1.5.0\ncollected 13 items\n\n../workspace/test_fibonacci.py ............\nLOOPBENCH_SPEED_MS=139.4495\n.\n\n=============================== warnings summary ===============================\n../usr/local/lib/python3.12/site-packages/_pytest/cacheprovider.py:475\n  /usr/local/lib/python3.12/site-packages/_pytest/cacheprovider.py:475: PytestCacheWarning: could not create cache path /workspace/.pytest_cache/v/cache/nodeids: [Errno 30] Read-only file system: '/workspace/pytest-cache-files-1tyo7v80'\n    config.cache.set(\"cache/nodeids\", sorted(self.cached_nodeids))\n\n../usr/local/lib/python3.12/site-packages/_pytest/stepwise.py:51\n  /usr/local/lib/python3.12/site-packages/_pytest/stepwise.py:51: PytestCacheWarning: could not create cache path /workspace/.pytest_cache/v/cache/stepwise: [Errno 30] Read-only file system: '/workspace/pytest-cache-files-tv_xusfb'\n    session.config.cache.set(STEPWISE_CACHE_DIR, [])\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n--------------------------------- JSON report ----------------------------------\nreport saved to: /results/pytest_report.json\n======================== 13 passed, 2 warnings in 1.77s ========================\n\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\n[sandbox] pytest exit code: 0\n[sandbox] score.json written: passed=13, failed=0, score=0.3947\n[sandbox] Done.\n",
       "stderr": "",
-      "execution_time": 5.312999999994645,
-      "score": 0.357908,
+      "execution_time": 5.015999999974156,
+      "score": 0.394687,
       "failed": false,
       "failure_phase": null,
       "error_message": null,
       "metrics": {
-        "combined_score": 0.357908,
+        "combined_score": 0.394687,
         "correctness": 1.0,
-        "speed_score": 0.357908
+        "speed_score": 0.394687
       },
       "program": null
     },
     {
-      "id": "05301bfa-9ffa-45d9-b696-0c65988489a3",
-      "run_id": "36e2c46d-92fd-427e-94ac-800ba2a01a7f",
+      "id": "4dbc6c1d-26ef-4f52-abbc-1edf824a8c13",
+      "run_id": "2f70c527-17a5-4c2b-8931-446135a56511",
       "generation": 1,
-      "parent_id": "9f4e02cc-b3b4-45c0-8513-d5bcaba1ca45",
-      "timestamp": 1783020350.1427412,
-      "patch_content": "--- a/examples/fibonacci_optimizer/initial_program.py\n+++ b/examples/fibonacci_optimizer/initial_program.py\n@@ -6,13 +6,14 @@\n \"\"\"\n \n \n-def fibonacci(n: int) -> int:\n+def fibonacci(n: int, memo: dict = {}) -> int:\n     \"\"\"\n-    Naive recursive Fibonacci \u2014 no memoization, exponential time complexity O(2^n).\n-    This is the starting point; LoopBench will optimize it.\n+    Recursive Fibonacci with memoization, reducing time complexity to O(n).\n+    This is the optimized implementation.\n \n     Args:\n         n: Position in the Fibonacci sequence (0-indexed)\n+        memo: Dictionary to store previously computed Fibonacci numbers\n \n     Returns:\n         The nth Fibonacci number\n@@ -21,7 +22,9 @@\n         return 0\n     if n == 1:\n         return 1\n-    return fibonacci(n - 1) + fibonacci(n - 2)\n+    if n not in memo:\n+        memo[n] = fibonacci(n - 1, memo) + fibonacci(n - 2, memo)\n+    return memo[n]\n \n \n # EVOLVE-BLOCK-END\n",
+      "parent_id": "c8eb3eea-dda0-4ae4-a529-6697637126c5",
+      "timestamp": 1783032669.4152925,
+      "patch_content": "--- a/examples/fibonacci_optimizer/initial_program.py\n+++ b/examples/fibonacci_optimizer/initial_program.py\n@@ -6,13 +6,14 @@\n \"\"\"\n \n \n-def fibonacci(n: int) -> int:\n+def fibonacci(n: int, memo: dict = {}) -> int:\n     \"\"\"\n-    Naive recursive Fibonacci \u2014 no memoization, exponential time complexity O(2^n).\n-    This is the starting point; LoopBench will optimize it.\n+    Optimized recursive Fibonacci \u2014 with memoization, time complexity O(n).\n+    This is the optimized version.\n \n     Args:\n         n: Position in the Fibonacci sequence (0-indexed)\n+        memo: Dictionary to store previously computed Fibonacci numbers\n \n     Returns:\n         The nth Fibonacci number\n@@ -21,7 +22,9 @@\n         return 0\n     if n == 1:\n         return 1\n-    return fibonacci(n - 1) + fibonacci(n - 2)\n+    if n not in memo:\n+        memo[n] = fibonacci(n - 1, memo) + fibonacci(n - 2, memo)\n+    return memo[n]\n \n \n # EVOLVE-BLOCK-END\n",
       "applied": true,
       "tested": true,
       "exit_code": 0,
-      "stdout": "[sandbox] Starting test run at 2026-07-02T19:25:49Z\n[sandbox] Program: /workspace/initial_program.py\n[sandbox] Command: pytest /workspace/test_fibonacci.py -v -s -q --tb=short\n\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\n============================= test session starts ==============================\nplatform linux -- Python 3.12.13, pytest-8.3.5, pluggy-1.6.0\nrootdir: /workspace\nplugins: metadata-3.1.1, json-report-1.5.0\ncollected 13 items\n\n../workspace/test_fibonacci.py ............\nLOOPBENCH_SPEED_MS=0.0010\n.\n\n=============================== warnings summary ===============================\n../usr/local/lib/python3.12/site-packages/_pytest/cacheprovider.py:475\n  /usr/local/lib/python3.12/site-packages/_pytest/cacheprovider.py:475: PytestCacheWarning: could not create cache path /workspace/.pytest_cache/v/cache/nodeids: [Errno 30] Read-only file system: '/workspace/pytest-cache-files-5st4umer'\n    config.cache.set(\"cache/nodeids\", sorted(self.cached_nodeids))\n\n../usr/local/lib/python3.12/site-packages/_pytest/stepwise.py:51\n  /usr/local/lib/python3.12/site-packages/_pytest/stepwise.py:51: PytestCacheWarning: could not create cache path /workspace/.pytest_cache/v/cache/stepwise: [Errno 30] Read-only file system: '/workspace/pytest-cache-files-qcv26uuc'\n    session.config.cache.set(STEPWISE_CACHE_DIR, [])\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n--------------------------------- JSON report ----------------------------------\nreport saved to: /results/pytest_report.json\n======================== 13 passed, 2 warnings in 0.08s ========================\n\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\n[sandbox] pytest exit code: 0\n[sandbox] score.json written: passed=13, failed=0, score=1.0000\n[sandbox] Done.\n",
+      "stdout": "[sandbox] Starting test run at 2026-07-02T22:51:08Z\n[sandbox] Program: /workspace/initial_program.py\n[sandbox] Command: pytest /workspace/test_fibonacci.py -v -s -q --tb=short\n\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\n============================= test session starts ==============================\nplatform linux -- Python 3.12.13, pytest-8.3.5, pluggy-1.6.0\nrootdir: /workspace\nplugins: metadata-3.1.1, json-report-1.5.0\ncollected 13 items\n\n../workspace/test_fibonacci.py ............\nLOOPBENCH_SPEED_MS=0.0010\n.\n\n=============================== warnings summary ===============================\n../usr/local/lib/python3.12/site-packages/_pytest/cacheprovider.py:475\n  /usr/local/lib/python3.12/site-packages/_pytest/cacheprovider.py:475: PytestCacheWarning: could not create cache path /workspace/.pytest_cache/v/cache/nodeids: [Errno 30] Read-only file system: '/workspace/pytest-cache-files-sgez6pdx'\n    config.cache.set(\"cache/nodeids\", sorted(self.cached_nodeids))\n\n../usr/local/lib/python3.12/site-packages/_pytest/stepwise.py:51\n  /usr/local/lib/python3.12/site-packages/_pytest/stepwise.py:51: PytestCacheWarning: could not create cache path /workspace/.pytest_cache/v/cache/stepwise: [Errno 30] Read-only file system: '/workspace/pytest-cache-files-yeyc1d2v'\n    session.config.cache.set(STEPWISE_CACHE_DIR, [])\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n--------------------------------- JSON report ----------------------------------\nreport saved to: /results/pytest_report.json\n======================== 13 passed, 2 warnings in 0.07s ========================\n\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\n[sandbox] pytest exit code: 0\n[sandbox] score.json written: passed=13, failed=0, score=1.0000\n[sandbox] Done.\n",
       "stderr": "",
-      "execution_time": 1.625,
+      "execution_time": 1.5,
       "score": 0.999993,
       "failed": false,
       "failure_phase": null,
@@ -78,79 +79,79 @@
       "program": null
     },
     {
-      "id": "ab1e8881-eebd-4732-ba70-c4ecb3397681",
-      "run_id": "36e2c46d-92fd-427e-94ac-800ba2a01a7f",
+      "id": "c22dacab-dab0-4a83-8622-daf1f017408a",
+      "run_id": "2f70c527-17a5-4c2b-8931-446135a56511",
       "generation": 2,
-      "parent_id": "05301bfa-9ffa-45d9-b696-0c65988489a3",
-      "timestamp": 1783020352.7584057,
-      "patch_content": "--- a/examples/fibonacci_optimizer/initial_program.py\n+++ b/examples/fibonacci_optimizer/initial_program.py\n@@ -1,15 +1,15 @@\n # EVOLVE-BLOCK-START\n \"\"\"\n LoopBench Hello World \u2014 Fibonacci Optimizer\n-Generation 0: naive recursive implementation (intentionally slow).\n-The evolutionary loop will rewrite the fibonacci() function.\n+Generation 1: memoized recursive implementation (faster).\n+The evolutionary loop will continue to optimize the fibonacci() function.\n \"\"\"\n \n \n-def fibonacci(n: int) -> int:\n+def fibonacci(n: int, memo: dict = {}) -> int:\n     \"\"\"\n-    Naive recursive Fibonacci \u2014 no memoization, exponential time complexity O(2^n).\n-    This is the starting point; LoopBench will optimize it.\n+    Memoized recursive Fibonacci \u2014 exponential time complexity reduced to linear with memoization O(n).\n+    This is an optimized version; LoopBench will continue to improve it.\n \n     Args:\n         n: Position in the Fibonacci sequence (0-indexed)\n@@ -21,7 +21,9 @@\n         return 0\n     if n == 1:\n         return 1\n-    return fibonacci(n - 1) + fibonacci(n - 2)\n+    if n not in memo:\n+        memo[n] = fibonacci(n - 1, memo) + fibonacci(n - 2, memo)\n+    return memo[n]\n \n \n # EVOLVE-BLOCK-END\n",
+      "parent_id": "4dbc6c1d-26ef-4f52-abbc-1edf824a8c13",
+      "timestamp": 1783032671.901444,
+      "patch_content": "--- a/examples/fibonacci_optimizer/initial_program.py\n+++ b/examples/fibonacci_optimizer/initial_program.py\n@@ -1,18 +1,19 @@\n # EVOLVE-BLOCK-START\n \"\"\"\n LoopBench Hello World \u2014 Fibonacci Optimizer\n-Generation 0: naive recursive implementation (intentionally slow).\n-The evolutionary loop will rewrite the fibonacci() function.\n+Generation 1: memoized recursive implementation (faster).\n+The evolutionary loop will further optimize the fibonacci() function.\n \"\"\"\n \n \n-def fibonacci(n: int) -> int:\n+def fibonacci(n: int, memo: dict = {}) -> int:\n     \"\"\"\n-    Naive recursive Fibonacci \u2014 no memoization, exponential time complexity O(2^n).\n-    This is the starting point; LoopBench will optimize it.\n+    Memoized recursive Fibonacci \u2014 exponential time complexity reduced to linear.\n+    This is the optimized version; further improvements are possible.\n \n     Args:\n         n: Position in the Fibonacci sequence (0-indexed)\n+        memo: Dictionary to store previously computed Fibonacci numbers (default is an empty dictionary)\n \n     Returns:\n         The nth Fibonacci number\n@@ -21,7 +22,9 @@\n         return 0\n     if n == 1:\n         return 1\n-    return fibonacci(n - 1) + fibonacci(n - 2)\n+    if n not in memo:\n+        memo[n] = fibonacci(n - 1, memo) + fibonacci(n - 2, memo)\n+    return memo[n]\n \n \n # EVOLVE-BLOCK-END\n",
       "applied": true,
       "tested": true,
       "exit_code": 0,
-      "stdout": "[sandbox] Starting test run at 2026-07-02T19:25:51Z\n[sandbox] Program: /workspace/initial_program.py\n[sandbox] Command: pytest /workspace/test_fibonacci.py -v -s -q --tb=short\n\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\n============================= test session starts ==============================\nplatform linux -- Python 3.12.13, pytest-8.3.5, pluggy-1.6.0\nrootdir: /workspace\nplugins: metadata-3.1.1, json-report-1.5.0\ncollected 13 items\n\n../workspace/test_fibonacci.py ............\nLOOPBENCH_SPEED_MS=0.0024\n.\n\n=============================== warnings summary ===============================\n../usr/local/lib/python3.12/site-packages/_pytest/cacheprovider.py:475\n  /usr/local/lib/python3.12/site-packages/_pytest/cacheprovider.py:475: PytestCacheWarning: could not create cache path /workspace/.pytest_cache/v/cache/nodeids: [Errno 30] Read-only file system: '/workspace/pytest-cache-files-0fdjd9sd'\n    config.cache.set(\"cache/nodeids\", sorted(self.cached_nodeids))\n\n../usr/local/lib/python3.12/site-packages/_pytest/stepwise.py:51\n  /usr/local/lib/python3.12/site-packages/_pytest/stepwise.py:51: PytestCacheWarning: could not create cache path /workspace/.pytest_cache/v/cache/stepwise: [Errno 30] Read-only file system: '/workspace/pytest-cache-files-gqzvrsdp'\n    session.config.cache.set(STEPWISE_CACHE_DIR, [])\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n--------------------------------- JSON report ----------------------------------\nreport saved to: /results/pytest_report.json\n======================== 13 passed, 2 warnings in 0.09s ========================\n\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\n[sandbox] pytest exit code: 0\n[sandbox] score.json written: passed=13, failed=0, score=1.0000\n[sandbox] Done.\n",
+      "stdout": "[sandbox] Starting test run at 2026-07-02T22:51:10Z\n[sandbox] Program: /workspace/initial_program.py\n[sandbox] Command: pytest /workspace/test_fibonacci.py -v -s -q --tb=short\n\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\n============================= test session starts ==============================\nplatform linux -- Python 3.12.13, pytest-8.3.5, pluggy-1.6.0\nrootdir: /workspace\nplugins: metadata-3.1.1, json-report-1.5.0\ncollected 13 items\n\n../workspace/test_fibonacci.py ............\nLOOPBENCH_SPEED_MS=0.0010\n.\n\n=============================== warnings summary ===============================\n../usr/local/lib/python3.12/site-packages/_pytest/cacheprovider.py:475\n  /usr/local/lib/python3.12/site-packages/_pytest/cacheprovider.py:475: PytestCacheWarning: could not create cache path /workspace/.pytest_cache/v/cache/nodeids: [Errno 30] Read-only file system: '/workspace/pytest-cache-files-16equ8e1'\n    config.cache.set(\"cache/nodeids\", sorted(self.cached_nodeids))\n\n../usr/local/lib/python3.12/site-packages/_pytest/stepwise.py:51\n  /usr/local/lib/python3.12/site-packages/_pytest/stepwise.py:51: PytestCacheWarning: could not create cache path /workspace/.pytest_cache/v/cache/stepwise: [Errno 30] Read-only file system: '/workspace/pytest-cache-files-7xype9vp'\n    session.config.cache.set(STEPWISE_CACHE_DIR, [])\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n--------------------------------- JSON report ----------------------------------\nreport saved to: /results/pytest_report.json\n======================== 13 passed, 2 warnings in 0.07s ========================\n\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\n[sandbox] pytest exit code: 0\n[sandbox] score.json written: passed=13, failed=0, score=1.0000\n[sandbox] Done.\n",
       "stderr": "",
-      "execution_time": 1.6410000000032596,
-      "score": 0.999984,
+      "execution_time": 1.4059999999881256,
+      "score": 0.999993,
       "failed": false,
       "failure_phase": null,
       "error_message": null,
       "metrics": {
-        "combined_score": 0.999984,
+        "combined_score": 0.999993,
         "correctness": 1.0,
-        "speed_score": 0.999984,
-        "speed_ms": 0.0024
+        "speed_score": 0.999993,
+        "speed_ms": 0.001
       },
       "program": null
     },
     {
-      "id": "65ba8307-e7d7-41e5-b0ee-67579bf07d38",
-      "run_id": "36e2c46d-92fd-427e-94ac-800ba2a01a7f",
+      "id": "a408f037-5633-4e74-8e00-2e4ca730b338",
+      "run_id": "2f70c527-17a5-4c2b-8931-446135a56511",
       "generation": 3,
-      "parent_id": "ab1e8881-eebd-4732-ba70-c4ecb3397681",
-      "timestamp": 1783020355.3220859,
-      "patch_content": "--- a/examples/fibonacci_optimizer/initial_program.py\n+++ b/examples/fibonacci_optimizer/initial_program.py\n@@ -1,15 +1,15 @@\n # EVOLVE-BLOCK-START\n \"\"\"\n LoopBench Hello World \u2014 Fibonacci Optimizer\n-Generation 0: naive recursive implementation (intentionally slow).\n-The evolutionary loop will rewrite the fibonacci() function.\n+Generation 1: iterative implementation.\n+The evolutionary loop will further optimize the fibonacci() function.\n \"\"\"\n \n \n def fibonacci(n: int) -> int:\n     \"\"\"\n-    Naive recursive Fibonacci \u2014 no memoization, exponential time complexity O(2^n).\n-    This is the starting point; LoopBench will optimize it.\n+    Iterative Fibonacci \u2014 linear time complexity O(n).\n+    This is the optimized implementation.\n \n     Args:\n         n: Position in the Fibonacci sequence (0-indexed)\n@@ -21,7 +21,11 @@\n         return 0\n     if n == 1:\n         return 1\n-    return fibonacci(n - 1) + fibonacci(n - 2)\n+    \n+    a, b = 0, 1\n+    for _ in range(2, n + 1):\n+        a, b = b, a + b\n+    return b\n \n \n # EVOLVE-BLOCK-END\n",
+      "parent_id": "c22dacab-dab0-4a83-8622-daf1f017408a",
+      "timestamp": 1783032674.3594532,
+      "patch_content": "--- a/examples/fibonacci_optimizer/initial_program.py\n+++ b/examples/fibonacci_optimizer/initial_program.py\n@@ -6,13 +6,14 @@\n \"\"\"\n \n \n-def fibonacci(n: int) -> int:\n+def fibonacci(n: int, memo: dict = {}) -> int:\n     \"\"\"\n-    Naive recursive Fibonacci \u2014 no memoization, exponential time complexity O(2^n).\n-    This is the starting point; LoopBench will optimize it.\n+    Optimized recursive Fibonacci \u2014 with memoization, time complexity O(n).\n+    This is the optimized implementation.\n \n     Args:\n         n: Position in the Fibonacci sequence (0-indexed)\n+        memo: Dictionary to store previously computed Fibonacci numbers\n \n     Returns:\n         The nth Fibonacci number\n@@ -21,7 +22,9 @@\n         return 0\n     if n == 1:\n         return 1\n-    return fibonacci(n - 1) + fibonacci(n - 2)\n+    if n not in memo:\n+        memo[n] = fibonacci(n - 1, memo) + fibonacci(n - 2, memo)\n+    return memo[n]\n \n \n # EVOLVE-BLOCK-END\n",
       "applied": true,
       "tested": true,
       "exit_code": 0,
-      "stdout": "[sandbox] Starting test run at 2026-07-02T19:25:54Z\n[sandbox] Program: /workspace/initial_program.py\n[sandbox] Command: pytest /workspace/test_fibonacci.py -v -s -q --tb=short\n\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\n============================= test session starts ==============================\nplatform linux -- Python 3.12.13, pytest-8.3.5, pluggy-1.6.0\nrootdir: /workspace\nplugins: metadata-3.1.1, json-report-1.5.0\ncollected 13 items\n\n../workspace/test_fibonacci.py ............\nLOOPBENCH_SPEED_MS=0.0031\n.\n\n=============================== warnings summary ===============================\n../usr/local/lib/python3.12/site-packages/_pytest/cacheprovider.py:475\n  /usr/local/lib/python3.12/site-packages/_pytest/cacheprovider.py:475: PytestCacheWarning: could not create cache path /workspace/.pytest_cache/v/cache/nodeids: [Errno 30] Read-only file system: '/workspace/pytest-cache-files-5a3nytgo'\n    config.cache.set(\"cache/nodeids\", sorted(self.cached_nodeids))\n\n../usr/local/lib/python3.12/site-packages/_pytest/stepwise.py:51\n  /usr/local/lib/python3.12/site-packages/_pytest/stepwise.py:51: PytestCacheWarning: could not create cache path /workspace/.pytest_cache/v/cache/stepwise: [Errno 30] Read-only file system: '/workspace/pytest-cache-files-n3unzvo2'\n    session.config.cache.set(STEPWISE_CACHE_DIR, [])\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n--------------------------------- JSON report ----------------------------------\nreport saved to: /results/pytest_report.json\n======================== 13 passed, 2 warnings in 0.08s ========================\n\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\n[sandbox] pytest exit code: 0\n[sandbox] score.json written: passed=13, failed=0, score=1.0000\n[sandbox] Done.\n",
+      "stdout": "[sandbox] Starting test run at 2026-07-02T22:51:13Z\n[sandbox] Program: /workspace/initial_program.py\n[sandbox] Command: pytest /workspace/test_fibonacci.py -v -s -q --tb=short\n\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\n============================= test session starts ==============================\nplatform linux -- Python 3.12.13, pytest-8.3.5, pluggy-1.6.0\nrootdir: /workspace\nplugins: metadata-3.1.1, json-report-1.5.0\ncollected 13 items\n\n../workspace/test_fibonacci.py ............\nLOOPBENCH_SPEED_MS=0.0008\n.\n\n=============================== warnings summary ===============================\n../usr/local/lib/python3.12/site-packages/_pytest/cacheprovider.py:475\n  /usr/local/lib/python3.12/site-packages/_pytest/cacheprovider.py:475: PytestCacheWarning: could not create cache path /workspace/.pytest_cache/v/cache/nodeids: [Errno 30] Read-only file system: '/workspace/pytest-cache-files-kdxa520m'\n    config.cache.set(\"cache/nodeids\", sorted(self.cached_nodeids))\n\n../usr/local/lib/python3.12/site-packages/_pytest/stepwise.py:51\n  /usr/local/lib/python3.12/site-packages/_pytest/stepwise.py:51: PytestCacheWarning: could not create cache path /workspace/.pytest_cache/v/cache/stepwise: [Errno 30] Read-only file system: '/workspace/pytest-cache-files-nv3glqkf'\n    session.config.cache.set(STEPWISE_CACHE_DIR, [])\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n--------------------------------- JSON report ----------------------------------\nreport saved to: /results/pytest_report.json\n======================== 13 passed, 2 warnings in 0.08s ========================\n\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\n[sandbox] pytest exit code: 0\n[sandbox] score.json written: passed=13, failed=0, score=1.0000\n[sandbox] Done.\n",
       "stderr": "",
-      "execution_time": 1.5779999999940628,
-      "score": 0.999979,
+      "execution_time": 1.4849999999860302,
+      "score": 0.999995,
       "failed": false,
       "failure_phase": null,
       "error_message": null,
       "metrics": {
-        "combined_score": 0.999979,
+        "combined_score": 0.999995,
         "correctness": 1.0,
-        "speed_score": 0.999979,
-        "speed_ms": 0.0031
+        "speed_score": 0.999995,
+        "speed_ms": 0.0008
       },
       "program": null
     }
   ],
   "programs": [],
   "best_candidate": {
-    "id": "05301bfa-9ffa-45d9-b696-0c65988489a3",
-    "run_id": "36e2c46d-92fd-427e-94ac-800ba2a01a7f",
-    "generation": 1,
-    "parent_id": "9f4e02cc-b3b4-45c0-8513-d5bcaba1ca45",
-    "timestamp": 1783020350.1427412,
-    "patch_content": "--- a/examples/fibonacci_optimizer/initial_program.py\n+++ b/examples/fibonacci_optimizer/initial_program.py\n@@ -6,13 +6,14 @@\n \"\"\"\n \n \n-def fibonacci(n: int) -> int:\n+def fibonacci(n: int, memo: dict = {}) -> int:\n     \"\"\"\n-    Naive recursive Fibonacci \u2014 no memoization, exponential time complexity O(2^n).\n-    This is the starting point; LoopBench will optimize it.\n+    Recursive Fibonacci with memoization, reducing time complexity to O(n).\n+    This is the optimized implementation.\n \n     Args:\n         n: Position in the Fibonacci sequence (0-indexed)\n+        memo: Dictionary to store previously computed Fibonacci numbers\n \n     Returns:\n         The nth Fibonacci number\n@@ -21,7 +22,9 @@\n         return 0\n     if n == 1:\n         return 1\n-    return fibonacci(n - 1) + fibonacci(n - 2)\n+    if n not in memo:\n+        memo[n] = fibonacci(n - 1, memo) + fibonacci(n - 2, memo)\n+    return memo[n]\n \n \n # EVOLVE-BLOCK-END\n",
+    "id": "a408f037-5633-4e74-8e00-2e4ca730b338",
+    "run_id": "2f70c527-17a5-4c2b-8931-446135a56511",
+    "generation": 3,
+    "parent_id": "c22dacab-dab0-4a83-8622-daf1f017408a",
+    "timestamp": 1783032674.3594532,
+    "patch_content": "--- a/examples/fibonacci_optimizer/initial_program.py\n+++ b/examples/fibonacci_optimizer/initial_program.py\n@@ -6,13 +6,14 @@\n \"\"\"\n \n \n-def fibonacci(n: int) -> int:\n+def fibonacci(n: int, memo: dict = {}) -> int:\n     \"\"\"\n-    Naive recursive Fibonacci \u2014 no memoization, exponential time complexity O(2^n).\n-    This is the starting point; LoopBench will optimize it.\n+    Optimized recursive Fibonacci \u2014 with memoization, time complexity O(n).\n+    This is the optimized implementation.\n \n     Args:\n         n: Position in the Fibonacci sequence (0-indexed)\n+        memo: Dictionary to store previously computed Fibonacci numbers\n \n     Returns:\n         The nth Fibonacci number\n@@ -21,7 +22,9 @@\n         return 0\n     if n == 1:\n         return 1\n-    return fibonacci(n - 1) + fibonacci(n - 2)\n+    if n not in memo:\n+        memo[n] = fibonacci(n - 1, memo) + fibonacci(n - 2, memo)\n+    return memo[n]\n \n \n # EVOLVE-BLOCK-END\n",
     "applied": true,
     "tested": true,
     "exit_code": 0,
-    "stdout": "[sandbox] Starting test run at 2026-07-02T19:25:49Z\n[sandbox] Program: /workspace/initial_program.py\n[sandbox] Command: pytest /workspace/test_fibonacci.py -v -s -q --tb=short\n\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\n============================= test session starts ==============================\nplatform linux -- Python 3.12.13, pytest-8.3.5, pluggy-1.6.0\nrootdir: /workspace\nplugins: metadata-3.1.1, json-report-1.5.0\ncollected 13 items\n\n../workspace/test_fibonacci.py ............\nLOOPBENCH_SPEED_MS=0.0010\n.\n\n=============================== warnings summary ===============================\n../usr/local/lib/python3.12/site-packages/_pytest/cacheprovider.py:475\n  /usr/local/lib/python3.12/site-packages/_pytest/cacheprovider.py:475: PytestCacheWarning: could not create cache path /workspace/.pytest_cache/v/cache/nodeids: [Errno 30] Read-only file system: '/workspace/pytest-cache-files-5st4umer'\n    config.cache.set(\"cache/nodeids\", sorted(self.cached_nodeids))\n\n../usr/local/lib/python3.12/site-packages/_pytest/stepwise.py:51\n  /usr/local/lib/python3.12/site-packages/_pytest/stepwise.py:51: PytestCacheWarning: could not create cache path /workspace/.pytest_cache/v/cache/stepwise: [Errno 30] Read-only file system: '/workspace/pytest-cache-files-qcv26uuc'\n    session.config.cache.set(STEPWISE_CACHE_DIR, [])\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n--------------------------------- JSON report ----------------------------------\nreport saved to: /results/pytest_report.json\n======================== 13 passed, 2 warnings in 0.08s ========================\n\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\n[sandbox] pytest exit code: 0\n[sandbox] score.json written: passed=13, failed=0, score=1.0000\n[sandbox] Done.\n",
+    "stdout": "[sandbox] Starting test run at 2026-07-02T22:51:13Z\n[sandbox] Program: /workspace/initial_program.py\n[sandbox] Command: pytest /workspace/test_fibonacci.py -v -s -q --tb=short\n\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\n============================= test session starts ==============================\nplatform linux -- Python 3.12.13, pytest-8.3.5, pluggy-1.6.0\nrootdir: /workspace\nplugins: metadata-3.1.1, json-report-1.5.0\ncollected 13 items\n\n../workspace/test_fibonacci.py ............\nLOOPBENCH_SPEED_MS=0.0008\n.\n\n=============================== warnings summary ===============================\n../usr/local/lib/python3.12/site-packages/_pytest/cacheprovider.py:475\n  /usr/local/lib/python3.12/site-packages/_pytest/cacheprovider.py:475: PytestCacheWarning: could not create cache path /workspace/.pytest_cache/v/cache/nodeids: [Errno 30] Read-only file system: '/workspace/pytest-cache-files-kdxa520m'\n    config.cache.set(\"cache/nodeids\", sorted(self.cached_nodeids))\n\n../usr/local/lib/python3.12/site-packages/_pytest/stepwise.py:51\n  /usr/local/lib/python3.12/site-packages/_pytest/stepwise.py:51: PytestCacheWarning: could not create cache path /workspace/.pytest_cache/v/cache/stepwise: [Errno 30] Read-only file system: '/workspace/pytest-cache-files-nv3glqkf'\n    session.config.cache.set(STEPWISE_CACHE_DIR, [])\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n--------------------------------- JSON report ----------------------------------\nreport saved to: /results/pytest_report.json\n======================== 13 passed, 2 warnings in 0.08s ========================\n\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\n[sandbox] pytest exit code: 0\n[sandbox] score.json written: passed=13, failed=0, score=1.0000\n[sandbox] Done.\n",
     "stderr": "",
-    "execution_time": 1.625,
-    "score": 0.999993,
+    "execution_time": 1.4849999999860302,
+    "score": 0.999995,
     "failed": false,
     "failure_phase": null,
     "error_message": null,
     "metrics": {
-      "combined_score": 0.999993,
+      "combined_score": 0.999995,
       "correctness": 1.0,
-      "speed_score": 0.999993,
-      "speed_ms": 0.001
+      "speed_score": 0.999995,
+      "speed_ms": 0.0008
     },
     "program": null
   },
@@ -158,9 +159,9 @@
   "audit_log": [
     {
       "id": 1,
-      "run_id": "36e2c46d-92fd-427e-94ac-800ba2a01a7f",
+      "run_id": "2f70c527-17a5-4c2b-8931-446135a56511",
       "candidate_id": null,
-      "timestamp": 1783020340.649521,
+      "timestamp": 1783032660.5628874,
       "event_type": "run_created",
       "event_data": {
         "status": "running",
@@ -169,9 +170,9 @@
     },
     {
       "id": 2,
-      "run_id": "36e2c46d-92fd-427e-94ac-800ba2a01a7f",
-      "candidate_id": "9f4e02cc-b3b4-45c0-8513-d5bcaba1ca45",
-      "timestamp": 1783020346.3464642,
+      "run_id": "2f70c527-17a5-4c2b-8931-446135a56511",
+      "candidate_id": "c8eb3eea-dda0-4ae4-a529-6697637126c5",
+      "timestamp": 1783032665.887167,
       "event_type": "candidate_recorded",
       "event_data": {
         "generation": 0,
@@ -182,52 +183,52 @@
     },
     {
       "id": 3,
-      "run_id": "36e2c46d-92fd-427e-94ac-800ba2a01a7f",
-      "candidate_id": "05301bfa-9ffa-45d9-b696-0c65988489a3",
-      "timestamp": 1783020350.1443527,
+      "run_id": "2f70c527-17a5-4c2b-8931-446135a56511",
+      "candidate_id": "4dbc6c1d-26ef-4f52-abbc-1edf824a8c13",
+      "timestamp": 1783032669.4169145,
       "event_type": "candidate_recorded",
       "event_data": {
         "generation": 1,
-        "parent_id": "9f4e02cc-b3b4-45c0-8513-d5bcaba1ca45",
+        "parent_id": "c8eb3eea-dda0-4ae4-a529-6697637126c5",
         "failed": false,
         "failure_phase": null
       }
     },
     {
       "id": 4,
-      "run_id": "36e2c46d-92fd-427e-94ac-800ba2a01a7f",
-      "candidate_id": "ab1e8881-eebd-4732-ba70-c4ecb3397681",
-      "timestamp": 1783020352.76003,
+      "run_id": "2f70c527-17a5-4c2b-8931-446135a56511",
+      "candidate_id": "c22dacab-dab0-4a83-8622-daf1f017408a",
+      "timestamp": 1783032671.9025035,
       "event_type": "candidate_recorded",
       "event_data": {
         "generation": 2,
-        "parent_id": "05301bfa-9ffa-45d9-b696-0c65988489a3",
+        "parent_id": "4dbc6c1d-26ef-4f52-abbc-1edf824a8c13",
         "failed": false,
         "failure_phase": null
       }
     },
     {
       "id": 5,
-      "run_id": "36e2c46d-92fd-427e-94ac-800ba2a01a7f",
-      "candidate_id": "65ba8307-e7d7-41e5-b0ee-67579bf07d38",
-      "timestamp": 1783020355.3237593,
+      "run_id": "2f70c527-17a5-4c2b-8931-446135a56511",
+      "candidate_id": "a408f037-5633-4e74-8e00-2e4ca730b338",
+      "timestamp": 1783032674.3605094,
       "event_type": "candidate_recorded",
       "event_data": {
         "generation": 3,
-        "parent_id": "ab1e8881-eebd-4732-ba70-c4ecb3397681",
+        "parent_id": "c22dacab-dab0-4a83-8622-daf1f017408a",
         "failed": false,
         "failure_phase": null
       }
     },
     {
       "id": 6,
-      "run_id": "36e2c46d-92fd-427e-94ac-800ba2a01a7f",
+      "run_id": "2f70c527-17a5-4c2b-8931-446135a56511",
       "candidate_id": null,
-      "timestamp": 1783020355.3331451,
+      "timestamp": 1783032674.3696697,
       "event_type": "run_completed",
       "event_data": {
         "status": "successful",
-        "final_improvement": 1.7939945460844686
+        "final_improvement": 1.533640581017363
       }
     }
   ]
