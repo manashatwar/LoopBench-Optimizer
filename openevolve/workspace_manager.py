@@ -487,9 +487,11 @@ class WorkspaceManager:
     def apply_patch(self, worktree: str | Path, patch: str) -> ApplyResult:
         """Validate and apply a unified diff to ``worktree``.
 
-        Git's check pass runs before any files are modified.  A failed check,
-        application, or post-application verification returns ``failed`` with
-        the captured output and cleans up the worktree immediately.
+        Tries progressively more lenient ``git apply`` option sets so that
+        LLM-generated diffs — which frequently have imperfect line counts,
+        whitespace, or context — still apply when semantically valid. The
+        strictest option set is attempted first to preserve exact behaviour
+        for well-formed patches.
         """
         worktree_path = Path(worktree).resolve()
         if not patch.strip():
@@ -501,52 +503,61 @@ class WorkspaceManager:
             self.cleanup_worktree(worktree_path)
             return result
 
-        check_result = self._run_patch_command(
-            worktree_path,
-            ["apply", "--check", "-"],
-            patch,
-        )
-        if check_result.returncode != 0:
-            result = ApplyResult(
-                success=False,
-                status="failed",
-                stdout=check_result.stdout,
-                stderr=check_result.stderr,
-            )
-            self.cleanup_worktree(worktree_path)
-            return result
+        # Option sets ordered from strictest to most lenient.
+        option_sets: List[List[str]] = [
+            [],                                              # strict (original behaviour)
+            ["--ignore-whitespace"],                         # tolerate whitespace diffs
+            ["--recount", "--ignore-whitespace"],            # fix bad @@ line counts
+            ["-C1", "--recount", "--ignore-whitespace"],     # reduce required context
+            ["--3way"],                                      # fall back to 3-way merge
+        ]
 
-        apply_result = self._run_patch_command(
-            worktree_path,
-            ["apply", "-"],
-            patch,
-        )
-        if apply_result.returncode != 0:
-            result = ApplyResult(
-                success=False,
-                status="failed",
-                stdout=apply_result.stdout,
-                stderr=apply_result.stderr,
-            )
-            self.cleanup_worktree(worktree_path)
-            return result
+        last_stdout = ""
+        last_stderr = "Patch did not apply with any option set."
 
-        if not self.verify_clean_application(worktree_path):
-            result = ApplyResult(
-                success=False,
-                status="failed",
-                stdout=apply_result.stdout,
-                stderr="Patch applied but the worktree contains conflicts or invalid whitespace.",
+        for opts in option_sets:
+            check = self._run_patch_command(
+                worktree_path, ["apply", "--check", *opts, "-"], patch
             )
-            self.cleanup_worktree(worktree_path)
-            return result
+            if check.returncode != 0:
+                last_stdout, last_stderr = check.stdout, check.stderr
+                continue
 
-        return ApplyResult(
-            success=True,
-            status="passed",
-            stdout=apply_result.stdout,
-            stderr=apply_result.stderr,
+            applied = self._run_patch_command(
+                worktree_path, ["apply", *opts, "-"], patch
+            )
+            if applied.returncode != 0:
+                last_stdout, last_stderr = applied.stdout, applied.stderr
+                continue
+
+            if not self.verify_clean_application(worktree_path):
+                # Roll back the partial application before trying the next set.
+                self._run_patch_command(
+                    worktree_path, ["apply", "--reverse", *opts, "-"], patch
+                )
+                last_stdout = applied.stdout
+                last_stderr = (
+                    "Patch applied but the worktree contains conflicts "
+                    "or invalid whitespace."
+                )
+                continue
+
+            return ApplyResult(
+                success=True,
+                status="passed",
+                stdout=applied.stdout,
+                stderr=applied.stderr,
+            )
+
+        # Every option set failed — clean up and report the last error.
+        result = ApplyResult(
+            success=False,
+            status="failed",
+            stdout=last_stdout,
+            stderr=last_stderr,
         )
+        self.cleanup_worktree(worktree_path)
+        return result
 
     def verify_clean_application(self, worktree: str | Path) -> bool:
         """Return whether an applied patch left no conflicts or diff errors."""
