@@ -7,7 +7,9 @@
   <!-- CDN: React 18 + ReactDOM (UMD) -->
   <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-  <!-- Recharts (depends on React) -->
+  <!-- prop-types: REQUIRED by Recharts UMD (it reads window.PropTypes) -->
+  <script crossorigin src="https://unpkg.com/prop-types@15/prop-types.min.js"></script>
+  <!-- Recharts (depends on React + PropTypes globals) -->
   <script crossorigin src="https://unpkg.com/recharts@2/umd/Recharts.js"></script>
   <!-- html2canvas for PNG export (task 15.5) -->
   <script crossorigin src="https://unpkg.com/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
@@ -58,14 +60,45 @@
 <body>
 <div id="root"></div>
 <script>
+// ─── visible error handler ───────────────────────────────────────────────
+// Surface any runtime error on the page instead of a blank screen.
+function showFatal(msg) {
+  var root = document.getElementById('root');
+  if (root) {
+    root.innerHTML =
+      '<div style="max-width:900px;margin:2rem auto;padding:1.25rem;'
+      + 'background:#450a0a;border:1px solid #7f1d1d;border-radius:.5rem;'
+      + 'color:#fca5a5;font-family:monospace;font-size:.85rem;white-space:pre-wrap">'
+      + '<strong style="color:#fecaca">Dashboard error</strong>\n\n'
+      + String(msg) + '</div>';
+  }
+}
+window.addEventListener('error', function (e) {
+  showFatal((e && e.message ? e.message : 'Unknown error')
+    + (e && e.filename ? '\n' + e.filename + ':' + e.lineno : ''));
+});
+window.addEventListener('unhandledrejection', function (e) {
+  showFatal('Promise rejection: ' + (e && e.reason ? e.reason : 'unknown'));
+});
+
+// ─── dependency checks ────────────────────────────────────────────────────
+if (typeof React === 'undefined')
+  showFatal('React failed to load from CDN. Check your network / unpkg.com access.');
+if (typeof ReactDOM === 'undefined')
+  showFatal('ReactDOM failed to load from CDN.');
+if (typeof Recharts === 'undefined')
+  showFatal('Recharts failed to load from CDN (charts library). '
+    + 'The rest of the dashboard cannot render without it.');
+
 // ─── helpers ───────────────────────────────────────────────────────────────
 const {
   useState, useEffect, useCallback, useMemo, useRef, createElement: h
 } = React;
+const R = (typeof Recharts !== 'undefined') ? Recharts : {};
 const {
   LineChart, Line, ScatterChart, Scatter, XAxis, YAxis, CartesianGrid,
   Tooltip, Legend, ResponsiveContainer, ReferenceLine
-} = Recharts;
+} = R;
 
 // ─── mode detection ────────────────────────────────────────────────────────
 // Static mode: served from file:// or GitHub Pages (no localhost)
@@ -381,7 +414,11 @@ function App() {
   );
 }
 
-ReactDOM.createRoot(document.getElementById('root')).render(h(App));
+try {
+  ReactDOM.createRoot(document.getElementById('root')).render(h(App));
+} catch (err) {
+  showFatal('Render failed: ' + (err && err.stack ? err.stack : err));
+}
 </script>
 </body>
 </html>
