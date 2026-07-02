@@ -6,7 +6,7 @@
 
 *Point it at any GitHub repository. Watch it evolve your code to run faster.*
 
-[![License](https://img.shields.io/github/license/algorithmicsuperintelligence/openevolve)](LICENSE)
+[![License](https://img.shields.io/github/license/manashatwar/LoopBench-Optimizer)](LICENSE)
 [![Python](https://img.shields.io/badge/python-3.11+-blue)](pyproject.toml)
 [![CI](https://github.com/manashatwar/LoopBench-Optimizer/actions/workflows/ci.yml/badge.svg)](https://github.com/manashatwar/LoopBench-Optimizer/actions/workflows/ci.yml)
 [![Sandbox Image](https://github.com/manashatwar/LoopBench-Optimizer/actions/workflows/sandbox-image.yml/badge.svg)](https://github.com/manashatwar/LoopBench-Optimizer/actions/workflows/sandbox-image.yml)
@@ -414,4 +414,6 @@ Built on top of the [OpenEvolve](https://github.com/algorithmicsuperintelligence
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+Apache-2.0 — see [LICENSE](LICENSE). LoopBench Optimizer is a fork of
+[OpenEvolve](https://github.com/algorithmicsuperintelligence/openevolve), which
+is also licensed under Apache-2.0.

@@ -1,86 +1,97 @@
-# Contributing to OpenEvolve
+# Contributing to LoopBench Optimizer
 
-Thank you for your interest in contributing to OpenEvolve! This document provides guidelines and instructions for contributing to the project.
+Thanks for your interest in contributing to LoopBench Optimizer! This document
+covers how to set up a development environment, run the tests, and submit
+changes.
 
 ## Getting Started
 
-1. Fork the repository
-2. Clone your fork: `git clone https://github.com/codelion/openevolve.git`
-3. Install the package in development mode: `pip install -e ".[dev]"`
-4. Set up environment for testing:
+1. Fork the repository on GitHub.
+2. Clone your fork:
    ```bash
-   # Unit tests don't require a real API key, but the environment variable must be set
-   export OPENAI_API_KEY=test-key-for-unit-tests
+   git clone https://github.com/manashatwar/LoopBench-Optimizer.git
+   cd LoopBench-Optimizer
    ```
-5. Run the tests to ensure everything is working: `python -m unittest discover tests`
+3. Create and activate a virtual environment:
+   ```bash
+   python -m venv .venv
+   source .venv/bin/activate        # Windows: .venv\Scripts\activate
+   ```
+4. Install the package in development mode:
+   ```bash
+   pip install -e ".[dev]"
+   ```
+5. Run the test suite to confirm everything works:
+   ```bash
+   python -m pytest
+   ```
 
-**Note**: The unit tests do not make actual API calls to OpenAI or any LLM provider. However, the `OPENAI_API_KEY` environment variable must be set to any non-empty value for the tests to run. You can use a placeholder value like `test-key-for-unit-tests`.
+**Note:** The unit tests do not make real LLM API calls. Some tests expect the
+`OPENAI_API_KEY` environment variable to be set to any non-empty value (e.g.
+`test-key`). Set it before running the suite if needed.
 
-## Development Environment
+## LLM Configuration
 
-We recommend using a virtual environment for development:
+LoopBench talks to any OpenAI-compatible endpoint. For local development and the
+`loopbench run` hero command, configure credentials in a `.env` file at the repo
+root:
 
-```bash
-python -m venv env
-source env/bin/activate  # On Windows: env\Scripts\activate
-pip install -e ".[dev]"
-
-# For running tests (no actual API calls are made)
-export OPENAI_API_KEY=test-key-for-unit-tests
-
-# For testing with real LLMs during development
-# export OPENAI_API_KEY=your-actual-api-key
+```
+GEMINI_API_KEY="your-api-key"
+LLM_API_BASE="https://api.groq.com/openai/v1"
+LLM_MODEL="llama-3.3-70b-versatile"
 ```
 
-### LLM Configuration for Development
+The variable name `GEMINI_API_KEY` is used regardless of provider; point
+`LLM_API_BASE` at whichever OpenAI-compatible service you use (Groq, OpenAI,
+etc.).
 
-When developing features that interact with LLMs:
+## Code Style
 
-1. **Local Development**: Use a mock API key for unit tests
-2. **Integration Testing**: Use your actual API key and configure `api_base` if using alternative providers
-3. **Cost Management**: Consider using cheaper models or [optillm](https://github.com/codelion/optillm) for rate limiting during development
+The project uses [ruff](https://docs.astral.sh/ruff/) for both linting and
+formatting. Before submitting a change:
+
+```bash
+ruff check openevolve/ loopbench/ sandbox/
+ruff format openevolve/ loopbench/ sandbox/
+```
+
+A pre-commit hook is provided to run these automatically:
+
+```bash
+pre-commit install
+```
 
 ## Pull Request Process
 
-1. Create a new branch for your feature or bugfix: `git checkout -b feat-your-feature-name`
-2. Make your changes
-3. Add tests for your changes
-4. Run the tests to make sure everything passes:
+1. Create a branch for your change:
    ```bash
-   export OPENAI_API_KEY=test-key-for-unit-tests
-   python -m unittest discover tests
+   git checkout -b feat/your-feature-name
    ```
-5. Commit your changes: `git commit -m "Add your descriptive commit message"`
-6. Push to your fork: `git push origin feature/your-feature-name`
-7. Submit a pull request to the main repository
-
-## Adding Examples
-
-We encourage adding new examples to showcase OpenEvolve's capabilities. To add a new example:
-
-1. Create a new directory in the `examples` folder
-2. Include all necessary files (initial program, evaluation code, etc.)
-3. Add a README.md explaining the example
-4. Make sure the example can be run with minimal setup
+2. Make your changes and add tests that cover them.
+3. Run the linter and the full test suite:
+   ```bash
+   ruff check openevolve/ loopbench/ sandbox/
+   python -m pytest
+   ```
+4. Commit with a clear, descriptive message.
+5. Push to your fork and open a pull request against `main`.
 
 ## Reporting Issues
 
-When reporting issues, please include:
+When reporting an issue, please include:
 
-1. A clear description of the issue
-2. Steps to reproduce
-3. Expected behavior
-4. Actual behavior
-5. Environment details (OS, Python version, etc.)
+1. A clear description of the problem.
+2. Steps to reproduce.
+3. Expected vs. actual behavior.
+4. Environment details (OS, Python version).
 
 ## Feature Requests
 
-Feature requests are welcome. Please provide:
-
-1. A clear description of the feature
-2. The motivation for adding this feature
-3. Possible implementation ideas (if any)
+Feature requests are welcome. Please describe the feature, the motivation behind
+it, and any implementation ideas you have.
 
 ## Code of Conduct
 
-Please be respectful and considerate of others when contributing to the project. We aim to create a welcoming and inclusive environment for all contributors.
+Please be respectful and considerate of others. We aim to keep this a welcoming
+and inclusive project for everyone.
