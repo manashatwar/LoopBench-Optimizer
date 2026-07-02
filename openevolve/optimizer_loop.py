@@ -25,6 +25,22 @@ from typing import Any, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 
+
+def _extract_code_block(text: str) -> str:
+    """Extract the largest fenced code block from an LLM response.
+
+    Returns the code inside the biggest ```lang ... ``` block. If there are no
+    fences, returns the whole text stripped. Language hints on the opening
+    fence line are dropped.
+    """
+    if not text:
+        return ""
+    import re
+    blocks = re.findall(r"```[^\n]*\n(.*?)```", text, flags=re.DOTALL)
+    if blocks:
+        return max(blocks, key=len).rstrip("\n") + "\n"
+    return text.strip() + "\n"
+
 # ---------------------------------------------------------------------------
 # Lazy imports so unit tests can stub heavy components without full env setup
 # ---------------------------------------------------------------------------
@@ -120,13 +136,20 @@ class OptimizerLoop:
         # ── Sandbox cfg (passed through to run_in_sandbox) ────────────────────
         self.sandbox_cfg: Dict[str, Any] = config.get("sandbox_cfg") or {}
 
+        # ── Generation mode ───────────────────────────────────────────────────
+        # "diff": LLM returns a unified diff applied via git apply (fragile).
+        # "full": LLM returns the complete improved file; the diff is computed
+        #         with difflib (always valid) and tested via the sandbox.
+        self.rewrite_mode: str = config.get("rewrite_mode", "diff")
+
         # ── Internal state ────────────────────────────────────────────────────
         self._run_id: Optional[str] = None
         self._candidate_history: List[Dict[str, Any]] = []
 
         logger.info(
-            "OptimizerLoop initialized: repo=%s target=%s max_iter=%d patience=%d",
+            "OptimizerLoop initialized: repo=%s target=%s max_iter=%d patience=%d mode=%s",
             self.repo_path, self.target_file, self.max_iterations, self.patience,
+            self.rewrite_mode,
         )
 
     # -------------------------------------------------------------------------
@@ -219,6 +242,10 @@ class OptimizerLoop:
                 and as context for the prompt).
         """
         run_in_sandbox, verify_output_streams = _import_sandbox()
+
+        # Full-file rewrite mode: robust path that avoids fragile diff parsing.
+        if self.rewrite_mode == "full":
+            return self._execute_generation_full_rewrite(generation, baseline_candidate)
 
         baseline_id = baseline_candidate["id"]
         baseline_metrics = baseline_candidate.get("metrics") or {}
@@ -335,11 +362,11 @@ class OptimizerLoop:
                         applied=False,
                         failed=True,
                         failure_phase="apply",
-                        error_message=apply_result.error or "Patch apply failed",
+                        error_message=apply_result.error_output or "Patch apply failed",
                     )
                     logger.warning(
                         "Phase 3 (apply) failed gen=%d: %s",
-                        generation, apply_result.error,
+                        generation, apply_result.error_output,
                     )
                     candidate = self.db.get_candidate(candidate_id)
                     self._candidate_history.append(candidate)
@@ -462,6 +489,124 @@ class OptimizerLoop:
         # ── Phase 7: Return candidate dict ────────────────────────────────────
         candidate = self.db.get_candidate(candidate_id)
         self._candidate_history.append(candidate)
+        return candidate
+
+    # -------------------------------------------------------------------------
+    # Full-file rewrite generation (robust, diff computed via difflib)
+    # -------------------------------------------------------------------------
+
+    def _build_full_rewrite_prompt(
+        self, original: str, baseline_metrics: Dict[str, Any], failures: list
+    ) -> str:
+        metrics_str = ", ".join(f"{k}={v}" for k, v in baseline_metrics.items()) or "N/A"
+        failures_str = "\n".join(f"- {m}" for m in failures) or "None"
+        return (
+            "You are optimizing a Python file for performance while keeping all "
+            "tests passing.\n\n"
+            f"Current performance metrics: {metrics_str}\n"
+            f"Recent failed attempts:\n{failures_str}\n\n"
+            "Rules:\n"
+            "  1. Keep ALL public function/class names and signatures unchanged.\n"
+            "  2. Do not change any code outside what is needed for the speed-up.\n"
+            "  3. The output MUST be the COMPLETE file, ready to run as-is.\n"
+            "  4. Return ONLY the full file inside a single ```python code block.\n\n"
+            "Here is the current file:\n\n"
+            "```python\n"
+            f"{original}\n"
+            "```\n"
+        )
+
+    def _execute_generation_full_rewrite(
+        self, generation: int, baseline_candidate: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """Generate a full replacement file, compute a valid diff, test it."""
+        import difflib
+        import tempfile
+
+        run_in_sandbox, verify_output_streams = _import_sandbox()
+        baseline_id = baseline_candidate["id"]
+        baseline_metrics = baseline_candidate.get("metrics") or {}
+
+        target_path = Path(self.target_file)
+        try:
+            original = target_path.read_text(encoding="utf-8")
+        except OSError as exc:
+            cid = self.db.insert_candidate(
+                generation=generation, parent_id=baseline_id, patch_content="",
+                failed=True, failure_phase="generate",
+                error_message=f"cannot read target file: {exc}",
+            )
+            return self.db.get_candidate(cid)
+
+        # Phase 2: generate the full improved file
+        failures = self.db.get_recent_failures(window=5, run_id=self._run_id)
+        prompt = self._build_full_rewrite_prompt(original, baseline_metrics, failures)
+        try:
+            response = asyncio.run(self.llm_ensemble.generate(prompt))
+        except Exception as exc:
+            cid = self.db.insert_candidate(
+                generation=generation, parent_id=baseline_id, patch_content="",
+                failed=True, failure_phase="generate", error_message=str(exc),
+            )
+            return self.db.get_candidate(cid)
+
+        new_content = _extract_code_block(response) or ""
+        if not new_content.strip() or new_content.strip() == original.strip():
+            cid = self.db.insert_candidate(
+                generation=generation, parent_id=baseline_id, patch_content="",
+                failed=True, failure_phase="generate",
+                error_message="LLM produced no usable change",
+            )
+            return self.db.get_candidate(cid)
+
+        # Compute a guaranteed-valid unified diff
+        try:
+            rel = target_path.resolve().relative_to(Path(self.repo_path).resolve())
+            rel_str = str(rel).replace("\\", "/")
+        except ValueError:
+            rel_str = target_path.name
+        patch = "".join(difflib.unified_diff(
+            original.splitlines(keepends=True),
+            new_content.splitlines(keepends=True),
+            fromfile=f"a/{rel_str}", tofile=f"b/{rel_str}",
+        ))
+
+        # Phase 4: test the improved file via the sandbox (temp-copy mode)
+        with tempfile.TemporaryDirectory(prefix="loopbench_full_") as td:
+            improved = Path(td) / target_path.name
+            improved.write_text(new_content, encoding="utf-8")
+            result = run_in_sandbox(
+                program_path=str(improved),
+                test_file=self.test_file,
+                sandbox_cfg=self.sandbox_cfg,
+                repo_root=self.repo_path,
+            )
+
+        # Phase 5/6: score + record
+        streams_ok = verify_output_streams(result.get("stdout"), result.get("stderr"))
+        metrics: Dict[str, Any] = {}
+        for key in ("combined_score", "correctness", "speed_score", "speed_ms"):
+            if result.get(key) is not None:
+                metrics[key] = result[key]
+        score = metrics.get("combined_score") or result.get("combined_score") or 0.0
+        failed = (not streams_ok) or result.get("exit_code", 1) != 0
+        if failed:
+            score = 0.0
+        cid = self.db.insert_candidate(
+            generation=generation, parent_id=baseline_id, patch_content=patch,
+            applied=True, tested=streams_ok, exit_code=result.get("exit_code"),
+            stdout=result.get("stdout"), stderr=result.get("stderr"),
+            execution_time=result.get("execution_time"), metrics=metrics,
+            score=score, failed=failed,
+            failure_phase="test" if failed else None,
+            error_message=(f"tests failed exit={result.get('exit_code')}" if failed else None),
+        )
+        candidate = self.db.get_candidate(cid)
+        self._candidate_history.append(candidate)
+        logger.info(
+            "Full-rewrite candidate recorded id=%s gen=%d score=%.4f failed=%s",
+            cid, generation, score, failed,
+        )
         return candidate
 
     # -------------------------------------------------------------------------
