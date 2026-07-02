@@ -373,6 +373,65 @@ def _validate_opt_cfg(cfg: dict) -> list:
     return errors
 
 
+def _build_llm_ensemble(raw: dict):
+    """Build an LLMEnsemble from the config's `llm` section.
+
+    Returns None when no LLM section / models are configured, in which case
+    the OptimizerLoop runs without patch generation (baseline only).
+    """
+    llm_cfg = raw.get("llm") or {}
+    models = llm_cfg.get("models") or []
+    if not models:
+        # Allow a single implicit model from a top-level `model` key
+        single = llm_cfg.get("model")
+        if single:
+            models = [{"name": single, "weight": 1.0}]
+    if not models:
+        return None
+
+    from openevolve.config import LLMModelConfig
+    from openevolve.llm.ensemble import LLMEnsemble
+
+    # Shared defaults applied to every model unless overridden per-model
+    shared = {
+        "api_base": llm_cfg.get("api_base"),
+        "api_key": llm_cfg.get("api_key"),
+        "temperature": llm_cfg.get("temperature", 0.7),
+        "top_p": llm_cfg.get("top_p", 0.95),
+        "max_tokens": llm_cfg.get("max_tokens", 4096),
+        "timeout": llm_cfg.get("timeout", 90),
+        "retries": llm_cfg.get("retries", 3),
+        "retry_delay": llm_cfg.get("retry_delay", 5),
+        "system_message": llm_cfg.get("system_message"),
+        "reasoning_effort": llm_cfg.get("reasoning_effort"),
+    }
+
+    model_cfgs = []
+    for m in models:
+        merged = {**shared}
+        merged.update({k: v for k, v in m.items() if v is not None})
+        merged.setdefault("weight", 1.0)
+        # LLMModelConfig.__post_init__ resolves ${VAR} in api_key from env
+        model_cfgs.append(
+            LLMModelConfig(
+                name=merged.get("name"),
+                api_base=merged.get("api_base"),
+                api_key=merged.get("api_key"),
+                weight=merged.get("weight", 1.0),
+                system_message=merged.get("system_message"),
+                temperature=merged.get("temperature"),
+                top_p=merged.get("top_p"),
+                max_tokens=merged.get("max_tokens"),
+                timeout=merged.get("timeout"),
+                retries=merged.get("retries"),
+                retry_delay=merged.get("retry_delay"),
+                reasoning_effort=merged.get("reasoning_effort"),
+            )
+        )
+
+    return LLMEnsemble(model_cfgs)
+
+
 # ---------------------------------------------------------------------------
 # Task 13.1 — optimizer init
 # ---------------------------------------------------------------------------
@@ -431,7 +490,22 @@ def _opt_cmd_run(args) -> int:
             print(f"❌ {e}", file=sys.stderr)
         return 1
 
-    loop = OptimizerLoop(opt_cfg)
+    # Build the LLM ensemble so patch generation actually runs (Phase 2).
+    # Without this the loop only records the baseline and every generation
+    # fails at the "generate" phase.
+    try:
+        llm_ensemble = _build_llm_ensemble(raw)
+    except Exception as exc:
+        print(f"❌ Failed to initialize LLM ensemble: {exc}", file=sys.stderr)
+        return 1
+    if llm_ensemble is None:
+        print(
+            "⚠️  No LLM models configured (llm.models) — running baseline only. "
+            "Add an llm section with models to enable evolution.",
+            file=sys.stderr,
+        )
+
+    loop = OptimizerLoop(opt_cfg, llm_ensemble=llm_ensemble)
     start = time.monotonic()
     result = None
 
