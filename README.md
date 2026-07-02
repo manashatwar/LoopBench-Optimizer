@@ -142,6 +142,10 @@ Each generation learns from previous failures, compounding improvements over tim
 
 ## Quick Start — one command
 
+> New here? The [**5-minute Quick Start**](QUICKSTART.md) walks you from clone to
+> a verified optimization step by step.
+
+
 Point LoopBench at any repo (GitHub URL or local path) and let it evolve your code:
 
 ```bash
