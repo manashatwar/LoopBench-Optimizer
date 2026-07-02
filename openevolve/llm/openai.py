@@ -109,8 +109,12 @@ class OpenAILLM(LLMInterface):
         self, system_message: str, messages: List[Dict[str, str]], **kwargs
     ) -> str:
         """Generate text using a system message and conversational context"""
-        # Prepare messages with system message
-        formatted_messages = [{"role": "system", "content": system_message}]
+        # Prepare messages with system message.
+        # Only include the system role when content is non-empty: some
+        # providers (e.g. Groq) reject a system message with null content.
+        formatted_messages = []
+        if system_message:
+            formatted_messages.append({"role": "system", "content": system_message})
         formatted_messages.extend(messages)
 
         # Set up generation parameters
