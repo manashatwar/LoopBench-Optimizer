@@ -106,8 +106,6 @@ def _apply_search_replace(original: str, blocks):
             return "\n".join(line.rstrip() for line in s.splitlines())
 
         norm_search = _norm(search)
-        content_lines = content.splitlines(keepends=True)
-        joined = "".join(content_lines)
         matched = False
         # Slide a window over the content lines to find a fuzzy match.
         search_line_count = len(search.splitlines())

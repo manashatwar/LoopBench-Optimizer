@@ -240,7 +240,6 @@ def run_target_pipeline(args: argparse.Namespace) -> int:
                     repo_path = git_root_path
                     print(f"[LoopBench] Detected Git root at: {repo_path}")
             except (subprocess.CalledProcessError, FileNotFoundError):
-                import shutil
                 temp_repo_dir = Path(tempfile.mkdtemp(prefix="loopbench_temp_git_"))
                 repo_path_copy = (temp_repo_dir / "repo").resolve()
                 print(f"[LoopBench] Target is not a Git repository. Creating a temporary Git copy at: {repo_path_copy}")
@@ -257,7 +256,7 @@ def run_target_pipeline(args: argparse.Namespace) -> int:
                     subprocess.run(["git", "config", "user.name", "LoopBench"], cwd=str(repo_path), check=True)
                     subprocess.run(["git", "add", "."], cwd=str(repo_path), check=True, stdout=subprocess.DEVNULL)
                     subprocess.run(["git", "commit", "-m", "Initial commit"], cwd=str(repo_path), check=True, stdout=subprocess.DEVNULL)
-                    print(f"[LoopBench] Initialized temporary Git repository.")
+                    print("[LoopBench] Initialized temporary Git repository.")
                 except Exception as e:
                     print(f"[LoopBench] ERROR: failed to initialize temporary Git repo: {e}")
                     return 1

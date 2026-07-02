@@ -1,5 +1,5 @@
-# OpenEvolve engine tests — best-effort, non-blocking
-name: OpenEvolve Core Tests
+# LoopBench engine tests — best-effort, non-blocking
+name: LoopBench Core Tests
 
 on:
   push:
@@ -8,8 +8,8 @@ on:
     branches: [main]
 
 jobs:
-  openevolve-tests:
-    name: OpenEvolve core tests
+  loopbench-tests:
+    name: LoopBench core tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -30,7 +30,7 @@ jobs:
           pip install -e ".[dev]"
           pip install pytest-timeout hypothesis
 
-      - name: Run OpenEvolve metric parser tests
+      - name: Run LoopBench metric parser tests
         env:
           OPENAI_API_KEY: test
         run: |
