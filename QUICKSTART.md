@@ -126,5 +126,7 @@ git add docs/data.json && git commit -m "add run results" && git push
   `examples/prime_counter_optimizer/initial_program.py` (trial division → sieve)
 - **Config-driven runs:** each example ships a `loopbench.yaml` you can run with
   `loopbench run --config examples/fibonacci_optimizer/loopbench.yaml`
+- **Define your own benchmark:** see [Defining Your Benchmark](docs/defining-benchmarks.md)
+  for the three ways to score a new file or repo (with full commands)
 - **Full reference:** see the main [README](README.md) and
   [docs/architecture/](docs/architecture/README.md)

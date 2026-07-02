@@ -175,6 +175,9 @@ Minutes later you get four artifacts:
 
 > Requires Docker Desktop running (tests execute in an isolated sandbox).
 
+> **Optimizing your own file or repo?** See [Defining Your Benchmark](docs/defining-benchmarks.md)
+> for the three ways to tell LoopBench what "better" means (with full commands).
+
 ---
 
 ## Editing Strategies
