@@ -75,7 +75,7 @@ guaranteed valid:
 | Mode | How the LLM edits | Best for |
 |------|-------------------|----------|
 | `full` | Returns the complete improved file | Small files |
-| `search_replace` | Returns Aider-style `SEARCH`/`REPLACE` blocks, applied by content match with fuzzy fallback | Large files (surgical, token-efficient) |
+| `search_replace` | Returns `SEARCH`/`REPLACE` edit blocks, applied by content match with fuzzy fallback | Large files (surgical, token-efficient) |
 | `auto` *(default for `loopbench run`)* | Picks `full` for files ≤ 300 lines, `search_replace` for larger | Any repo |
 
 Verified in practice: a **1,233-line** file routed to `search_replace` produced a
