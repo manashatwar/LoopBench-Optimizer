@@ -1,396 +1,440 @@
 {
   "run": {
-    "id": "demo-run-001",
-    "target_repo": "https://github.com/your-org/LoopBench-Optimizer",
-    "start_time": 1782852559.3770685,
-    "end_time": 1782856159.3770685,
-    "status": "successful",
-    "success_threshold": 0.1,
-    "final_improvement": 0.5
+    "id": "ecf53cf4-bb15-419a-af82-47c481658c53",
+    "target_repo": "C:\\Users\\manis\\LoopBench-Optimizer",
+    "start_time": 1782988094.1681652,
+    "end_time": 1782988322.7958968,
+    "status": "completed",
+    "success_threshold": 0.05,
+    "final_improvement": 0.0,
+    "config": {
+      "repo_path": "C:\\Users\\manis\\LoopBench-Optimizer",
+      "target_file": "C:\\Users\\manis\\LoopBench-Optimizer\\examples\\fibonacci_optimizer\\initial_program.py",
+      "test_file": "C:\\Users\\manis\\LoopBench-Optimizer\\examples\\fibonacci_optimizer\\test_fibonacci.py",
+      "max_iterations": 5,
+      "patience": 5,
+      "success_threshold": 0.05,
+      "db_path": "C:\\Users\\manis\\LoopBench-Optimizer\\loopbench_dashboard.db",
+      "search_strategy": {
+        "strategy": "greedy",
+        "beam_width": null,
+        "restart_interval": null
+      },
+      "metric_patterns": null,
+      "sandbox_cfg": {
+        "test_command": "pytest test_fibonacci.py -v -s -q --tb=short",
+        "timeout": 120
+      }
+    },
+    "metadata": {}
   },
   "candidates": [
     {
-      "id": "baseline-0",
-      "run_id": "demo-run-001",
+      "id": "762f5ffa-247b-47d5-9611-4574d927a19b",
+      "run_id": "ecf53cf4-bb15-419a-af82-47c481658c53",
       "generation": 0,
       "parent_id": null,
-      "timestamp": 1782852559.3770685,
+      "timestamp": 1782988097.3493464,
       "patch_content": "",
       "applied": true,
       "tested": true,
       "exit_code": 0,
-      "stdout": "Baseline: 100ms",
+      "stdout": "[sandbox] Starting test run at 2026-07-02T10:28:14Z\n[sandbox] Program: /workspace/initial_program.py\n[sandbox] Command: pytest /workspace/test_fibonacci.py -v -s -q --tb=short\n\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\n============================= test session starts ==============================\nplatform linux -- Python 3.12.13, pytest-8.3.5, pluggy-1.6.0\nrootdir: /workspace\nplugins: metadata-3.1.1, json-report-1.5.0\ncollected 13 items\n\n../workspace/test_fibonacci.py ............\nLOOPBENCH_SPEED_MS=138.9485\n.\n\n=============================== warnings summary ===============================\n../usr/local/lib/python3.12/site-packages/_pytest/cacheprovider.py:475\n  /usr/local/lib/python3.12/site-packages/_pytest/cacheprovider.py:475: PytestCacheWarning: could not create cache path /workspace/.pytest_cache/v/cache/nodeids: [Errno 30] Read-only file system: '/workspace/pytest-cache-files-6tspksqc'\n    config.cache.set(\"cache/nodeids\", sorted(self.cached_nodeids))\n\n../usr/local/lib/python3.12/site-packages/_pytest/stepwise.py:51\n  /usr/local/lib/python3.12/site-packages/_pytest/stepwise.py:51: PytestCacheWarning: could not create cache path /workspace/.pytest_cache/v/cache/stepwise: [Errno 30] Read-only file system: '/workspace/pytest-cache-files-c5cg8ye4'\n    session.config.cache.set(STEPWISE_CACHE_DIR, [])\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n--------------------------------- JSON report ----------------------------------\nreport saved to: /results/pytest_report.json\n======================== 13 passed, 2 warnings in 1.76s ========================\n\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\n[sandbox] pytest exit code: 0\n[sandbox] score.json written: passed=13, failed=0, score=0.3960\n[sandbox] Done.\n",
       "stderr": "",
-      "execution_time": 0.5,
-      "metrics": {
-        "combined_score": 0.5,
-        "latency": 100.0
-      },
-      "score": 0.5,
+      "execution_time": 3.0939999999973224,
+      "score": 0.396007,
       "failed": false,
       "failure_phase": null,
-      "error_message": null
+      "error_message": null,
+      "metrics": {
+        "combined_score": 0.396007,
+        "correctness": 1.0,
+        "speed_score": 0.396007
+      },
+      "program": null
     },
     {
-      "id": "e4879fb5-1af",
-      "run_id": "demo-run-001",
+      "id": "74b23ed5-ff3c-4ee6-9cbb-3670ce28f745",
+      "run_id": "ecf53cf4-bb15-419a-af82-47c481658c53",
       "generation": 1,
-      "parent_id": "baseline-0",
-      "timestamp": 1782852739.3770685,
-      "patch_content": "--- a/src/main.py\n+++ b/src/main.py\n@@ -1,5 +1,5 @@\n-def slow_sum(n):\n-    return sum(range(n))\n+def fast_sum(n):\n+    return n * (n - 1) // 2\n",
-      "applied": true,
-      "tested": true,
-      "exit_code": 0,
-      "stdout": "Score: 0.5",
-      "stderr": "",
-      "execution_time": 0.8754841186120954,
-      "metrics": {
-        "combined_score": 0.5,
-        "latency": 200.0
-      },
-      "score": 0.5,
-      "failed": false,
-      "failure_phase": null,
-      "error_message": null
-    },
-    {
-      "id": "5e292752-c2b",
-      "run_id": "demo-run-001",
-      "generation": 2,
-      "parent_id": "baseline-0",
-      "timestamp": 1782852919.3770685,
-      "patch_content": "--- a/src/main.py\n+++ b/src/main.py\n@@ -1,5 +1,5 @@\n-def slow_sum(n):\n-    return sum(range(n))\n+def fast_sum(n):\n+    return n * (n - 1) // 2\n",
-      "applied": true,
-      "tested": true,
-      "exit_code": 0,
-      "stdout": "Score: 0.55",
-      "stderr": "",
-      "execution_time": 0.32250967970040023,
-      "metrics": {
-        "combined_score": 0.55,
-        "latency": 181.8
-      },
-      "score": 0.55,
-      "failed": false,
-      "failure_phase": null,
-      "error_message": null
-    },
-    {
-      "id": "3cfae810-a7b",
-      "run_id": "demo-run-001",
-      "generation": 3,
-      "parent_id": "baseline-0",
-      "timestamp": 1782853099.3770685,
+      "parent_id": "762f5ffa-247b-47d5-9611-4574d927a19b",
+      "timestamp": 1782988143.409309,
       "patch_content": "",
       "applied": false,
       "tested": false,
-      "exit_code": 1,
-      "stdout": "",
-      "stderr": "patch apply failed",
-      "execution_time": 0.5475263865322073,
-      "metrics": {},
-      "score": 0.0,
+      "exit_code": null,
+      "stdout": null,
+      "stderr": null,
+      "execution_time": null,
+      "score": null,
       "failed": true,
-      "failure_phase": "apply",
-      "error_message": "patch apply failed"
+      "failure_phase": "generate",
+      "error_message": "No LLM ensemble configured",
+      "metrics": {},
+      "program": null
     },
     {
-      "id": "1c68052d-7a0",
-      "run_id": "demo-run-001",
+      "id": "bf2c519d-cd97-4f8f-8637-4898f30f108d",
+      "run_id": "ecf53cf4-bb15-419a-af82-47c481658c53",
+      "generation": 2,
+      "parent_id": "762f5ffa-247b-47d5-9611-4574d927a19b",
+      "timestamp": 1782988190.015534,
+      "patch_content": "",
+      "applied": false,
+      "tested": false,
+      "exit_code": null,
+      "stdout": null,
+      "stderr": null,
+      "execution_time": null,
+      "score": null,
+      "failed": true,
+      "failure_phase": "generate",
+      "error_message": "No LLM ensemble configured",
+      "metrics": {},
+      "program": null
+    },
+    {
+      "id": "3868708d-2d3b-4d8d-b1b5-d6ec8c98d4c9",
+      "run_id": "ecf53cf4-bb15-419a-af82-47c481658c53",
+      "generation": 3,
+      "parent_id": "762f5ffa-247b-47d5-9611-4574d927a19b",
+      "timestamp": 1782988230.9192958,
+      "patch_content": "",
+      "applied": false,
+      "tested": false,
+      "exit_code": null,
+      "stdout": null,
+      "stderr": null,
+      "execution_time": null,
+      "score": null,
+      "failed": true,
+      "failure_phase": "generate",
+      "error_message": "No LLM ensemble configured",
+      "metrics": {},
+      "program": null
+    },
+    {
+      "id": "c512bf4a-1b64-498e-8d3b-01b683ae272e",
+      "run_id": "ecf53cf4-bb15-419a-af82-47c481658c53",
       "generation": 4,
-      "parent_id": "baseline-0",
-      "timestamp": 1782853279.3770685,
-      "patch_content": "--- a/src/main.py\n+++ b/src/main.py\n@@ -1,5 +1,5 @@\n-def slow_sum(n):\n-    return sum(range(n))\n+def fast_sum(n):\n+    return n * (n - 1) // 2\n",
-      "applied": true,
-      "tested": true,
-      "exit_code": 0,
-      "stdout": "Score: 0.62",
-      "stderr": "",
-      "execution_time": 0.5008896643339404,
-      "metrics": {
-        "combined_score": 0.62,
-        "latency": 161.3
-      },
-      "score": 0.62,
-      "failed": false,
-      "failure_phase": null,
-      "error_message": null
+      "parent_id": "762f5ffa-247b-47d5-9611-4574d927a19b",
+      "timestamp": 1782988275.9894242,
+      "patch_content": "",
+      "applied": false,
+      "tested": false,
+      "exit_code": null,
+      "stdout": null,
+      "stderr": null,
+      "execution_time": null,
+      "score": null,
+      "failed": true,
+      "failure_phase": "generate",
+      "error_message": "No LLM ensemble configured",
+      "metrics": {},
+      "program": null
     },
     {
-      "id": "f26b11e6-ab4",
-      "run_id": "demo-run-001",
+      "id": "4c88a129-9a11-4cd4-abfd-8148492210b0",
+      "run_id": "ecf53cf4-bb15-419a-af82-47c481658c53",
       "generation": 5,
-      "parent_id": "baseline-0",
-      "timestamp": 1782853459.3770685,
-      "patch_content": "--- a/src/main.py\n+++ b/src/main.py\n@@ -1,5 +1,5 @@\n-def slow_sum(n):\n-    return sum(range(n))\n+def fast_sum(n):\n+    return n * (n - 1) // 2\n",
-      "applied": true,
-      "tested": true,
-      "exit_code": 0,
-      "stdout": "Score: 0.68",
-      "stderr": "",
-      "execution_time": 0.962824092747611,
-      "metrics": {
-        "combined_score": 0.68,
-        "latency": 147.1
-      },
-      "score": 0.68,
-      "failed": false,
-      "failure_phase": null,
-      "error_message": null
-    },
-    {
-      "id": "57d52a71-bd4",
-      "run_id": "demo-run-001",
-      "generation": 6,
-      "parent_id": "baseline-0",
-      "timestamp": 1782853639.3770685,
-      "patch_content": "--- a/src/main.py\n+++ b/src/main.py\n@@ -1,5 +1,5 @@\n-def slow_sum(n):\n-    return sum(range(n))\n+def fast_sum(n):\n+    return n * (n - 1) // 2\n",
-      "applied": true,
-      "tested": true,
-      "exit_code": 0,
-      "stdout": "Score: 0.66",
-      "stderr": "",
-      "execution_time": 0.9090295386806202,
-      "metrics": {
-        "combined_score": 0.66,
-        "latency": 151.5
-      },
-      "score": 0.66,
-      "failed": false,
-      "failure_phase": null,
-      "error_message": null
-    },
-    {
-      "id": "24339fd3-70c",
-      "run_id": "demo-run-001",
-      "generation": 7,
-      "parent_id": "baseline-0",
-      "timestamp": 1782853819.3770685,
-      "patch_content": "--- a/src/main.py\n+++ b/src/main.py\n@@ -1,5 +1,5 @@\n-def slow_sum(n):\n-    return sum(range(n))\n+def fast_sum(n):\n+    return n * (n - 1) // 2\n",
-      "applied": true,
-      "tested": true,
-      "exit_code": 0,
-      "stdout": "Score: 0.71",
-      "stderr": "",
-      "execution_time": 1.1029616109343607,
-      "metrics": {
-        "combined_score": 0.71,
-        "latency": 140.8
-      },
-      "score": 0.71,
-      "failed": false,
-      "failure_phase": null,
-      "error_message": null
-    },
-    {
-      "id": "2a4a6fb3-a13",
-      "run_id": "demo-run-001",
-      "generation": 8,
-      "parent_id": "baseline-0",
-      "timestamp": 1782853999.3770685,
-      "patch_content": "--- a/src/main.py\n+++ b/src/main.py\n@@ -1,5 +1,5 @@\n-def slow_sum(n):\n-    return sum(range(n))\n+def fast_sum(n):\n+    return n * (n - 1) // 2\n",
-      "applied": true,
-      "tested": true,
-      "exit_code": 0,
-      "stdout": "Score: 0.7",
-      "stderr": "",
-      "execution_time": 0.3782449493664745,
-      "metrics": {
-        "combined_score": 0.7,
-        "latency": 142.9
-      },
-      "score": 0.7,
-      "failed": false,
-      "failure_phase": null,
-      "error_message": null
-    },
-    {
-      "id": "1e7a4b23-2b0",
-      "run_id": "demo-run-001",
-      "generation": 9,
-      "parent_id": "baseline-0",
-      "timestamp": 1782854179.3770685,
-      "patch_content": "--- a/src/main.py\n+++ b/src/main.py\n@@ -1,5 +1,5 @@\n-def slow_sum(n):\n-    return sum(range(n))\n+def fast_sum(n):\n+    return n * (n - 1) // 2\n",
-      "applied": true,
-      "tested": true,
-      "exit_code": 0,
-      "stdout": "Score: 0.75",
-      "stderr": "",
-      "execution_time": 0.6797296377167433,
-      "metrics": {
-        "combined_score": 0.75,
-        "latency": 133.3
-      },
-      "score": 0.75,
-      "failed": false,
-      "failure_phase": null,
-      "error_message": null
-    },
-    {
-      "id": "226b9cf2-482",
-      "run_id": "demo-run-001",
-      "generation": 10,
-      "parent_id": "baseline-0",
-      "timestamp": 1782854359.3770685,
-      "patch_content": "--- a/src/main.py\n+++ b/src/main.py\n@@ -1,5 +1,5 @@\n-def slow_sum(n):\n-    return sum(range(n))\n+def fast_sum(n):\n+    return n * (n - 1) // 2\n",
-      "applied": true,
-      "tested": true,
-      "exit_code": 0,
-      "stdout": "Score: 0.73",
-      "stderr": "",
-      "execution_time": 0.3268174974942633,
-      "metrics": {
-        "combined_score": 0.73,
-        "latency": 137.0
-      },
-      "score": 0.73,
-      "failed": false,
-      "failure_phase": null,
-      "error_message": null
+      "parent_id": "762f5ffa-247b-47d5-9611-4574d927a19b",
+      "timestamp": 1782988322.785434,
+      "patch_content": "",
+      "applied": false,
+      "tested": false,
+      "exit_code": null,
+      "stdout": null,
+      "stderr": null,
+      "execution_time": null,
+      "score": null,
+      "failed": true,
+      "failure_phase": "generate",
+      "error_message": "No LLM ensemble configured",
+      "metrics": {},
+      "program": null
     }
   ],
+  "programs": [],
   "best_candidate": {
-    "id": "24339fd3-70c",
-    "run_id": "demo-run-001",
-    "generation": 7,
-    "parent_id": "baseline-0",
-    "timestamp": 1782853819.3770685,
-    "patch_content": "--- a/src/main.py\n+++ b/src/main.py\n@@ -1,5 +1,5 @@\n-def slow_sum(n):\n-    return sum(range(n))\n+def fast_sum(n):\n+    return n * (n - 1) // 2\n",
+    "id": "762f5ffa-247b-47d5-9611-4574d927a19b",
+    "run_id": "ecf53cf4-bb15-419a-af82-47c481658c53",
+    "generation": 0,
+    "parent_id": null,
+    "timestamp": 1782988097.3493464,
+    "patch_content": "",
     "applied": true,
     "tested": true,
     "exit_code": 0,
-    "stdout": "Score: 0.71",
+    "stdout": "[sandbox] Starting test run at 2026-07-02T10:28:14Z\n[sandbox] Program: /workspace/initial_program.py\n[sandbox] Command: pytest /workspace/test_fibonacci.py -v -s -q --tb=short\n\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\n============================= test session starts ==============================\nplatform linux -- Python 3.12.13, pytest-8.3.5, pluggy-1.6.0\nrootdir: /workspace\nplugins: metadata-3.1.1, json-report-1.5.0\ncollected 13 items\n\n../workspace/test_fibonacci.py ............\nLOOPBENCH_SPEED_MS=138.9485\n.\n\n=============================== warnings summary ===============================\n../usr/local/lib/python3.12/site-packages/_pytest/cacheprovider.py:475\n  /usr/local/lib/python3.12/site-packages/_pytest/cacheprovider.py:475: PytestCacheWarning: could not create cache path /workspace/.pytest_cache/v/cache/nodeids: [Errno 30] Read-only file system: '/workspace/pytest-cache-files-6tspksqc'\n    config.cache.set(\"cache/nodeids\", sorted(self.cached_nodeids))\n\n../usr/local/lib/python3.12/site-packages/_pytest/stepwise.py:51\n  /usr/local/lib/python3.12/site-packages/_pytest/stepwise.py:51: PytestCacheWarning: could not create cache path /workspace/.pytest_cache/v/cache/stepwise: [Errno 30] Read-only file system: '/workspace/pytest-cache-files-c5cg8ye4'\n    session.config.cache.set(STEPWISE_CACHE_DIR, [])\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n--------------------------------- JSON report ----------------------------------\nreport saved to: /results/pytest_report.json\n======================== 13 passed, 2 warnings in 1.76s ========================\n\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\n[sandbox] pytest exit code: 0\n[sandbox] score.json written: passed=13, failed=0, score=0.3960\n[sandbox] Done.\n",
     "stderr": "",
-    "execution_time": 1.1029616109343607,
-    "metrics": {
-      "combined_score": 0.71,
-      "latency": 140.8
-    },
-    "score": 0.71,
+    "execution_time": 3.0939999999973224,
+    "score": 0.396007,
     "failed": false,
     "failure_phase": null,
-    "error_message": null
+    "error_message": null,
+    "metrics": {
+      "combined_score": 0.396007,
+      "correctness": 1.0,
+      "speed_score": 0.396007
+    },
+    "program": null
   },
   "failures": [
     {
-      "id": "3cfae810-a7b",
-      "run_id": "demo-run-001",
-      "generation": 3,
-      "parent_id": "baseline-0",
-      "timestamp": 1782853099.3770685,
+      "id": "4c88a129-9a11-4cd4-abfd-8148492210b0",
+      "run_id": "ecf53cf4-bb15-419a-af82-47c481658c53",
+      "generation": 5,
+      "parent_id": "762f5ffa-247b-47d5-9611-4574d927a19b",
+      "timestamp": 1782988322.785434,
       "patch_content": "",
       "applied": false,
       "tested": false,
-      "exit_code": 1,
-      "stdout": "",
-      "stderr": "patch apply failed",
-      "execution_time": 0.5475263865322073,
-      "metrics": {},
-      "score": 0.0,
+      "exit_code": null,
+      "stdout": null,
+      "stderr": null,
+      "execution_time": null,
+      "score": null,
       "failed": true,
-      "failure_phase": "apply",
-      "error_message": "patch apply failed"
+      "failure_phase": "generate",
+      "error_message": "No LLM ensemble configured",
+      "metrics": {},
+      "program": null
+    },
+    {
+      "id": "c512bf4a-1b64-498e-8d3b-01b683ae272e",
+      "run_id": "ecf53cf4-bb15-419a-af82-47c481658c53",
+      "generation": 4,
+      "parent_id": "762f5ffa-247b-47d5-9611-4574d927a19b",
+      "timestamp": 1782988275.9894242,
+      "patch_content": "",
+      "applied": false,
+      "tested": false,
+      "exit_code": null,
+      "stdout": null,
+      "stderr": null,
+      "execution_time": null,
+      "score": null,
+      "failed": true,
+      "failure_phase": "generate",
+      "error_message": "No LLM ensemble configured",
+      "metrics": {},
+      "program": null
+    },
+    {
+      "id": "3868708d-2d3b-4d8d-b1b5-d6ec8c98d4c9",
+      "run_id": "ecf53cf4-bb15-419a-af82-47c481658c53",
+      "generation": 3,
+      "parent_id": "762f5ffa-247b-47d5-9611-4574d927a19b",
+      "timestamp": 1782988230.9192958,
+      "patch_content": "",
+      "applied": false,
+      "tested": false,
+      "exit_code": null,
+      "stdout": null,
+      "stderr": null,
+      "execution_time": null,
+      "score": null,
+      "failed": true,
+      "failure_phase": "generate",
+      "error_message": "No LLM ensemble configured",
+      "metrics": {},
+      "program": null
+    },
+    {
+      "id": "bf2c519d-cd97-4f8f-8637-4898f30f108d",
+      "run_id": "ecf53cf4-bb15-419a-af82-47c481658c53",
+      "generation": 2,
+      "parent_id": "762f5ffa-247b-47d5-9611-4574d927a19b",
+      "timestamp": 1782988190.015534,
+      "patch_content": "",
+      "applied": false,
+      "tested": false,
+      "exit_code": null,
+      "stdout": null,
+      "stderr": null,
+      "execution_time": null,
+      "score": null,
+      "failed": true,
+      "failure_phase": "generate",
+      "error_message": "No LLM ensemble configured",
+      "metrics": {},
+      "program": null
+    },
+    {
+      "id": "74b23ed5-ff3c-4ee6-9cbb-3670ce28f745",
+      "run_id": "ecf53cf4-bb15-419a-af82-47c481658c53",
+      "generation": 1,
+      "parent_id": "762f5ffa-247b-47d5-9611-4574d927a19b",
+      "timestamp": 1782988143.409309,
+      "patch_content": "",
+      "applied": false,
+      "tested": false,
+      "exit_code": null,
+      "stdout": null,
+      "stderr": null,
+      "execution_time": null,
+      "score": null,
+      "failed": true,
+      "failure_phase": "generate",
+      "error_message": "No LLM ensemble configured",
+      "metrics": {},
+      "program": null
     }
   ],
   "audit_log": [
     {
       "id": 1,
-      "run_id": "demo-run-001",
+      "run_id": "ecf53cf4-bb15-419a-af82-47c481658c53",
       "candidate_id": null,
-      "timestamp": 1782852739.3770685,
-      "event_type": "generation_start",
+      "timestamp": 1782988094.1691744,
+      "event_type": "run_created",
       "event_data": {
-        "generation": 1
+        "status": "running",
+        "target_repo": "C:\\Users\\manis\\LoopBench-Optimizer"
       }
     },
     {
       "id": 2,
-      "run_id": "demo-run-001",
-      "candidate_id": null,
-      "timestamp": 1782852919.3770685,
-      "event_type": "generation_start",
+      "run_id": "ecf53cf4-bb15-419a-af82-47c481658c53",
+      "candidate_id": "762f5ffa-247b-47d5-9611-4574d927a19b",
+      "timestamp": 1782988097.3509104,
+      "event_type": "candidate_recorded",
       "event_data": {
-        "generation": 2
+        "generation": 0,
+        "parent_id": null,
+        "failed": false,
+        "failure_phase": null
       }
     },
     {
       "id": 3,
-      "run_id": "demo-run-001",
+      "run_id": "ecf53cf4-bb15-419a-af82-47c481658c53",
       "candidate_id": null,
-      "timestamp": 1782853099.3770685,
+      "timestamp": 1782988097.3581128,
       "event_type": "generation_start",
       "event_data": {
-        "generation": 3
+        "generation": 1,
+        "baseline_id": "762f5ffa-247b-47d5-9611-4574d927a19b"
       }
     },
     {
       "id": 4,
-      "run_id": "demo-run-001",
-      "candidate_id": null,
-      "timestamp": 1782853279.3770685,
-      "event_type": "generation_start",
+      "run_id": "ecf53cf4-bb15-419a-af82-47c481658c53",
+      "candidate_id": "74b23ed5-ff3c-4ee6-9cbb-3670ce28f745",
+      "timestamp": 1782988143.4117935,
+      "event_type": "candidate_recorded",
       "event_data": {
-        "generation": 4
+        "generation": 1,
+        "parent_id": "762f5ffa-247b-47d5-9611-4574d927a19b",
+        "failed": true,
+        "failure_phase": "generate"
       }
     },
     {
       "id": 5,
-      "run_id": "demo-run-001",
+      "run_id": "ecf53cf4-bb15-419a-af82-47c481658c53",
       "candidate_id": null,
-      "timestamp": 1782853459.3770685,
+      "timestamp": 1782988143.4204423,
       "event_type": "generation_start",
       "event_data": {
-        "generation": 5
+        "generation": 2,
+        "baseline_id": "762f5ffa-247b-47d5-9611-4574d927a19b"
       }
     },
     {
       "id": 6,
-      "run_id": "demo-run-001",
-      "candidate_id": null,
-      "timestamp": 1782853639.3770685,
-      "event_type": "generation_start",
+      "run_id": "ecf53cf4-bb15-419a-af82-47c481658c53",
+      "candidate_id": "bf2c519d-cd97-4f8f-8637-4898f30f108d",
+      "timestamp": 1782988190.0255487,
+      "event_type": "candidate_recorded",
       "event_data": {
-        "generation": 6
+        "generation": 2,
+        "parent_id": "762f5ffa-247b-47d5-9611-4574d927a19b",
+        "failed": true,
+        "failure_phase": "generate"
       }
     },
     {
       "id": 7,
-      "run_id": "demo-run-001",
+      "run_id": "ecf53cf4-bb15-419a-af82-47c481658c53",
       "candidate_id": null,
-      "timestamp": 1782853819.3770685,
+      "timestamp": 1782988190.0341327,
       "event_type": "generation_start",
       "event_data": {
-        "generation": 7
+        "generation": 3,
+        "baseline_id": "762f5ffa-247b-47d5-9611-4574d927a19b"
       }
     },
     {
       "id": 8,
-      "run_id": "demo-run-001",
-      "candidate_id": null,
-      "timestamp": 1782853999.3770685,
-      "event_type": "generation_start",
+      "run_id": "ecf53cf4-bb15-419a-af82-47c481658c53",
+      "candidate_id": "3868708d-2d3b-4d8d-b1b5-d6ec8c98d4c9",
+      "timestamp": 1782988230.9279292,
+      "event_type": "candidate_recorded",
       "event_data": {
-        "generation": 8
+        "generation": 3,
+        "parent_id": "762f5ffa-247b-47d5-9611-4574d927a19b",
+        "failed": true,
+        "failure_phase": "generate"
       }
     },
     {
       "id": 9,
-      "run_id": "demo-run-001",
+      "run_id": "ecf53cf4-bb15-419a-af82-47c481658c53",
       "candidate_id": null,
-      "timestamp": 1782854179.3770685,
+      "timestamp": 1782988230.937401,
       "event_type": "generation_start",
       "event_data": {
-        "generation": 9
+        "generation": 4,
+        "baseline_id": "762f5ffa-247b-47d5-9611-4574d927a19b"
       }
     },
     {
       "id": 10,
-      "run_id": "demo-run-001",
+      "run_id": "ecf53cf4-bb15-419a-af82-47c481658c53",
+      "candidate_id": "c512bf4a-1b64-498e-8d3b-01b683ae272e",
+      "timestamp": 1782988275.9997432,
+      "event_type": "candidate_recorded",
+      "event_data": {
+        "generation": 4,
+        "parent_id": "762f5ffa-247b-47d5-9611-4574d927a19b",
+        "failed": true,
+        "failure_phase": "generate"
+      }
+    },
+    {
+      "id": 11,
+      "run_id": "ecf53cf4-bb15-419a-af82-47c481658c53",
       "candidate_id": null,
-      "timestamp": 1782854359.3770685,
+      "timestamp": 1782988276.009194,
       "event_type": "generation_start",
       "event_data": {
-        "generation": 10
+        "generation": 5,
+        "baseline_id": "762f5ffa-247b-47d5-9611-4574d927a19b"
+      }
+    },
+    {
+      "id": 12,
+      "run_id": "ecf53cf4-bb15-419a-af82-47c481658c53",
+      "candidate_id": "4c88a129-9a11-4cd4-abfd-8148492210b0",
+      "timestamp": 1782988322.7864313,
+      "event_type": "candidate_recorded",
+      "event_data": {
+        "generation": 5,
+        "parent_id": "762f5ffa-247b-47d5-9611-4574d927a19b",
+        "failed": true,
+        "failure_phase": "generate"
+      }
+    },
+    {
+      "id": 13,
+      "run_id": "ecf53cf4-bb15-419a-af82-47c481658c53",
+      "candidate_id": null,
+      "timestamp": 1782988322.7972813,
+      "event_type": "run_completed",
+      "event_data": {
+        "status": "completed",
+        "final_improvement": 0.0
       }
     }
   ]
