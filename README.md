@@ -71,6 +71,14 @@ sequenceDiagram
     Note over L: keep candidate if score beats current baseline
 ```
 
+> **Per-subsystem architecture:** see [`docs/architecture/`](docs/architecture/README.md)
+> for individual diagrams of the [Ghost Worktree System](docs/architecture/ghost-worktree-system.md),
+> [Repo Context Mapper](docs/architecture/repo-context-mapper.md),
+> [LLM Editing Engine](docs/architecture/llm-editing.md),
+> [Docker Sandbox](docs/architecture/docker-sandbox.md),
+> [Candidate Database](docs/architecture/candidate-database.md), and
+> [Search Strategy](docs/architecture/search-strategy.md).
+
 ### Core components
 
 ```mermaid
