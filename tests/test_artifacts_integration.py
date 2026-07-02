@@ -179,35 +179,28 @@ def evaluate_stage1(program_path):
         self.assertTrue(len(artifacts["stderr"]) > 0, "stderr should not be empty")
 
     def test_cascade_evaluation_with_artifacts(self):
-        """Test cascade evaluation captures artifacts at each stage"""
+        """Test cascade evaluation captures artifacts when stage 1 fails.
+
+        Exercises the real cascade path: the evaluator's ``evaluate_stage1``
+        (defined in setUp) fails on invalid code and returns an
+        EvaluationResult carrying a ``stderr`` artifact.
+        """
+        # Write a program with a real syntax error so evaluate_stage1 fails.
+        bad_program = os.path.join(self.temp_dir, "bad_program.py")
+        with open(bad_program, "w", encoding="utf-8") as f:
+            f.write("def broken(:\n    this is not valid python\n")
 
         async def run_test():
-            # Program that will fail at stage 1
-            invalid_code = "invalid syntax here"
-            program_id = "cascade_test_1"
-
-            # Run cascade evaluation
-            result = await self.evaluator._cascade_evaluate(f"/tmp/test_program.py")
-
-            # Should be an EvaluationResult with artifacts
+            result = await self.evaluator._cascade_evaluate(bad_program)
             if isinstance(result, EvaluationResult):
                 return result
-            else:
-                # If it returns a dict, wrap it
-                return EvaluationResult.from_dict(result)
+            return EvaluationResult.from_dict(result)
 
-        # Mock the actual file operations since we're testing the cascade logic
-        with patch("openevolve.evaluator.run_in_executor") as mock_executor:
-            # Mock stage1 to return an error with artifacts
-            mock_executor.return_value = EvaluationResult(
-                metrics={"stage1_passed": 0.0}, artifacts={"stderr": "Stage 1 compilation error"}
-            )
+        result = asyncio.run(run_test())
 
-            result = asyncio.run(run_test())
-
-            # Should have failure metrics and artifacts
-            self.assertEqual(result.metrics.get("stage1_passed"), 0.0)
-            self.assertIn("stderr", result.artifacts)
+        # Stage 1 should fail and its artifacts should propagate.
+        self.assertEqual(result.metrics.get("stage1_passed"), 0.0)
+        self.assertIn("stderr", result.artifacts)
 
     def test_artifacts_disabled_integration(self):
         """Test that the full system works with artifacts disabled"""

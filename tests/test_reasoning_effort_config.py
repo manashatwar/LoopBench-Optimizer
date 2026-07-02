@@ -198,13 +198,15 @@ llm:
         with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False) as f:
             f.write(yaml_content)
             f.flush()
-            
-            try:
-                config = Config.from_yaml(f.name)
-                self.assertEqual(config.llm.reasoning_effort, "high")
-                self.assertEqual(config.llm.models[0].reasoning_effort, "high")
-            finally:
-                os.unlink(f.name)
+            tmp_name = f.name
+
+        # File is now closed — safe to reopen/unlink on Windows too.
+        try:
+            config = Config.from_yaml(tmp_name)
+            self.assertEqual(config.llm.reasoning_effort, "high")
+            self.assertEqual(config.llm.models[0].reasoning_effort, "high")
+        finally:
+            os.unlink(tmp_name)
 
 
 if __name__ == "__main__":

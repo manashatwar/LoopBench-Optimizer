@@ -211,7 +211,7 @@ class TestGeneratePatch:
     def test_returns_patch_on_first_attempt(self):
         """Valid patch returned on the first LLM call."""
         ensemble = _make_ensemble([_wrap_diff(VALID_PATCH)])
-        result = asyncio.get_event_loop().run_until_complete(
+        result = asyncio.run(
             ensemble.generate_patch("prompt", backoff_base=0)
         )
         assert result is not None
@@ -220,7 +220,7 @@ class TestGeneratePatch:
     def test_retries_when_first_response_lacks_patch(self):
         """Retries when initial response has no patch; succeeds on second."""
         ensemble = _make_ensemble(["No patch here.", _wrap_diff(VALID_PATCH)])
-        result = asyncio.get_event_loop().run_until_complete(
+        result = asyncio.run(
             ensemble.generate_patch("prompt", backoff_base=0)
         )
         assert result is not None
@@ -228,7 +228,7 @@ class TestGeneratePatch:
     def test_returns_none_after_all_retries_fail(self):
         """Returns None when every attempt produces a response without a patch."""
         ensemble = _make_ensemble(["no patch"] * 10)
-        result = asyncio.get_event_loop().run_until_complete(
+        result = asyncio.run(
             ensemble.generate_patch("prompt", max_retries=2, backoff_base=0)
         )
         assert result is None
@@ -236,7 +236,7 @@ class TestGeneratePatch:
     def test_retries_on_api_error(self):
         """API errors are caught; next attempt with backoff succeeds."""
         ensemble = _make_ensemble([None, _wrap_diff(VALID_PATCH)])
-        result = asyncio.get_event_loop().run_until_complete(
+        result = asyncio.run(
             ensemble.generate_patch("prompt", max_retries=2, backoff_base=0)
         )
         assert result is not None
@@ -244,7 +244,7 @@ class TestGeneratePatch:
     def test_returns_none_when_all_attempts_raise(self):
         """Returns None when all attempts raise an API error."""
         ensemble = _make_ensemble([None, None, None, None])
-        result = asyncio.get_event_loop().run_until_complete(
+        result = asyncio.run(
             ensemble.generate_patch("prompt", max_retries=2, backoff_base=0)
         )
         assert result is None
@@ -258,7 +258,7 @@ class TestGeneratePatch:
 
         ensemble = _make_ensemble(["no patch", "no patch", _wrap_diff(VALID_PATCH)])
         with patch("openevolve.llm.ensemble.asyncio.sleep", side_effect=capturing_sleep):
-            asyncio.get_event_loop().run_until_complete(
+            asyncio.run(
                 ensemble.generate_patch("prompt", max_retries=3, backoff_base=1.0)
             )
 
@@ -280,7 +280,7 @@ class TestGeneratePatch:
         # Replace the model's generate on the mocked _sample_model return value
         ensemble._sample_model().generate = counting_generate
 
-        asyncio.get_event_loop().run_until_complete(
+        asyncio.run(
             ensemble.generate_patch("prompt", max_retries=2, backoff_base=0)
         )
         assert call_count == 3  # 1 initial + 2 retries
@@ -300,7 +300,7 @@ class TestRetryWithClarification:
         ensemble = _make_ensemble(["placeholder"])
         ensemble.models[0].generate = capturing_generate
 
-        asyncio.get_event_loop().run_until_complete(
+        asyncio.run(
             ensemble.retry_with_clarification(
                 "original prompt",
                 "patch did not apply cleanly",
@@ -311,7 +311,7 @@ class TestRetryWithClarification:
 
     def test_returns_patch_on_success(self):
         ensemble = _make_ensemble([_wrap_diff(VALID_PATCH)])
-        result = asyncio.get_event_loop().run_until_complete(
+        result = asyncio.run(
             ensemble.retry_with_clarification("prompt", "err", backoff_base=0)
         )
         assert result is not None
@@ -319,7 +319,7 @@ class TestRetryWithClarification:
 
     def test_returns_none_when_all_retries_fail(self):
         ensemble = _make_ensemble(["no patch"] * 10)
-        result = asyncio.get_event_loop().run_until_complete(
+        result = asyncio.run(
             ensemble.retry_with_clarification(
                 "prompt", "err", max_retries=1, backoff_base=0
             )

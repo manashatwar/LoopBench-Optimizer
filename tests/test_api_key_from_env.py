@@ -153,12 +153,14 @@ llm:
         with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
             f.write(yaml_content)
             f.flush()
+            tmp_name = f.name
 
-            try:
-                config = Config.from_yaml(f.name)
-                self.assertEqual(config.llm.api_key, self.test_api_key)
-            finally:
-                os.unlink(f.name)
+        # File is now closed — safe to reopen/unlink on Windows too.
+        try:
+            config = Config.from_yaml(tmp_name)
+            self.assertEqual(config.llm.api_key, self.test_api_key)
+        finally:
+            os.unlink(tmp_name)
 
     def test_mixed_api_key_sources(self):
         """Test mixing direct api_key and ${VAR} in same config"""
