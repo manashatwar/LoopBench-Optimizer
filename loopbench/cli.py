@@ -192,7 +192,24 @@ async def _run_async(args: argparse.Namespace) -> int:
         return 1
 
 
+def _run_target_pipeline(args: argparse.Namespace) -> int:
+    """Delegate to the hero-command pipeline (loopbench/hero.py)."""
+    from loopbench.hero import run_target_pipeline
+    return run_target_pipeline(args)
+
+
 def _cmd_run(args: argparse.Namespace) -> int:
+    # Hero mode: `loopbench run --target <url|path> --metric <name>`
+    if getattr(args, "target", None):
+        return _run_target_pipeline(args)
+    # Evaluator-first mode: `loopbench run --config <yaml>`
+    if not getattr(args, "config", None):
+        print(
+            "[LoopBench] ERROR: provide either --target <url|path> (hero mode) "
+            "or --config <loopbench.yaml> (evaluator mode).",
+            file=sys.stderr,
+        )
+        return 1
     return asyncio.run(_run_async(args))
 
 
@@ -290,7 +307,14 @@ def build_parser() -> argparse.ArgumentParser:
 
     # ── run ──
     run_p = sub.add_parser("run", help="Run the optimization loop")
-    run_p.add_argument("--config", "-c", required=True, help="Path to loopbench.yaml")
+    run_p.add_argument("--config", "-c", help="Path to loopbench.yaml (evaluator-first mode)")
+    run_p.add_argument("--target", help="GitHub URL or local path to optimize (hero mode)")
+    run_p.add_argument("--metric", "-m", default="combined_score",
+                       help="Metric name to optimize (default: combined_score)")
+    run_p.add_argument("--target-file", dest="target_file",
+                       help="File to optimize, relative to repo root (hero mode)")
+    run_p.add_argument("--test-command", dest="test_command",
+                       help="Override the detected test command (hero mode)")
     run_p.add_argument("--output", "-o", help="Output directory (default: loopbench_output/)")
     run_p.add_argument("--iterations", "-i", type=int, help="Override max iterations")
     run_p.add_argument("--target-score", "-t", type=float, help="Override target score threshold")
