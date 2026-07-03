@@ -243,22 +243,6 @@ Verified in practice: a **1,233-line** file routed to `search_replace` produced 
 
 ---
 
-## Advanced: the `optimizer` engine (OpenEvolve)
-
-Separate from `loopbench`, the `optimizer` CLI exposes the underlying OpenEvolve
-engine (MAP-Elites / island populations) for repeatable runs with a full
-6-section config. Most users should use `loopbench run` (hero or config mode)
-above; reach for `optimizer` only if you need the evolutionary-population
-features.
-
-```bash
-optimizer init --output optimizer.yaml   # generate a template
-optimizer run --config optimizer.yaml    # run
-optimizer dashboard --run-id <id> --open # view results
-```
-
----
-
 ## Project Structure
 
 ```
@@ -325,144 +309,47 @@ LoopBench-Optimizer/
 
 ---
 
-## CLI Commands
+## Command reference
 
-### `loopbench` — the hero command
+Two commands cover almost everything:
 
 ```bash
-# Optimize any repo end-to-end (clone URL or local path)
-loopbench run --target https://github.com/user/repo --metric latency
-loopbench run --target . --target-file src/main.py --metric latency -i 5
+# Quick run — optimize a file directly (clone URL or local path)
+loopbench run --target <repo> --target-file <file> --metric latency [-i 5]
 
-# Options
-#   --target        GitHub URL or local path
-#   --target-file   file to optimize (relative to repo root)
-#   --metric        metric name to optimize (default: combined_score)
-#   --test-command  override the auto-detected test command
-#   --io-tests      JSON of stdin/stdout cases (run mode — optimize scripts that read stdin)
-#   --max-tokens    stop after N total LLM tokens (cost bound)
-#   --max-cost      stop after estimated USD spend (needs pricing in loopbench.yaml)
-#   --max-runtime   stop after N seconds of wall-clock time
-#   --pip           space-separated pip packages for the sandbox (else auto-detected)
-#   -i / --iterations   max generations (default: 5)
-#   -o / --output   output directory (default: loopbench_output/)
-
-# Optimize an external repo via a config job (recommended for real projects)
-loopbench init --job my_job                  # scaffold my_job/loopbench.yaml + test_target.py
+# Config job — scaffold, edit, run (recommended for external/real repos)
+loopbench init --job my_job                  # creates my_job/loopbench.yaml + test_target.py
 loopbench run  --config my_job/loopbench.yaml
-
-# Validate a config + dry-run its evaluator before a full run
-loopbench check --config my_job/loopbench.yaml
+loopbench check --config my_job/loopbench.yaml   # validate + dry-run before a full run
 ```
 
-### `loopbench run --config` — config job (external repos)
+Common `loopbench run` flags (full list via `loopbench run --help`):
 
-A `loopbench.yaml` whose `target` names a **repo + file** runs the full clone →
-optimize pipeline (Docker sandbox, auto-deps, budgets):
+| Flag | Purpose |
+|------|---------|
+| `--target`, `--target-file` | Repo (URL/path) and the file to optimize |
+| `--metric` | Metric to optimize (default `combined_score`) |
+| `--pip "numpy scipy"` | Sandbox dependencies (else auto-detected) |
+| `--test-command` | Use a custom test/benchmark command |
+| `--io-tests <file>` | Run mode for stdin/stdout scripts |
+| `--max-tokens` / `--max-cost` / `--max-runtime` | Cost / time budgets |
+| `-i`, `-o` | Iterations, output directory |
 
-```yaml
-target:
-  repo: https://github.com/OWNER/REPO     # or a local repo path
-  file: path/in/repo/module.py
-  evaluator: test_target.py               # your test, in the job folder
-sandbox:  { command: "pytest test_target.py -v -s -q", pip: ["numpy"] }
-metric:   { name: "combined_score", threshold: 0.95 }
-constraints: { max_iterations: 10, max_tokens_total: 200000 }
-```
-
-```bash
-loopbench init --job my_job                  # scaffold it
-loopbench run  --config my_job/loopbench.yaml # clone + optimize
-```
-
-### `optimizer` — advanced engine (OpenEvolve MAP-Elites)
-
-```bash
-# Generate a config template (all 6 required sections)
-optimizer init --output optimizer.yaml
-
-# Run an optimization
-optimizer run --config optimizer.yaml --max-iterations 50 --output results/
-
-# Resume an interrupted run
-optimizer resume --run-id <id> --db optimizer.db
-
-# Export run data
-optimizer export --run-id <id> --format json
-optimizer export --run-id <id> --format markdown
-
-# Launch the dashboard
-optimizer dashboard --run-id <id> --open          # local server + browser
-optimizer dashboard --run-id <id> --no-server     # generate docs/data.json only
-```
+See [**Defining Your Benchmark**](docs/defining-benchmarks.md) for every scoring
+option in depth. The separate `optimizer` CLI exposes the advanced OpenEvolve
+engine (MAP-Elites / islands) — most users won't need it.
 
 ---
 
 ## Dashboard
 
-The dashboard runs in two modes:
+Every run writes `docs/data.json`. View it locally or publish it:
 
-**GitHub Pages (static)** — commit `docs/data.json` to share results publicly:
 ```bash
-optimizer dashboard --run-id <id> --no-server
-git add docs/data.json && git push
-# View at: https://manashatwar.github.io/LoopBench-Optimizer/
+python -m http.server 8080 --directory docs        # local: open http://localhost:8080
+git add docs/data.json && git commit -m "results" && git push   # GitHub Pages
+# published at: https://manashatwar.github.io/LoopBench-Optimizer/
 ```
-
-**Local live server** — monitor an active run in real time:
-```bash
-optimizer dashboard --run-id <id> --port 8080 --open
-# Auto-refreshes every N seconds via ?refresh=N
-```
-
----
-
-## Configuration
-
-The optimizer requires a YAML config with exactly 6 sections:
-
-```yaml
-repository:
-  url: "https://github.com/your-org/repo.git"
-  target_files: ["src/main.py"]
-  auth_token: "${GITHUB_TOKEN}"
-
-llm:
-  # Any OpenAI-compatible provider (Groq, Gemini, OpenAI, Ollama, …)
-  provider: "openai"
-  model: "llama-3.3-70b-versatile"
-  api_base: "https://api.groq.com/openai/v1"
-  api_key: "${GEMINI_API_KEY}"   # var name is read from .env
-
-docker:
-  test_command: "pytest --benchmark-only -v"
-  timeout: 300
-
-database:
-  path: "./optimizer.db"
-
-metrics:
-  patterns:
-    execution_time: 'Mean: ([\d.]+) seconds'
-  success_threshold: 0.10
-
-search:
-  strategy: "greedy"   # greedy | beam | random_restart
-  max_iterations: 50
-  patience: 10
-```
-
-Generate a full template with: `optimizer init`
-
----
-
-## Search Strategies
-
-| Strategy | Description | Parallelizable |
-|----------|-------------|---------------|
-| `greedy` | Always use the single best candidate | No |
-| `beam` | Top-K random selection (`beam_width`) | Yes |
-| `random_restart` | Periodically revert to baseline (`restart_interval`) | No |
 
 ---
 
