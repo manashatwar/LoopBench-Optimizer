@@ -275,7 +275,18 @@ def _cmd_run(args: argparse.Namespace) -> int:
 
 # ── init subcommand ────────────────────────────────────────────────────────────
 def _cmd_init(args: argparse.Namespace) -> int:
-    """Scaffold a new loopbench.yaml project."""
+    """Scaffold a new loopbench.yaml project (or an external-repo job folder)."""
+    if getattr(args, "job", None):
+        from loopbench.scaffold import write_job
+        paths = write_job(args.job)
+        print(f"[LoopBench] ✅ Job folder scaffolded: {paths['dir']}")
+        print(f"[LoopBench]   config    : {paths['config']}")
+        print(f"[LoopBench]   evaluator : {paths['evaluator']}")
+        print("[LoopBench] Next: edit target.repo/file + pip in loopbench.yaml, fill in")
+        print("            the correctness + speed TODOs in test_target.py, then run:")
+        print(f"  loopbench run --config {paths['config']}")
+        return 0
+
     name = args.name or "my_project"
     output = Path(args.output or ".") / f"{name}.yaml"
 
@@ -399,9 +410,12 @@ def build_parser() -> argparse.ArgumentParser:
     )
 
     # ── init ──
-    init_p = sub.add_parser("init", help="Scaffold a new loopbench.yaml")
+    init_p = sub.add_parser("init", help="Scaffold a loopbench.yaml or an external-repo job folder")
     init_p.add_argument("--name", "-n", help="Project name (default: my_project)")
     init_p.add_argument("--output", "-o", help="Directory to create the YAML in (default: .)")
+    init_p.add_argument("--job", dest="job",
+                        help="Scaffold a full external-repo job folder at this path "
+                             "(loopbench.yaml + test_target.py), e.g. --job my_job")
 
     # ── check ──
     check_p = sub.add_parser("check", help="Validate config and dry-run the evaluator")

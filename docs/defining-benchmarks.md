@@ -284,7 +284,12 @@ code **read-only** (**no unsafe file writes**).
 
 To optimize a file in someone else's repo, you write a small **job folder in your
 own workspace** — the same structure as the examples — and point its
-`loopbench.yaml` at the external repo. You never edit files inside the target
+`loopbench.yaml` at the external repo. Scaffold it in one command so you only
+edit configuration:
+
+```bash
+loopbench init --job my_job     # creates my_job/loopbench.yaml + my_job/test_target.py
+``` You never edit files inside the target
 repo; LoopBench clones it, injects your evaluator into the sandbox, and
 optimizes the named file.
 
