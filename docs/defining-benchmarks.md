@@ -259,6 +259,9 @@ loopbench run --target . --target-file src/hot.py --metric latency --max-tokens 
 
 # Stop after an estimated $0.25 spend (requires pricing, see below)
 loopbench run --target . --target-file src/hot.py --metric latency --max-cost 0.25
+
+# Stop after 300 seconds of wall-clock time
+loopbench run --target . --target-file src/hot.py --metric latency --max-runtime 300
 ```
 
 Or declare them in `loopbench.yaml` under `constraints` (CLI flags override):
@@ -268,9 +271,29 @@ constraints:
   max_iterations: 20
   max_tokens_total: 50000          # hard token budget
   max_token_cost_usd: 0.25         # dollar budget (needs pricing below)
+  max_runtime_seconds: 300         # wall-clock deadline for the whole run
   usd_per_1k_prompt: 0.00059       # your provider's input price per 1k tokens
   usd_per_1k_completion: 0.00079   # output price per 1k tokens
 ```
+
+The other two constraints from the spec are always on and need no config: the
+sandbox runs with `--network=none` (**no external network**) and mounts your
+code **read-only** (**no unsafe file writes**).
+
+### Custom sandbox commands (any test/benchmark runner)
+
+By default the sandbox runs `pytest`. To use a different command — a benchmark
+harness, a type checker, or a plain script — pass `--test-command` (hero mode)
+or set `sandbox.command` (config mode):
+
+```bash
+loopbench run --target . --target-file src/hot.py \
+  --test-command "python benchmark.py"
+```
+
+For a **pytest** command, correctness comes from the pass/fail report. For **any
+other** command, correctness is the command's **exit code** (`0` = pass). In both
+cases, print a `LOOPBENCH_SPEED_MS=<number>` line to feed the speed score.
 
 Token counts come from the provider's `usage` field (OpenAI, Groq, and Google
 AI Studio all report it). The dollar estimate needs the two pricing fields — if

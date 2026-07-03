@@ -261,7 +261,10 @@ def run_target_pipeline(args: argparse.Namespace) -> int:
                     )
             except Exception:
                 pass
-        test_cmd = args.test_command or fw.test_command or "pytest"
+        # Only an EXPLICIT --test-command overrides the sandbox default (which
+        # already includes the resolved test path and -s so speed markers show).
+        # The auto-detected fw.test_command is not forced here.
+        test_cmd = args.test_command
 
         # Ensure target is a Git repository, fallback to initializing a temporary one if needed
         if not _is_url(target):
@@ -309,7 +312,7 @@ def run_target_pipeline(args: argparse.Namespace) -> int:
 
         print(f"[LoopBench] Target file : {target_path}")
         print(f"[LoopBench] Test file   : {test_path or '(none detected)'}")
-        print(f"[LoopBench] Test command: {test_cmd}")
+        print(f"[LoopBench] Test command: {test_cmd or '(default pytest)'}")
         print(f"[LoopBench] Metric      : {metric}")
 
         # 4. Build config + LLM ensemble
@@ -337,16 +340,20 @@ def run_target_pipeline(args: argparse.Namespace) -> int:
         if not raw.get("llm"):
             raw["llm"] = _default_llm_cfg()
 
-        # ── Cost / token budget (CLI flags override loopbench.yaml constraints) ─
+        # ── Constraints (CLI flags override loopbench.yaml constraints) ────────
         constraints = raw.get("constraints") if isinstance(raw.get("constraints"), dict) else {}
+        opt_cfg["metric_name"] = metric
         opt_cfg["max_tokens_total"] = getattr(args, "max_tokens", None) or constraints.get("max_tokens_total")
         opt_cfg["max_usd"] = getattr(args, "max_cost", None) or constraints.get("max_token_cost_usd")
+        opt_cfg["max_runtime_seconds"] = getattr(args, "max_runtime", None) or constraints.get("max_runtime_seconds")
         opt_cfg["usd_per_1k_prompt"] = constraints.get("usd_per_1k_prompt", 0.0)
         opt_cfg["usd_per_1k_completion"] = constraints.get("usd_per_1k_completion", 0.0)
         if opt_cfg["max_tokens_total"]:
-            print(f"[LoopBench] Token budget: {opt_cfg['max_tokens_total']} tokens")
+            print(f"[LoopBench] Token budget : {opt_cfg['max_tokens_total']} tokens")
         if opt_cfg["max_usd"]:
-            print(f"[LoopBench] Cost budget : ${float(opt_cfg['max_usd']):.4f}")
+            print(f"[LoopBench] Cost budget  : ${float(opt_cfg['max_usd']):.4f}")
+        if opt_cfg["max_runtime_seconds"]:
+            print(f"[LoopBench] Runtime limit: {opt_cfg['max_runtime_seconds']}s")
 
         try:
             ensemble = _build_llm_ensemble(raw)
@@ -411,7 +418,9 @@ def run_target_pipeline(args: argparse.Namespace) -> int:
                 line += f"  |  est. cost ${usd:.4f}"
             print(line)
             if cost.get("stopped_on_budget"):
-                print("  ⏹️  Run stopped early: budget reached.")
+                print("  ⏹️  Run stopped early: cost/token budget reached.")
+            if cost.get("stopped_on_time"):
+                print("  ⏹️  Run stopped early: runtime limit reached.")
         print("-" * 60)
         print("  Artifacts:")
         print(f"    Patch      : {patch_file}")

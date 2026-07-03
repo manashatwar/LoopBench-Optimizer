@@ -291,6 +291,7 @@ loopbench run --target . --target-file src/main.py --metric latency -i 5
 #   --io-tests      JSON of stdin/stdout cases (run mode — optimize scripts that read stdin)
 #   --max-tokens    stop after N total LLM tokens (cost bound)
 #   --max-cost      stop after estimated USD spend (needs pricing in loopbench.yaml)
+#   --max-runtime   stop after N seconds of wall-clock time
 #   -i / --iterations   max generations (default: 5)
 #   -o / --output   output directory (default: loopbench_output/)
 
@@ -417,7 +418,9 @@ Built on top of the [OpenEvolve](https://github.com/algorithmicsuperintelligence
 - **Docker sandbox** test execution (`--network=none`, read-only mount)
 - **7-phase orchestration** with explicit phase tracking
 - **SQLite audit trail** with full lineage
-- **Cost-bounded runs** — stop on a token (`--max-tokens`) or dollar (`--max-cost`) budget; per-generation token/cost is logged and reported
+- **Bounded runs** — stop on a token (`--max-tokens`), dollar (`--max-cost`), runtime (`--max-runtime`), or iteration budget; per-generation token/cost is logged and reported
+- **Any sandbox command** — `pytest` by default, or bring your own via `--test-command` (benchmarks, type checks, plain scripts); non-pytest correctness comes from the exit code
+- **Custom metric** — `--metric <name>` optimizes whichever metric your evaluator emits (falls back to `combined_score`)
 - **Run mode** — optimize stdin/stdout scripts (competitive-programming solutions, CLI tools) via `--io-tests`
 - **GitHub Pages dashboard** (no server required for sharing)
 - **Provider-agnostic LLM** via `LLM_API_BASE` / `LLM_MODEL` (Groq, Gemini, OpenAI, …)

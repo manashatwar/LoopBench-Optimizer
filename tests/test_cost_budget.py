@@ -88,3 +88,40 @@ class TestBudgetExceeded:
             max_usd=5.0, usd_per_1k_prompt=0.5,
         )
         assert loop._budget_exceeded()[0] is False
+
+
+class TestMetricSelection:
+    def test_default_is_combined_score(self, tmp_path):
+        loop = _loop(tmp_path, FakeEnsemble())
+        assert loop.metric_name == "combined_score"
+        m = {"combined_score": 0.7, "speed_score": 0.9}
+        assert loop._score_from_metrics(m, {}) == pytest.approx(0.7)
+
+    def test_unknown_metric_falls_back_to_combined(self, tmp_path):
+        # "latency" is a label, not an emitted metric -> fall back to
+        # combined_score (which already reflects speed + correctness).
+        loop = _loop(tmp_path, FakeEnsemble(), metric_name="latency")
+        m = {"combined_score": 0.5, "speed_score": 0.88}
+        assert loop._score_from_metrics(m, {}) == pytest.approx(0.5)
+
+    def test_named_metric_from_result(self, tmp_path):
+        loop = _loop(tmp_path, FakeEnsemble(), metric_name="throughput")
+        assert loop._score_from_metrics({}, {"throughput": 1234.0}) == pytest.approx(1234.0)
+
+    def test_fallback_to_combined_score(self, tmp_path):
+        loop = _loop(tmp_path, FakeEnsemble(), metric_name="does_not_exist")
+        assert loop._score_from_metrics({"combined_score": 0.42}, {}) == pytest.approx(0.42)
+
+    def test_nothing_usable_returns_zero(self, tmp_path):
+        loop = _loop(tmp_path, FakeEnsemble(), metric_name="nope")
+        assert loop._score_from_metrics({}, {}) == 0.0
+
+
+class TestRuntimeConfig:
+    def test_max_runtime_stored(self, tmp_path):
+        loop = _loop(tmp_path, FakeEnsemble(), max_runtime_seconds=30)
+        assert loop.max_runtime_seconds == 30
+
+    def test_unset_runtime_is_none(self, tmp_path):
+        loop = _loop(tmp_path, FakeEnsemble())
+        assert loop.max_runtime_seconds is None

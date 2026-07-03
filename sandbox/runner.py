@@ -225,6 +225,19 @@ def build_sandbox_image(
     return True
 
 
+def _resolve_test_cmd(sandbox_cfg: Optional[dict], container_test: str) -> str:
+    """Build the command the container runs.
+
+    Honors a user-supplied ``test_command`` from the sandbox config (so
+    benchmarks, type checks, or non-pytest runners work). Falls back to the
+    default pytest invocation when none is given (or the bare word "pytest").
+    """
+    user_cmd = (sandbox_cfg or {}).get("test_command")
+    if user_cmd and str(user_cmd).strip() and str(user_cmd).strip().lower() != "pytest":
+        return str(user_cmd).strip()
+    return f"pytest {container_test} -v -s -q --tb=short"
+
+
 def run_in_sandbox(
     program_path: str,
     test_file: str,
@@ -299,7 +312,7 @@ def run_in_sandbox(
 
             container_program = f"/workspace/{prog_path.name}"
             container_test = f"/workspace/{test_path.name}"
-            test_cmd = f"pytest {container_test} -v -s -q --tb=short"
+            test_cmd = _resolve_test_cmd(sandbox_cfg, container_test)
 
             docker_cmd = [
                 "docker", "run",
@@ -334,9 +347,7 @@ def run_in_sandbox(
         # Container-side paths
         container_program = f"/workspace/{prog_path.name}"
         container_test = f"/workspace/{test_path.name}"
-        test_cmd = (
-            f"pytest {container_test} -v -s -q --tb=short"
-        )
+        test_cmd = _resolve_test_cmd(sandbox_cfg, container_test)
 
         # ── Build docker run command ──────────────────────────────────────────
         docker_cmd = [

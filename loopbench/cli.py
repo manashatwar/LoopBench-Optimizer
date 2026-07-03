@@ -327,6 +327,8 @@ def build_parser() -> argparse.ArgumentParser:
     run_p.add_argument("--max-cost", dest="max_cost", type=float,
                        help="Stop the loop after this estimated USD spend "
                             "(requires pricing in loopbench.yaml constraints)")
+    run_p.add_argument("--max-runtime", dest="max_runtime", type=float,
+                       help="Stop the loop after this many seconds of wall-clock time")
     run_p.add_argument(
         "--log-level", "-l",
         choices=["DEBUG", "INFO", "WARNING", "ERROR"],

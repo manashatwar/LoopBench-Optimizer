@@ -20,6 +20,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import time
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -229,6 +230,14 @@ class OptimizerLoop:
         self.usd_per_1k_prompt: float = float(config.get("usd_per_1k_prompt", 0.0) or 0.0)
         self.usd_per_1k_completion: float = float(config.get("usd_per_1k_completion", 0.0) or 0.0)
 
+        # Global wall-clock deadline for the whole run (None = unlimited).
+        self.max_runtime_seconds: Optional[float] = config.get("max_runtime_seconds")
+
+        # ── Metric selection ──────────────────────────────────────────────────
+        # Which metric the loop maximizes. Defaults to combined_score. Common
+        # latency aliases resolve to speed_score (higher = faster).
+        self.metric_name: str = config.get("metric_name") or "combined_score"
+
         # ── Generation mode ───────────────────────────────────────────────────
         # "diff": LLM returns a unified diff applied via git apply (fragile).
         # "full": LLM returns the complete improved file; the diff is computed
@@ -281,7 +290,7 @@ class OptimizerLoop:
                 if result.get(key) is not None:
                     metrics[key] = result[key]
 
-        score = metrics.get("combined_score") or result.get("combined_score") or 0.0
+        score = self._score_from_metrics(metrics, result)
         if failed:
             score = 0.0
 
@@ -529,7 +538,7 @@ class OptimizerLoop:
                         if result.get(key) is not None:
                             metrics[key] = result[key]
 
-                score = metrics.get("combined_score") or result.get("combined_score") or 0.0
+                score = self._score_from_metrics(metrics, result)
                 failed = result.get("exit_code", 1) != 0
                 if failed:
                     score = 0.0
@@ -704,7 +713,7 @@ class OptimizerLoop:
         for key in ("combined_score", "correctness", "speed_score", "speed_ms"):
             if result.get(key) is not None:
                 metrics[key] = result[key]
-        score = metrics.get("combined_score") or result.get("combined_score") or 0.0
+        score = self._score_from_metrics(metrics, result)
         failed = (not streams_ok) or result.get("exit_code", 1) != 0
         if failed:
             score = 0.0
@@ -807,6 +816,34 @@ class OptimizerLoop:
     # Task 10.4 – Multi-generation loop with early stopping
     # -------------------------------------------------------------------------
 
+    def _score_from_metrics(
+        self, metrics: Optional[Dict[str, Any]], result: Optional[Dict[str, Any]]
+    ) -> float:
+        """Resolve the optimization score for the configured metric.
+
+        Uses ``metric_name`` when the evaluator/sandbox actually emits that key
+        (this is how a user's custom metric — throughput, memory, accuracy — is
+        honored), otherwise falls back to combined_score. Returns 0.0 when
+        nothing usable is found.
+
+        Note: combined_score already folds in both correctness and speed, so
+        latency-style optimization works with the default without a special
+        alias — and it stays correct for pure-correctness evaluators that emit
+        no speed marker (where speed_score would be 0).
+        """
+        if self.metric_name and self.metric_name != "combined_score":
+            for src in (metrics, result):
+                if isinstance(src, dict):
+                    val = src.get(self.metric_name)
+                    if isinstance(val, (int, float)):
+                        return float(val)
+        for src in (metrics, result):
+            if isinstance(src, dict):
+                val = src.get("combined_score")
+                if isinstance(val, (int, float)):
+                    return float(val)
+        return 0.0
+
     def _budget_snapshot(self) -> Dict[str, Any]:
         """Current cumulative token usage and estimated cost from the LLM."""
         usage = {"prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0, "api_calls": 0}
@@ -867,9 +904,27 @@ class OptimizerLoop:
         total_generations: int = 0
         final_status = "completed"
         stopped_on_budget = False
+        stopped_on_time = False
+        run_start = time.monotonic()
 
         # 3. Main generation loop
         for generation in range(1, self.max_iterations + 1):
+            # 3a-0. Wall-clock deadline gate.
+            if self.max_runtime_seconds:
+                elapsed = time.monotonic() - run_start
+                if elapsed >= float(self.max_runtime_seconds):
+                    logger.info(
+                        "Stopping before generation %d: runtime limit reached (%.1fs >= %ss)",
+                        generation, elapsed, self.max_runtime_seconds,
+                    )
+                    final_status = "time_exhausted"
+                    stopped_on_time = True
+                    self.db.log_event(
+                        "time_exhausted",
+                        {"generation": generation, "elapsed_s": round(elapsed, 2)},
+                    )
+                    break
+
             # 3a. Cost/token budget gate — stop before spending more.
             exceeded, reason = self._budget_exceeded()
             if exceeded:
@@ -983,6 +1038,9 @@ class OptimizerLoop:
             "max_usd": self.max_usd,
             "max_tokens_total": self.max_tokens_total,
             "stopped_on_budget": stopped_on_budget,
+            "stopped_on_time": stopped_on_time,
+            "max_runtime_seconds": self.max_runtime_seconds,
+            "elapsed_seconds": round(time.monotonic() - run_start, 2),
         }
         return report
 
