@@ -238,13 +238,16 @@ def run_target_pipeline(args: argparse.Namespace) -> int:
             print(f"[LoopBench] ERROR: could not build I/O harness: {exc}")
             return 1
 
-        user_benchmark = getattr(args, "benchmark", None)
-        if user_benchmark:
-            test_path = Path(user_benchmark).resolve()
+        # An explicit test/evaluator file (from a loopbench.yaml target.evaluator
+        # when optimizing an external repo) is injected into the sandbox next to
+        # the target. It lives in the user's job dir, not the cloned repo.
+        explicit_test = getattr(args, "test_file", None)
+        if explicit_test:
+            test_path = Path(explicit_test).resolve()
             if not test_path.exists():
-                print(f"[LoopBench] ERROR: benchmark not found: {test_path}")
+                print(f"[LoopBench] ERROR: test/evaluator file not found: {test_path}")
                 return 1
-            print(f"[LoopBench] Benchmark   : {test_path} (user-supplied evaluator)")
+            print(f"[LoopBench] Evaluator   : {test_path}")
         elif run_mode_info is not None:
             test_path = Path(run_mode_info["test_path"])
             print(

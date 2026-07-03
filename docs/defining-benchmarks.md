@@ -280,31 +280,53 @@ The other two constraints from the spec are always on and need no config: the
 sandbox runs with `--network=none` (**no external network**) and mounts your
 code **read-only** (**no unsafe file writes**).
 
-### Optimizing an arbitrary repo file (where the benchmark lives)
+### Optimizing an external repo (config-driven)
 
-When you point LoopBench at someone else's repo, you don't edit files inside
-that repo. The benchmark lives in **your own workspace** and is passed with
-`--benchmark`; LoopBench injects it into the sandbox and runs it against the
-target (via `LOOPBENCH_PROGRAM_PATH`). The cloned repo stays pristine.
+To optimize a file in someone else's repo, you write a small **job folder in your
+own workspace** — the same structure as the examples — and point its
+`loopbench.yaml` at the external repo. You never edit files inside the target
+repo; LoopBench clones it, injects your evaluator into the sandbox, and
+optimizes the named file.
 
-```bash
-# 1. Scaffold a benchmark template in your workspace
-loopbench init --benchmark bench.py
-
-# 2. Edit bench.py — fill in the correctness assertions and the speed workload
-#    (it loads the candidate from LOOPBENCH_PROGRAM_PATH)
-
-# 3. Run against any repo/file; the benchmark scores each candidate
-loopbench run \
-  --target https://github.com/user/repo \
-  --target-file path/in/repo/module.py \
-  --benchmark bench.py \
-  --pip "numpy" -i 6
+```
+my_job/
+├── loopbench.yaml       # points at the external repo + file to optimize
+└── test_target.py       # the evaluator/test (correctness gate + LOOPBENCH_SPEED_MS)
 ```
 
-Priority for the evaluator: `--benchmark` > `--io-tests` (run mode) >
-auto-detected `test_*.py` in the repo. So `--benchmark` is the general answer
-for a repo that has no usable tests of its own.
+`loopbench.yaml`:
+
+```yaml
+target:
+  repo: https://github.com/OmkarPathak/Python-Programs   # cloned automatically
+  file: MachineLearning/gradient_descent.py              # the file to optimize
+  evaluator: test_target.py                              # local (in this job dir)
+
+sandbox:
+  command: "pytest test_target.py -v -s -q"
+  pip: ["numpy", "matplotlib"]                           # installed in the sandbox
+
+metric:
+  name: "combined_score"
+  threshold: 0.90
+
+constraints:
+  max_iterations: 20
+  max_tokens_total: 200000
+```
+
+Then run:
+
+```bash
+loopbench run --config my_job/loopbench.yaml
+```
+
+`test_target.py` loads each candidate from `LOOPBENCH_PROGRAM_PATH`, asserts
+correctness, and prints `LOOPBENCH_SPEED_MS` — exactly like Option A/B above. The
+target repo stays untouched; everything you author lives in `my_job/`.
+
+> A local file you own keeps using `target.program` (evaluator-first controller);
+> `target.repo` + `target.file` is the external-repo path (clone + sandbox).
 
 ### Third-party dependencies (numpy, pandas, …)
 

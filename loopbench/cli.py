@@ -198,32 +198,84 @@ def _run_target_pipeline(args: argparse.Namespace) -> int:
     return run_target_pipeline(args)
 
 
+def _config_to_hero_args(args: argparse.Namespace, lb: dict, config_path: str) -> argparse.Namespace:
+    """Translate an external-repo loopbench.yaml into hero-pipeline args.
+
+    Used when the config's ``target`` names a repo/file to optimize (as opposed
+    to a local ``program``). The evaluator/test file, sandbox command, pip deps,
+    metric, and constraints all come from the config — the same file structure
+    as the examples, pointed at an external repo.
+    """
+    base = Path(config_path).resolve().parent
+    target = lb.get("target", {}) or {}
+    sandbox = lb.get("sandbox", {}) or {}
+    metric = lb.get("metric", {}) or {}
+    constraints = lb.get("constraints", {}) or {}
+
+    evaluator = target.get("evaluator") or sandbox.get("test_file")
+    test_file = _resolve_path(base, evaluator) if evaluator else None
+
+    pip = sandbox.get("pip")
+    if isinstance(pip, (list, tuple)):
+        pip = " ".join(str(p) for p in pip)
+
+    return argparse.Namespace(
+        target=target.get("repo") or str(base),
+        target_file=target.get("file"),
+        test_file=test_file,
+        test_command=sandbox.get("command"),
+        metric=metric.get("name") or "combined_score",
+        target_score=metric.get("threshold"),
+        pip=pip,
+        io_tests=None,
+        iterations=constraints.get("max_iterations"),
+        max_tokens=constraints.get("max_tokens_total"),
+        max_cost=constraints.get("max_token_cost_usd"),
+        max_runtime=constraints.get("max_runtime_seconds"),
+        output=getattr(args, "output", None),
+        config=config_path,
+        log_level=getattr(args, "log_level", "INFO"),
+    )
+
+
 def _cmd_run(args: argparse.Namespace) -> int:
     # Hero mode: `loopbench run --target <url|path> --metric <name>`
     if getattr(args, "target", None):
         return _run_target_pipeline(args)
-    # Evaluator-first mode: `loopbench run --config <yaml>`
+    # Config mode: `loopbench run --config <yaml>`
     if not getattr(args, "config", None):
         print(
             "[LoopBench] ERROR: provide either --target <url|path> (hero mode) "
-            "or --config <loopbench.yaml> (evaluator mode).",
+            "or --config <loopbench.yaml> (config mode).",
             file=sys.stderr,
         )
         return 1
+
+    # External-repo config → clone + optimize via the hero pipeline (using the
+    # config's evaluator/test/sandbox/metric/constraints). Local `target.program`
+    # configs keep the existing evaluator-first controller path.
+    try:
+        lb, _ = _load_loopbench_yaml(args.config)
+    except Exception as exc:
+        print(f"[LoopBench] ERROR: {exc}", file=sys.stderr)
+        return 1
+    target = lb.get("target", {}) or {}
+    if target.get("repo") or target.get("file"):
+        if not target.get("file"):
+            print("[LoopBench] ERROR: target.file is required when target.repo is set.", file=sys.stderr)
+            return 1
+        if not (target.get("evaluator") or (lb.get("sandbox", {}) or {}).get("test_file")):
+            print("[LoopBench] ERROR: target.evaluator (the test/evaluator file) is required "
+                  "to score an external repo.", file=sys.stderr)
+            return 1
+        return _run_target_pipeline(_config_to_hero_args(args, lb, args.config))
+
     return asyncio.run(_run_async(args))
 
 
 # ── init subcommand ────────────────────────────────────────────────────────────
 def _cmd_init(args: argparse.Namespace) -> int:
-    """Scaffold a new loopbench.yaml project (or a benchmark template)."""
-    if getattr(args, "benchmark", None):
-        from loopbench.scaffold import write_benchmark_template
-        path = write_benchmark_template(args.benchmark)
-        print(f"[LoopBench] ✅ Benchmark template created: {path}")
-        print("[LoopBench] Edit the correctness + speed sections, then run:")
-        print(f"  loopbench run --target <repo|path> --target-file <file> --benchmark {path}")
-        return 0
-
+    """Scaffold a new loopbench.yaml project."""
     name = args.name or "my_project"
     output = Path(args.output or ".") / f"{name}.yaml"
 
@@ -323,11 +375,6 @@ def build_parser() -> argparse.ArgumentParser:
                        help="File to optimize, relative to repo root (hero mode)")
     run_p.add_argument("--test-command", dest="test_command",
                        help="Override the detected test command (hero mode)")
-    run_p.add_argument("--benchmark", dest="benchmark",
-                       help="Path to an external benchmark/evaluator file (lives in YOUR "
-                            "workspace, not the target repo). LoopBench runs it against the "
-                            "target via LOOPBENCH_PROGRAM_PATH. Scaffold one with "
-                            "'loopbench init --benchmark <path>'.")
     run_p.add_argument("--io-tests", dest="io_tests",
                        help="Path to a JSON file of stdin/stdout test cases (run mode). "
                             "Enables optimizing scripts that read stdin and print stdout "
@@ -352,12 +399,9 @@ def build_parser() -> argparse.ArgumentParser:
     )
 
     # ── init ──
-    init_p = sub.add_parser("init", help="Scaffold a new loopbench.yaml or benchmark")
+    init_p = sub.add_parser("init", help="Scaffold a new loopbench.yaml")
     init_p.add_argument("--name", "-n", help="Project name (default: my_project)")
     init_p.add_argument("--output", "-o", help="Directory to create the YAML in (default: .)")
-    init_p.add_argument("--benchmark", dest="benchmark",
-                        help="Instead of a YAML, scaffold a benchmark template at this path "
-                             "(e.g. --benchmark bench.py) for use with 'run --benchmark'.")
 
     # ── check ──
     check_p = sub.add_parser("check", help="Validate config and dry-run the evaluator")
