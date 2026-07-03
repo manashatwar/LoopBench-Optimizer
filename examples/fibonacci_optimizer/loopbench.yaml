@@ -24,7 +24,16 @@ metric:
 
 constraints:
   max_iterations: 20
-  max_token_cost_usd: 3.0
+  # ── Cost / token budget (hero mode) ─────────────────────────────────────────
+  # The loop stops early when any budget below is reached. CLI flags
+  # (--max-tokens / --max-cost) override these values.
+  max_tokens_total: 200000          # hard token budget (works with any provider)
+  max_token_cost_usd: 0.50          # dollar budget (needs the pricing below)
+  # Your provider's price per 1,000 tokens. Example values shown for Groq
+  # llama-3.3-70b — replace with your provider's CURRENT rates. Leave at 0 to
+  # disable the dollar budget (the token budget still applies).
+  usd_per_1k_prompt: 0.00059
+  usd_per_1k_completion: 0.00079
 
 # ── OpenEvolve passthrough ────────────────────────────────────────────────────
 max_iterations: 5

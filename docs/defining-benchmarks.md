@@ -278,6 +278,46 @@ they're 0, the USD budget is inactive but the token budget still works. Every
 generation's token/cost delta is written to the run's audit log, and the run
 summary reports total tokens, estimated cost, and whether the budget stopped it.
 
+### Where to find your pricing
+
+Set `usd_per_1k_prompt` / `usd_per_1k_completion` to your provider's **current**
+per-1,000-token rates (pricing changes often — always check the provider page):
+
+- **Groq** — groq.com/pricing
+- **OpenAI** — openai.com/api/pricing
+- **Google Gemini** — ai.google.dev/pricing
+
+Example: if a provider charges `$0.59` per **million** input tokens, that is
+`0.59 / 1000 = 0.00059` per 1k, so `usd_per_1k_prompt: 0.00059`.
+
+### Worked example
+
+A ready-to-use budget block ships in
+[`examples/fibonacci_optimizer/loopbench.yaml`](../examples/fibonacci_optimizer/loopbench.yaml).
+Run the fibonacci demo with a small token cap:
+
+```bash
+loopbench run \
+  --target . \
+  --target-file examples/fibonacci_optimizer/initial_program.py \
+  --metric latency \
+  -i 5 \
+  --max-tokens 1
+```
+
+Because the baseline uses no LLM tokens, generation 1 runs, then the loop stops
+at the budget gate before generation 2. The summary reports what was spent:
+
+```
+  Total Generations: 1
+  ...
+  Tokens used    : 896 (1 API calls)
+------------------------------------------------------------
+```
+
+Swap `--max-tokens 1` for a realistic value (e.g. `--max-tokens 50000`) or use
+`--max-cost 0.25` once pricing is set in the config.
+
 ---
 
 ## Inspecting the benchmark result
