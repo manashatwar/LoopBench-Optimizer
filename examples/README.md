@@ -64,7 +64,7 @@ loopbench run   --config examples/prime_counter_optimizer/loopbench.yaml
 
 ## Anatomy of an example
 
-Each optimizer example has four parts:
+Each optimizer example is **three files**:
 
 ### 1. `initial_program.py`
 The starting (slow but correct) implementation. The region the optimizer is
@@ -90,26 +90,31 @@ speed marker on stdout:
 LOOPBENCH_SPEED_MS=39.7473
 ```
 
-### 3. `evaluator.py`
-Runs the pytest suite in a subprocess and returns an `EvaluationResult`:
+### 3. `loopbench.yaml`
+Points at the file to optimize (`target.file`), the test that scores it
+(`target.evaluator`), the sandbox command, any pip deps, the metric, and
+constraints:
 
-- `correctness` — `1.0` only if every test passes (any failure zeroes the score)
-- `speed_ms` — parsed from the `LOOPBENCH_SPEED_MS` marker
-- `speed_score` — exponential decay of `speed_ms` (faster = higher)
-- `combined_score` — `correctness * speed_score`, the primary fitness signal
+```yaml
+target:
+  file: initial_program.py
+  evaluator: test_prime_counter.py
+sandbox:
+  command: "pytest test_prime_counter.py -v -s -q"
+  # pip: ["numpy"]        # only if the code needs third-party packages
+metric:      { name: "combined_score", threshold: 0.95 }
+constraints: { max_iterations: 5 }
+```
 
-The `combined_score` acts as a hard regression gate: a candidate that breaks any
-test scores `0.0` and is rejected.
-
-### 4. `loopbench.yaml`
-Declares the target program, evaluator, sandbox command, the metric to optimize,
-and the LLM settings.
-
-> **Note — external repos need only two files.** These bundled examples include
-> four files because they're self-contained. When you optimize *someone else's*
-> repo (`loopbench init --job`), you write just **`loopbench.yaml` + `test_target.py`**:
-> the target is the real repo file (no `initial_program.py`), and the sandbox
-> scores your test directly (no `evaluator.py` — the test file *is* the evaluator).
+> **How scoring works — there is no `evaluator.py`.** The sandbox runs your
+> `test_*.py` directly and computes the score itself: correctness from pass/fail,
+> speed from the `LOOPBENCH_SPEED_MS` line
+> (`combined_score = correctness × speed_score`). A candidate that breaks any
+> test scores `0.0` and is rejected. **The test file *is* the evaluator.**
+>
+> **External repos** need only two files — `loopbench.yaml` + `test_target.py`
+> (no `initial_program.py`, since the target is the real repo file). Scaffold one
+> with `loopbench init --job`.
 
 ## Writing your own example
 
@@ -118,7 +123,7 @@ and the LLM settings.
    optimize and a fixed public entry point outside it.
 3. Add a `test_*.py` suite that loads `LOOPBENCH_PROGRAM_PATH`, checks
    correctness, and prints `LOOPBENCH_SPEED_MS=<value>`.
-4. Copy an `evaluator.py` and adjust the test file name and speed-score scale.
-5. Add a `loopbench.yaml` pointing at your program, evaluator, and test command.
+4. Add a `loopbench.yaml` with `target.file`, `target.evaluator` (the test),
+   `sandbox.command`, and (if the code needs packages) `sandbox.pip`.
 
 See the main [README](../README.md) for the full CLI reference and architecture.

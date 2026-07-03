@@ -1,0 +1,19 @@
+# LoopBench example — NumPy vectorization: Python-loop MSE → np.mean.
+# Requires numpy (auto-installed in the sandbox). Run either way:
+#   loopbench run --target . --target-file examples/numpy_vectorize_optimizer/initial_program.py --metric latency --pip numpy
+#   loopbench run --config examples/numpy_vectorize_optimizer/loopbench.yaml
+
+target:
+  file: initial_program.py
+  evaluator: test_numpy_vectorize.py
+
+sandbox:
+  command: "pytest test_numpy_vectorize.py -v -s -q"
+  pip: ["numpy"]
+
+metric:
+  name: "combined_score"
+  threshold: 0.90
+
+constraints:
+  max_iterations: 5

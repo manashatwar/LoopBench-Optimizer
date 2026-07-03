@@ -1,62 +1,19 @@
-# LoopBench Demo — Gradient Descent Optimizer (NumPy vectorization)
-#
-# Usage:
-#   loopbench run --target . \
-#     --target-file examples/gradient_descent_optimizer/initial_program.py \
-#     --metric latency --pip numpy -i 6
+# LoopBench example — Gradient descent: Python loops → NumPy vectorization.
+# Requires numpy (auto-installed in the sandbox). Run either way:
+#   loopbench run --target . --target-file examples/gradient_descent_optimizer/initial_program.py --metric latency --pip numpy
+#   loopbench run --config examples/gradient_descent_optimizer/loopbench.yaml
 
 target:
-  program: initial_program.py
-  evaluator: evaluator.py
+  file: initial_program.py
+  evaluator: test_gradient_descent.py
 
 sandbox:
-  use_docker: true
-  command: "pytest test_gradient_descent.py -v -s -q --tb=short"
-  pip: "numpy"                     # installed into the sandbox automatically
-  network_off: true
-  readonly_mount: true
+  command: "pytest test_gradient_descent.py -v -s -q"
+  pip: ["numpy"]
 
 metric:
   name: "combined_score"
   threshold: 0.90
-  direction: "maximize"
 
 constraints:
-  max_iterations: 20
-  max_tokens_total: 200000
-
-max_iterations: 6
-checkpoint_interval: 1
-log_level: "INFO"
-diff_based_evolution: true
-max_code_length: 6000
-
-llm:
-  models:
-    - name: "gemini-2.5-flash"
-      weight: 1.0
-  api_base: "https://generativelanguage.googleapis.com/v1beta/openai/"
-  api_key: "${GEMINI_API_KEY}"
-  temperature: 0.7
-  max_tokens: 3072
-  timeout: 90
-  retries: 5
-  retry_delay: 65
-
-prompt:
-  system_message: >
-    You are an expert Python performance engineer. Rewrite evaluate_cost() and
-    evaluate_gradient() inside the EVOLVE-BLOCK to be as fast as possible using
-    NumPy vectorization, while keeping the numerical results identical (they are
-    checked against reference formulas). Do NOT change run_gradient_descent().
-  num_top_programs: 2
-  num_diverse_programs: 1
-
-database:
-  population_size: 20
-  num_islands: 1
-
-evaluator:
-  timeout: 240
-  cascade_evaluation: false
-  parallel_evaluations: 1
+  max_iterations: 6

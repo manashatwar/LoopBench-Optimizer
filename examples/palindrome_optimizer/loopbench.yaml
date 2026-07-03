@@ -1,66 +1,18 @@
-# LoopBench Demo — Longest Palindromic Substring (CodeChef PRINCESS)
-#
-# Usage:
-#   loopbench check --config examples/palindrome_optimizer/loopbench.yaml
-#   loopbench run   --config examples/palindrome_optimizer/loopbench.yaml
+# LoopBench example — Longest palindrome (CodeChef PRINCESS): O(n³) → O(n²).
+# Run either way:
+#   loopbench run --target . --target-file examples/palindrome_optimizer/initial_program.py --metric latency
+#   loopbench run --config examples/palindrome_optimizer/loopbench.yaml
 
 target:
-  program: initial_program.py
-  evaluator: evaluator.py
+  file: initial_program.py
+  evaluator: test_palindrome.py
 
 sandbox:
-  use_docker: true
-  command: "pytest test_palindrome.py -v -s -q --tb=short"
-  network_off: true
-  readonly_mount: true
+  command: "pytest test_palindrome.py -v -s -q"
 
 metric:
   name: "combined_score"
   threshold: 0.90
-  direction: "maximize"
 
 constraints:
-  max_iterations: 20
-  max_token_cost_usd: 3.0
-
-max_iterations: 5
-checkpoint_interval: 1
-log_level: "INFO"
-diff_based_evolution: true
-max_code_length: 6000
-
-llm:
-  models:
-    - name: "gemini-2.5-flash"
-      weight: 1.0
-  api_base: "https://generativelanguage.googleapis.com/v1beta/openai/"
-  api_key: "${GEMINI_API_KEY}"
-  temperature: 0.7
-  max_tokens: 3072
-  timeout: 90
-  retries: 5
-  retry_delay: 65
-
-prompt:
-  system_message: >
-    You are an expert Python performance engineer. Rewrite longest_palindrome()
-    inside the EVOLVE-BLOCK to be as fast as possible while keeping all pytest
-    tests green. The current solution checks every substring (O(n^3)). Prefer an
-    expand-around-center approach (O(n^2)) or Manacher's algorithm (O(n)). Keep
-    run_longest_palindrome(s) and has_palindrome_substring(s) working: the result
-    must be the longest palindromic substring of s (a real substring that reads
-    the same forwards and backwards).
-  num_top_programs: 2
-  num_diverse_programs: 1
-
-database:
-  population_size: 20
-  archive_size: 10
-  num_islands: 1
-  elite_selection_ratio: 0.2
-  exploitation_ratio: 0.7
-
-evaluator:
-  timeout: 180
-  cascade_evaluation: false
-  parallel_evaluations: 1
+  max_iterations: 6
