@@ -238,7 +238,14 @@ def run_target_pipeline(args: argparse.Namespace) -> int:
             print(f"[LoopBench] ERROR: could not build I/O harness: {exc}")
             return 1
 
-        if run_mode_info is not None:
+        user_benchmark = getattr(args, "benchmark", None)
+        if user_benchmark:
+            test_path = Path(user_benchmark).resolve()
+            if not test_path.exists():
+                print(f"[LoopBench] ERROR: benchmark not found: {test_path}")
+                return 1
+            print(f"[LoopBench] Benchmark   : {test_path} (user-supplied evaluator)")
+        elif run_mode_info is not None:
             test_path = Path(run_mode_info["test_path"])
             print(
                 f"[LoopBench] Run mode enabled ({run_mode_info['reason']}): "

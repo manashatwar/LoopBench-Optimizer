@@ -215,7 +215,15 @@ def _cmd_run(args: argparse.Namespace) -> int:
 
 # ── init subcommand ────────────────────────────────────────────────────────────
 def _cmd_init(args: argparse.Namespace) -> int:
-    """Scaffold a new loopbench.yaml project."""
+    """Scaffold a new loopbench.yaml project (or a benchmark template)."""
+    if getattr(args, "benchmark", None):
+        from loopbench.scaffold import write_benchmark_template
+        path = write_benchmark_template(args.benchmark)
+        print(f"[LoopBench] ✅ Benchmark template created: {path}")
+        print("[LoopBench] Edit the correctness + speed sections, then run:")
+        print(f"  loopbench run --target <repo|path> --target-file <file> --benchmark {path}")
+        return 0
+
     name = args.name or "my_project"
     output = Path(args.output or ".") / f"{name}.yaml"
 
@@ -315,6 +323,11 @@ def build_parser() -> argparse.ArgumentParser:
                        help="File to optimize, relative to repo root (hero mode)")
     run_p.add_argument("--test-command", dest="test_command",
                        help="Override the detected test command (hero mode)")
+    run_p.add_argument("--benchmark", dest="benchmark",
+                       help="Path to an external benchmark/evaluator file (lives in YOUR "
+                            "workspace, not the target repo). LoopBench runs it against the "
+                            "target via LOOPBENCH_PROGRAM_PATH. Scaffold one with "
+                            "'loopbench init --benchmark <path>'.")
     run_p.add_argument("--io-tests", dest="io_tests",
                        help="Path to a JSON file of stdin/stdout test cases (run mode). "
                             "Enables optimizing scripts that read stdin and print stdout "
@@ -339,9 +352,12 @@ def build_parser() -> argparse.ArgumentParser:
     )
 
     # ── init ──
-    init_p = sub.add_parser("init", help="Scaffold a new loopbench.yaml")
+    init_p = sub.add_parser("init", help="Scaffold a new loopbench.yaml or benchmark")
     init_p.add_argument("--name", "-n", help="Project name (default: my_project)")
     init_p.add_argument("--output", "-o", help="Directory to create the YAML in (default: .)")
+    init_p.add_argument("--benchmark", dest="benchmark",
+                        help="Instead of a YAML, scaffold a benchmark template at this path "
+                             "(e.g. --benchmark bench.py) for use with 'run --benchmark'.")
 
     # ── check ──
     check_p = sub.add_parser("check", help="Validate config and dry-run the evaluator")

@@ -280,6 +280,32 @@ The other two constraints from the spec are always on and need no config: the
 sandbox runs with `--network=none` (**no external network**) and mounts your
 code **read-only** (**no unsafe file writes**).
 
+### Optimizing an arbitrary repo file (where the benchmark lives)
+
+When you point LoopBench at someone else's repo, you don't edit files inside
+that repo. The benchmark lives in **your own workspace** and is passed with
+`--benchmark`; LoopBench injects it into the sandbox and runs it against the
+target (via `LOOPBENCH_PROGRAM_PATH`). The cloned repo stays pristine.
+
+```bash
+# 1. Scaffold a benchmark template in your workspace
+loopbench init --benchmark bench.py
+
+# 2. Edit bench.py — fill in the correctness assertions and the speed workload
+#    (it loads the candidate from LOOPBENCH_PROGRAM_PATH)
+
+# 3. Run against any repo/file; the benchmark scores each candidate
+loopbench run \
+  --target https://github.com/user/repo \
+  --target-file path/in/repo/module.py \
+  --benchmark bench.py \
+  --pip "numpy" -i 6
+```
+
+Priority for the evaluator: `--benchmark` > `--io-tests` (run mode) >
+auto-detected `test_*.py` in the repo. So `--benchmark` is the general answer
+for a repo that has no usable tests of its own.
+
 ### Third-party dependencies (numpy, pandas, …)
 
 Real code imports packages that aren't in the base sandbox. LoopBench detects

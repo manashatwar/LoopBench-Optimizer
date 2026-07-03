@@ -189,7 +189,8 @@ def resolve_deps_with_source(
     > imports scanned across the repo. Returns (packages, source_label).
     """
     if explicit:
-        return [p for p in explicit if p and p not in _SKIP], "explicit --pip/config"
+        # An explicit list is authoritative — honor it verbatim (no _SKIP filter).
+        return [p for p in explicit if p], "explicit --pip/config"
 
     repo_path = Path(repo_path)
 
