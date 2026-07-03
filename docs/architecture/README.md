@@ -9,7 +9,7 @@ Mermaid diagrams that render directly on GitHub.
 | [Ghost Worktree System](ghost-worktree-system.md) | Isolated, disposable git worktrees per candidate |
 | [Repo Context Mapper](repo-context-mapper.md) | Builds an LLM-ready, token-budgeted map of the repository |
 | [LLM Editing Engine](llm-editing.md) | Full-rewrite / search-replace / auto edit strategies |
-| [Docker Sandbox](docker-sandbox.md) | Network-isolated, read-only test execution |
+| [Docker Sandbox](docker-sandbox.md) | Network-isolated, read-only execution of any test/benchmark command |
 | [Candidate Database](candidate-database.md) | SQLite audit trail of runs, candidates, and events |
 | [Search Strategy](search-strategy.md) | How the next baseline is chosen each generation |
 
