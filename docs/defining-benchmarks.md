@@ -101,81 +101,26 @@ decay constant so scores spread meaningfully across your range.
 
 ---
 
-## Option B — Evaluator-first (most control): your own scoring formula
+## Option B — Custom scoring: combine multiple signals
 
-Best when you want to define exactly how the metric is computed and combined
-(e.g. weight accuracy vs. speed vs. memory). The benchmark is an `evaluator.py`
-that returns the metrics.
+Best when "better" isn't a single timing — e.g. you want to weight accuracy vs.
+speed vs. memory. **You don't need a separate `evaluator.py` — your test file is
+the evaluator.** Compute whatever you want inside the test and expose it two ways:
 
-### Full flow
+- Do the weighting yourself and print one number as `LOOPBENCH_SPEED_MS`
+  (Option A) — e.g. `score = time_ms / accuracy`, so lower time *and* higher
+  accuracy both help.
+- Or print several named numbers and choose which to optimize with a regex
+  metric (Option C) plus `--metric <name>`.
 
-```bash
-# 1. Scaffold a project config
-loopbench init --name my_project
-#   creates my_project.yaml
-```
+Correctness stays the hard gate: any failing test scores `0.0`.
 
-Create the three files (see `examples/fibonacci_optimizer/` for a full set):
-
-```
-my_project/
-├── initial_program.py     # code to optimize (wrap the mutable part in EVOLVE-BLOCK)
-├── test_my_project.py     # pytest suite
-├── evaluator.py           # returns the benchmark score
-└── loopbench.yaml         # wiring + stop target
-```
-
-Your `evaluator.py` defines the benchmark:
-
-```python
-from openevolve.evaluation_result import EvaluationResult
-
-def evaluate(program_path: str) -> EvaluationResult:
-    correctness = ...   # 1.0 if all tests pass else 0.0
-    speed_ms    = ...   # measured from your test output
-    speed_score = ...   # your own formula
-    return EvaluationResult(metrics={
-        "correctness": correctness,
-        "speed_ms": speed_ms,
-        "speed_score": speed_score,
-        "combined_score": correctness * speed_score,   # <- the benchmark
-    })
-```
-
-Set the stop target in `loopbench.yaml`:
-
-```yaml
-target:
-  program: initial_program.py
-  evaluator: evaluator.py
-
-sandbox:
-  use_docker: true
-  command: "pytest test_my_project.py -v -s -q --tb=short"
-
-metric:
-  name: "combined_score"
-  threshold: 0.95        # stop once a candidate reaches this score
-  direction: "maximize"
-
-constraints:
-  max_iterations: 20
-```
-
-Validate, then run:
-
-```bash
-# Dry-run the evaluator against the initial program (no LLM calls)
-loopbench check --config my_project/loopbench.yaml
-
-# Run the optimization
-loopbench run --config my_project/loopbench.yaml
-
-# Override iterations / stop target from the CLI if you want
-loopbench run --config my_project/loopbench.yaml -i 30 -t 0.98
-```
-
-> Template you can copy: `examples/fibonacci_optimizer/` (all four files).
+> **Advanced (rarely needed).** A fully custom
+> `evaluate(program_path) -> EvaluationResult` scorer is also supported through
+> the separate OpenEvolve `optimizer` engine (`optimizer run --config ...`). The
+> sandbox flow above covers almost every case and is what all the examples use,
+> so reach for this only if you specifically need the evolutionary-population
+> engine.
 
 ---
 
@@ -195,14 +140,15 @@ metrics:
   success_threshold: 0.10        # min improvement to count as a win
 ```
 
-Then run as in Option B:
+Set which captured metric to optimize via `metric.name` in the config (e.g.
+`throughput`), then run:
 
 ```bash
 loopbench run --config my_project/loopbench.yaml
 ```
 
-LoopBench runs your tests, greps each pattern out of stdout/stderr, and uses the
-captured values as the metrics for scoring.
+LoopBench runs your tests, greps each pattern out of stdout/stderr, and
+optimizes the metric you named (falling back to `combined_score`).
 
 ---
 
@@ -459,7 +405,7 @@ python -m http.server 8080 --directory docs   # then open http://localhost:8080
 | You want… | Use | Where you set the benchmark |
 |-----------|-----|------------------------------|
 | Point-and-go on a file/repo | **A** | `test_*.py` (`LOOPBENCH_SPEED_MS`) + `sandbox/entrypoint.sh` formula |
-| Full control over the score formula | **B** | `evaluator.py` + `metric.threshold` in `loopbench.yaml` |
+| Combine multiple signals (accuracy + speed + memory) | **B** | compute one score in your `test_*.py`, or a named metric via C |
 | Reuse existing perf output | **C** | `metrics.patterns` regex in the config |
 | Optimize a stdin/stdout script | **D** | `--io-tests` JSON of input/output cases |
 
