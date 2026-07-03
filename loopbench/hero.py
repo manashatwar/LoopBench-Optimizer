@@ -221,7 +221,31 @@ def run_target_pipeline(args: argparse.Namespace) -> int:
             return 1
         target_path = Path(target_path)
 
-        test_path = _autodetect_test_file(repo_path, target_path)
+        # ── Run mode: stdin/stdout scripts (competitive programming, CLI tools) ─
+        # If I/O test cases are provided (or auto-detected), generate a pytest
+        # harness that runs the target as a SUBPROCESS instead of importing it.
+        # This lets LoopBench optimize scripts that read stdin at module top
+        # level (which would otherwise crash the default import-based harness).
+        run_mode_info = None
+        try:
+            from loopbench.io_harness import maybe_build_io_harness
+            run_mode_info = maybe_build_io_harness(
+                getattr(args, "io_tests", None),
+                target_path,
+                Path(tempfile.mkdtemp(prefix="loopbench_io_")),
+            )
+        except Exception as exc:
+            print(f"[LoopBench] ERROR: could not build I/O harness: {exc}")
+            return 1
+
+        if run_mode_info is not None:
+            test_path = Path(run_mode_info["test_path"])
+            print(
+                f"[LoopBench] Run mode enabled ({run_mode_info['reason']}): "
+                f"{run_mode_info['n_cases']} I/O case(s) — testing via subprocess"
+            )
+        else:
+            test_path = _autodetect_test_file(repo_path, target_path)
         test_cmd = args.test_command or fw.test_command or "pytest"
 
         # Ensure target is a Git repository, fallback to initializing a temporary one if needed
@@ -246,8 +270,15 @@ def run_target_pipeline(args: argparse.Namespace) -> int:
                 shutil.copytree(original_repo_path, repo_path_copy, symlinks=True, ignore_dangling_symlinks=True)
                 
                 target_path = (repo_path_copy / target_path.relative_to(original_repo_path)).resolve()
+                # Only relocate the test file if it lives inside the repo. The
+                # run-mode I/O harness is generated in a separate temp dir and
+                # must stay where it is (the sandbox copies it in by basename).
                 if test_path:
-                    test_path = (repo_path_copy / test_path.relative_to(original_repo_path)).resolve()
+                    try:
+                        rel_test = Path(test_path).resolve().relative_to(original_repo_path.resolve())
+                        test_path = (repo_path_copy / rel_test).resolve()
+                    except ValueError:
+                        pass  # harness / external test file — leave as-is
                 repo_path = repo_path_copy
                 
                 try:

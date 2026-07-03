@@ -288,6 +288,7 @@ loopbench run --target . --target-file src/main.py --metric latency -i 5
 #   --target-file   file to optimize (relative to repo root)
 #   --metric        metric name to optimize (default: combined_score)
 #   --test-command  override the auto-detected test command
+#   --io-tests      JSON of stdin/stdout cases (run mode — optimize scripts that read stdin)
 #   -i / --iterations   max generations (default: 5)
 #   -o / --output   output directory (default: loopbench_output/)
 

@@ -1,0 +1,32 @@
+[
+  {
+    "name": "princess_sample",
+    "input": "2\nab\nbabba\n",
+    "output": "NO\nYES"
+  },
+  {
+    "name": "single_aba",
+    "input": "1\naba\n",
+    "output": "YES"
+  },
+  {
+    "name": "no_pal",
+    "input": "1\nabc\n",
+    "output": "NO"
+  },
+  {
+    "name": "adjacent_pair",
+    "input": "1\naab\n",
+    "output": "YES"
+  },
+  {
+    "name": "big_no",
+    "input": "1\nabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabc\n",
+    "output": "NO"
+  },
+  {
+    "name": "big_yes",
+    "input": "1\nabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabczz\n",
+    "output": "YES"
+  }
+]

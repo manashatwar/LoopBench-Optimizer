@@ -315,6 +315,10 @@ def build_parser() -> argparse.ArgumentParser:
                        help="File to optimize, relative to repo root (hero mode)")
     run_p.add_argument("--test-command", dest="test_command",
                        help="Override the detected test command (hero mode)")
+    run_p.add_argument("--io-tests", dest="io_tests",
+                       help="Path to a JSON file of stdin/stdout test cases (run mode). "
+                            "Enables optimizing scripts that read stdin and print stdout "
+                            "(e.g. competitive-programming solutions).")
     run_p.add_argument("--output", "-o", help="Output directory (default: loopbench_output/)")
     run_p.add_argument("--iterations", "-i", type=int, help="Override max iterations")
     run_p.add_argument("--target-score", "-t", type=float, help="Override target score threshold")

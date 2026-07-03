@@ -204,6 +204,48 @@ captured values as the metrics for scoring.
 
 ---
 
+## Option D — Run mode: stdin/stdout scripts (no importable tests)
+
+Best for scripts that read **stdin** and write **stdout** at module top level —
+competitive-programming solutions, CLI tools, filters. The default harness
+*imports* the target, which crashes such scripts (they call `input()` on
+import). Run mode instead executes the target as a **subprocess**, feeds it
+stdin, and compares stdout against expected output.
+
+Provide a JSON file of I/O cases:
+
+```json
+[
+  {"name": "sample",  "input": "2\nab\nbabba\n", "output": "NO\nYES"},
+  {"name": "big_no",  "input": "1\nabcabc...\n", "output": "NO"}
+]
+```
+
+Then point LoopBench at the script with `--io-tests`:
+
+```bash
+loopbench run \
+  --target . \
+  --target-file path/to/solution.py \
+  --io-tests path/to/io_tests.json \
+  -i 6
+```
+
+LoopBench auto-generates a pytest harness that runs `python solution.py` per
+case, checks the output, and times the heaviest case for the speed score. You
+can also drop the cases in a conventional file next to the target
+(`<stem>.io.json` or `io_tests.json`) and omit `--io-tests` — it's auto-detected.
+
+- Correctness = every case's stdout matches (compared line-by-line, trailing
+  whitespace ignored).
+- The metric = wall-clock time of the largest input.
+
+> Template you can copy: `examples/stdin_palindrome/` (`solution.py` +
+> `io_tests.json`). Verified end-to-end: a naive O(n³) stdin solver was evolved
+> to O(n), all cases green, on a script that can't even be imported.
+
+---
+
 ## Inspecting the benchmark result
 
 Every run writes artifacts to `loopbench_output/` (hero mode) or your
@@ -235,5 +277,6 @@ python -m http.server 8080 --directory docs   # then open http://localhost:8080
 | Point-and-go on a file/repo | **A** | `test_*.py` (`LOOPBENCH_SPEED_MS`) + `sandbox/entrypoint.sh` formula |
 | Full control over the score formula | **B** | `evaluator.py` + `metric.threshold` in `loopbench.yaml` |
 | Reuse existing perf output | **C** | `metrics.patterns` regex in the config |
+| Optimize a stdin/stdout script | **D** | `--io-tests` JSON of input/output cases |
 
 See the [Quick Start](../QUICKSTART.md) for the end-to-end 5-minute walkthrough.
