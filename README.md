@@ -332,8 +332,9 @@ Common `loopbench run` flags (full list via `loopbench run --help`):
 | `-i`, `-o` | Iterations, output directory |
 
 See [**Defining Your Benchmark**](docs/defining-benchmarks.md) for every scoring
-option in depth. The separate `optimizer` CLI exposes the advanced OpenEvolve
-engine (MAP-Elites / islands) — most users won't need it.
+option in depth. The separate `optimizer` CLI runs the **same** LLM + evaluator
+loop with a heavier search strategy (OpenEvolve MAP-Elites / islands) — most
+users won't need it.
 
 ---
 

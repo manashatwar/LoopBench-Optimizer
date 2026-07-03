@@ -117,10 +117,15 @@ Correctness stays the hard gate: any failing test scores `0.0`.
 
 > **Advanced (rarely needed).** A fully custom
 > `evaluate(program_path) -> EvaluationResult` scorer is also supported through
-> the separate OpenEvolve `optimizer` engine (`optimizer run --config ...`). The
-> sandbox flow above covers almost every case and is what all the examples use,
-> so reach for this only if you specifically need the evolutionary-population
-> engine.
+> the separate OpenEvolve `optimizer` engine (`optimizer run --config ...`).
+>
+> This is **not** "the smart part" — the intelligence (the LLM that writes the
+> improvements + the evaluator-driven loop that keeps the best and learns from
+> failures) is **identical** in both. The only difference is the *search
+> strategy*: `loopbench run` uses greedy/beam selection, while the `optimizer`
+> engine adds MAP-Elites / island populations for broader exploration on very
+> hard, open-ended problems. For "make this faster and keep tests green," the
+> default flow is just as capable (and cheaper).
 
 ---
 
