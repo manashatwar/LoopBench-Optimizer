@@ -317,6 +317,44 @@ def _cmd_check(args: argparse.Namespace) -> int:
         return 1
 
     target = lb.get("target", {})
+
+    # External-repo job: validate structure + the local test/evaluator file.
+    # (A full dry-run needs to clone the repo + Docker, so `check` validates that
+    # the job is well-formed rather than executing it.)
+    if target.get("repo") or (target.get("file") and not target.get("program")):
+        sandbox = lb.get("sandbox", {}) or {}
+        ok = True
+        if target.get("repo"):
+            print(f"[LoopBench] ✅ repo   : {target['repo']}")
+        if not target.get("file"):
+            print("[LoopBench] ❌ target.file is required")
+            ok = False
+        else:
+            print(f"[LoopBench] ✅ file   : {target['file']}")
+        ev = target.get("evaluator") or sandbox.get("test_file")
+        if not ev:
+            print("[LoopBench] ❌ target.evaluator (your test file) is required")
+            ok = False
+        else:
+            ev_path = Path(_resolve_path(base_dir, ev))
+            if ev_path.exists():
+                print(f"[LoopBench] ✅ test   : {ev_path}")
+                text = ev_path.read_text(encoding="utf-8")
+                if "LOOPBENCH_SPEED_MS" not in text:
+                    print("[LoopBench] ⚠️  test file does not print LOOPBENCH_SPEED_MS "
+                          "— the speed metric will be 0 (correctness-only scoring).")
+            else:
+                print(f"[LoopBench] ❌ test file not found: {ev_path}")
+                ok = False
+        if sandbox.get("command"):
+            print(f"[LoopBench] ✅ command: {sandbox['command']}")
+        else:
+            print("[LoopBench] ⚠️  no sandbox.command — defaulting to pytest")
+        print("[LoopBench] " + ("✅ Job looks valid. Run it with: "
+                                 f"loopbench run --config {config_path.name}"
+                                 if ok else "❌ Fix the errors above."))
+        return 0 if ok else 1
+
     program = _resolve_path(base_dir, target.get("program", ""))
     evaluator = _resolve_path(base_dir, target.get("evaluator", ""))
 

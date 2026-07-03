@@ -105,6 +105,12 @@ test scores `0.0` and is rejected.
 Declares the target program, evaluator, sandbox command, the metric to optimize,
 and the LLM settings.
 
+> **Note — external repos need only two files.** These bundled examples include
+> four files because they're self-contained. When you optimize *someone else's*
+> repo (`loopbench init --job`), you write just **`loopbench.yaml` + `test_target.py`**:
+> the target is the real repo file (no `initial_program.py`), and the sandbox
+> scores your test directly (no `evaluator.py` — the test file *is* the evaluator).
+
 ## Writing your own example
 
 1. Create a new directory under `examples/`.

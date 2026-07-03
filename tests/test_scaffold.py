@@ -39,3 +39,15 @@ def test_evaluator_is_valid_python_with_markers(tmp_path):
 def test_creates_nested_dir(tmp_path):
     write_job(str(tmp_path / "a" / "b" / "job"))
     assert (tmp_path / "a" / "b" / "job" / "loopbench.yaml").exists()
+
+
+def test_check_accepts_scaffolded_external_job(tmp_path):
+    """`loopbench check` must validate an external-repo job (no evaluator.py)."""
+    import argparse
+
+    from loopbench.cli import _cmd_check
+
+    write_job(str(tmp_path / "job"))
+    args = argparse.Namespace(config=str(tmp_path / "job" / "loopbench.yaml"))
+    assert _cmd_check(args) == 0
+
