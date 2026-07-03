@@ -7,6 +7,7 @@ from pathlib import Path
 import pytest
 
 from loopbench.io_harness import (
+    detect_stdin_usage,
     generate_io_test_file,
     load_io_cases,
     maybe_build_io_harness,
@@ -18,6 +19,40 @@ def _write_cases(tmp_path: Path, cases) -> Path:
     p = tmp_path / "io_tests.json"
     p.write_text(json.dumps(cases), encoding="utf-8")
     return p
+
+
+class TestDetectStdinUsage:
+    def _write(self, tmp_path: Path, src: str) -> str:
+        p = tmp_path / "prog.py"
+        p.write_text(src, encoding="utf-8")
+        return str(p)
+
+    def test_top_level_input(self, tmp_path: Path):
+        assert detect_stdin_usage(self._write(tmp_path, "t = int(input())\nprint(t)\n")) is True
+
+    def test_top_level_sys_stdin(self, tmp_path: Path):
+        src = "import sys\ndata = sys.stdin.read()\nprint(data)\n"
+        assert detect_stdin_usage(self._write(tmp_path, src)) is True
+
+    def test_from_import_stdin(self, tmp_path: Path):
+        src = "from sys import stdin\nfor line in stdin:\n    print(line)\n"
+        assert detect_stdin_usage(self._write(tmp_path, src)) is True
+
+    def test_input_inside_function_is_not_top_level(self, tmp_path: Path):
+        src = "def f():\n    return input()\n\ndef g(x):\n    return x + 1\n"
+        assert detect_stdin_usage(self._write(tmp_path, src)) is False
+
+    def test_input_in_main_guard_is_run_mode(self, tmp_path: Path):
+        src = "def solve(x):\n    return x\n\nif __name__ == '__main__':\n    print(solve(input()))\n"
+        # A __main__ guard that reads stdin still needs run mode.
+        assert detect_stdin_usage(self._write(tmp_path, src)) is True
+
+    def test_no_stdin_usage(self, tmp_path: Path):
+        src = "def add(a, b):\n    return a + b\n\nprint(add(1, 2))\n"
+        assert detect_stdin_usage(self._write(tmp_path, src)) is False
+
+    def test_syntax_error_returns_false(self, tmp_path: Path):
+        assert detect_stdin_usage(self._write(tmp_path, "def (:\n")) is False
 
 
 class TestLoadIoCases:

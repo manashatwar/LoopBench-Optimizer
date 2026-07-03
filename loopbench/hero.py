@@ -246,6 +246,21 @@ def run_target_pipeline(args: argparse.Namespace) -> int:
             )
         else:
             test_path = _autodetect_test_file(repo_path, target_path)
+            # Nudge: if the target reads stdin at top level, it can't be imported
+            # for testing. Warn the user toward run mode instead of a silent 0%.
+            try:
+                from loopbench.io_harness import detect_stdin_usage
+                if detect_stdin_usage(str(target_path)):
+                    print(
+                        "[LoopBench] ⚠️  This script reads from stdin at top level, so it "
+                        "cannot be imported for testing.\n"
+                        "            Provide stdin/stdout cases with "
+                        "--io-tests <cases.json> to optimize it in run mode\n"
+                        "            (or place io_tests.json next to the file). "
+                        "See docs/defining-benchmarks.md — Option D."
+                    )
+            except Exception:
+                pass
         test_cmd = args.test_command or fw.test_command or "pytest"
 
         # Ensure target is a Git repository, fallback to initializing a temporary one if needed

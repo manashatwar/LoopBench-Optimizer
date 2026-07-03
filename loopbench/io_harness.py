@@ -17,9 +17,67 @@ existing Docker sandbox and scoring pipeline work unchanged. The generated file:
 
 from __future__ import annotations
 
+import ast
 import json
 from pathlib import Path
 from typing import Any, Dict, List, Tuple
+
+
+def detect_stdin_usage(program_path: str) -> bool:
+    """Best-effort: does this script read stdin at module top level?
+
+    Returns True if the module body (i.e. code that runs on import, NOT inside a
+    function/class or an ``if __name__ == "__main__"`` guard) calls ``input(...)``
+    or touches ``sys.stdin``. Such scripts crash the default import-based harness,
+    so run mode (``--io-tests``) is required.
+
+    Detection is conservative: on any parse error it returns False.
+    """
+    try:
+        source = Path(program_path).read_text(encoding="utf-8")
+        tree = ast.parse(source)
+    except (OSError, SyntaxError, ValueError):
+        return False
+
+    def _guards_main(node: ast.If) -> bool:
+        """True if `node` is an `if __name__ == "__main__":` guard."""
+        test = node.test
+        if not isinstance(test, ast.Compare):
+            return False
+        left = test.left
+        if isinstance(left, ast.Name) and left.id == "__name__":
+            return True
+        for comp in test.comparators:
+            if isinstance(comp, ast.Name) and comp.id == "__name__":
+                return True
+        return False
+
+    def _reads_stdin(node: ast.AST) -> bool:
+        for sub in ast.walk(node):
+            # input(...) call
+            if isinstance(sub, ast.Call) and isinstance(sub.func, ast.Name) and sub.func.id == "input":
+                return True
+            # sys.stdin  (attribute access, e.g. sys.stdin.read())
+            if isinstance(sub, ast.Attribute) and sub.attr == "stdin":
+                return True
+            # bare `stdin` name (from `from sys import stdin`)
+            if isinstance(sub, ast.Name) and sub.id == "stdin":
+                return True
+        return False
+
+    # Only inspect top-level statements. Skip function/class defs (deferred) and
+    # the __main__ guard (only runs as a script, which run mode does anyway).
+    for stmt in tree.body:
+        if isinstance(stmt, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
+            continue
+        if isinstance(stmt, ast.If) and _guards_main(stmt):
+            # A __main__ guard that reads stdin still means run-mode territory.
+            if _reads_stdin(stmt):
+                return True
+            continue
+        if _reads_stdin(stmt):
+            return True
+    return False
 
 
 def load_io_cases(path: str) -> List[Dict[str, str]]:
