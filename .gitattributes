@@ -1,0 +1,11 @@
+# Shell scripts run inside Linux Docker containers — they MUST use LF endings,
+# even when checked out on Windows, or /bin/sh fails on the carriage returns.
+*.sh text eol=lf
+sandbox/entrypoint.sh text eol=lf
+
+# Normalize common text files to LF in the repo.
+*.py text eol=lf
+*.yaml text eol=lf
+*.yml text eol=lf
+*.md text eol=lf
+*.json text eol=lf
