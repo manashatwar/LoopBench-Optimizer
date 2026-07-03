@@ -15,6 +15,7 @@ green.
 | [`palindrome_optimizer/`](palindrome_optimizer/) | Longest palindromic substring (CodeChef PRINCESS): naive O(n³) → expand-around-center O(n²) |
 | [`stdin_palindrome/`](stdin_palindrome/) | **Run mode** demo: a stdin/stdout script (reads `input()`) optimized via subprocess I/O test cases, no import needed |
 | [`numpy_vectorize_optimizer/`](numpy_vectorize_optimizer/) | Third-party deps demo: a NumPy Python-loop MSE the sandbox **auto-installs NumPy** to run, then vectorizes |
+| [`gradient_descent_optimizer/`](gradient_descent_optimizer/) | Linear-regression gradient descent (naive Python loops → NumPy vectorization); auto-installs NumPy |
 | [`llm_prompt_optimization/`](llm_prompt_optimization/) | Prompt-evolution example (also used by the template-resolution tests) |
 | [`algotune/`](algotune/) | Real AlgoTune task projects used as fixtures for the repo-context mapper tests |
 | `repo_mapper_demo.py` | Demo of `RepoContextMapper` — builds an LLM-ready context map of a repo |
