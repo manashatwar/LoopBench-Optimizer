@@ -121,15 +121,19 @@ git add docs/data.json && git commit -m "add run results" && git push
 
 ## What next
 
-- **Optimize a real repo:** `loopbench run --target https://github.com/user/repo --metric latency`
-- **Try the second example:** swap the target file to
+- **Optimize an external repo (recommended):** scaffold a job folder, edit two
+  files, and run — the target repo stays untouched:
+  ```bash
+  loopbench init --job my_job                    # my_job/loopbench.yaml + test_target.py
+  #   edit target.repo/file + pip in loopbench.yaml
+  #   fill in the correctness + speed TODOs in test_target.py
+  loopbench run --config my_job/loopbench.yaml
+  ```
+- **Quick one-off:** `loopbench run --target https://github.com/user/repo --target-file path/to/file.py --metric latency`
+- **Try another example:** swap the target file to
   `examples/prime_counter_optimizer/initial_program.py` (trial division → sieve)
-- **Config-driven runs:** each example ships a `loopbench.yaml` you can run with
-  `loopbench run --config examples/fibonacci_optimizer/loopbench.yaml`
-  (unlike hero mode, config mode uses the `llm:` block *in the YAML* — its
-  `api_base`/model default to Gemini, so edit them to match your provider if
-  you're using Groq or OpenAI)
 - **Define your own benchmark:** see [Defining Your Benchmark](docs/defining-benchmarks.md)
-  for the three ways to score a new file or repo (with full commands)
+  for every way to score a file/repo — tests, evaluators, run mode, dependencies,
+  and cost/runtime budgets (with full commands)
 - **Full reference:** see the main [README](README.md) and
   [docs/architecture/](docs/architecture/README.md)

@@ -175,8 +175,52 @@ Minutes later you get four artifacts:
 
 > Requires Docker Desktop running (tests execute in an isolated sandbox).
 
-> **Optimizing your own file or repo?** See [Defining Your Benchmark](docs/defining-benchmarks.md)
-> for the three ways to tell LoopBench what "better" means (with full commands).
+---
+
+## Two ways to run
+
+| Mode | Command | Best for |
+|------|---------|----------|
+| **Hero** (above) | `loopbench run --target <repo> --target-file <file> --metric latency` | A quick run; files that already have tests, or simple targets |
+| **Config job** (below) | `loopbench run --config my_job/loopbench.yaml` | Real projects and **external repos** — declarative, repeatable, no edits inside the target repo |
+
+## Optimize an external repo (config mode)
+
+For someone else's repo, keep everything in a small **job folder in your own
+workspace** — you never edit files inside the target repo. Scaffold it in one
+command, so you only fill in configuration:
+
+```bash
+loopbench init --job my_job      # creates my_job/loopbench.yaml + my_job/test_target.py
+```
+
+Then edit two files and run:
+
+**1. `my_job/loopbench.yaml`** — point it at the repo, the file to optimize, and deps:
+
+```yaml
+target:
+  repo: https://github.com/OWNER/REPO     # cloned automatically (or a local path)
+  file: path/in/repo/module.py            # the file to optimize
+  evaluator: test_target.py               # this job's test (below)
+sandbox:
+  command: "pytest test_target.py -v -s -q"
+  pip: ["numpy"]                          # installed in the sandbox
+metric:      { name: "combined_score", threshold: 0.95 }
+constraints: { max_iterations: 10, max_tokens_total: 200000 }
+```
+
+**2. `my_job/test_target.py`** — fill in the two TODOs: a correctness check and a
+speed workload that prints `LOOPBENCH_SPEED_MS`.
+
+```bash
+loopbench run --config my_job/loopbench.yaml
+```
+
+LoopBench clones the repo, installs the deps, and optimizes the file using your
+test — the target repo stays untouched. See
+[**Defining Your Benchmark**](docs/defining-benchmarks.md) for all the options
+(dependencies, cost/runtime budgets, custom test commands, stdin/run mode).
 
 ---
 
@@ -199,9 +243,13 @@ Verified in practice: a **1,233-line** file routed to `search_replace` produced 
 
 ---
 
-## Alternative: config-driven runs
+## Advanced: the `optimizer` engine (OpenEvolve)
 
-For repeatable runs with a full 6-section config, use the `optimizer` CLI:
+Separate from `loopbench`, the `optimizer` CLI exposes the underlying OpenEvolve
+engine (MAP-Elites / island populations) for repeatable runs with a full
+6-section config. Most users should use `loopbench run` (hero or config mode)
+above; reach for `optimizer` only if you need the evolutionary-population
+features.
 
 ```bash
 optimizer init --output optimizer.yaml   # generate a template
@@ -238,9 +286,12 @@ LoopBench-Optimizer/
 │   ├── entrypoint.sh            # container entrypoint
 │   └── Dockerfile.sandbox       # test execution image
 │
-├── loopbench/                   # LoopBench CLI — the `loopbench run` hero command
-│   ├── cli.py                   # run (--target/--metric) / init / check
-│   └── hero.py                  # clone → optimize → emit patch + dashboard + log
+├── loopbench/                   # LoopBench CLI + hero/config pipeline
+│   ├── cli.py                   # run (hero + --config) / init (--job) / check
+│   ├── hero.py                  # clone → optimize → emit patch + dashboard + log
+│   ├── scaffold.py              # `init --job` job-folder generator
+│   ├── deps.py                  # dependency detection (requirements/pyproject/imports)
+│   └── io_harness.py            # run mode: stdin/stdout subprocess harness
 │
 ├── docs/                        # Static GitHub Pages dashboard
 │   └── index.html               # Single-file React dashboard (no build step)
@@ -296,12 +347,35 @@ loopbench run --target . --target-file src/main.py --metric latency -i 5
 #   -i / --iterations   max generations (default: 5)
 #   -o / --output   output directory (default: loopbench_output/)
 
-# Scaffold / validate an evaluator-first config (optional)
-loopbench init  --name my_project
-loopbench check --config loopbench.yaml
+# Optimize an external repo via a config job (recommended for real projects)
+loopbench init --job my_job                  # scaffold my_job/loopbench.yaml + test_target.py
+loopbench run  --config my_job/loopbench.yaml
+
+# Validate a config + dry-run its evaluator before a full run
+loopbench check --config my_job/loopbench.yaml
 ```
 
-### `optimizer` — config-driven runs
+### `loopbench run --config` — config job (external repos)
+
+A `loopbench.yaml` whose `target` names a **repo + file** runs the full clone →
+optimize pipeline (Docker sandbox, auto-deps, budgets):
+
+```yaml
+target:
+  repo: https://github.com/OWNER/REPO     # or a local repo path
+  file: path/in/repo/module.py
+  evaluator: test_target.py               # your test, in the job folder
+sandbox:  { command: "pytest test_target.py -v -s -q", pip: ["numpy"] }
+metric:   { name: "combined_score", threshold: 0.95 }
+constraints: { max_iterations: 10, max_tokens_total: 200000 }
+```
+
+```bash
+loopbench init --job my_job                  # scaffold it
+loopbench run  --config my_job/loopbench.yaml # clone + optimize
+```
+
+### `optimizer` — advanced engine (OpenEvolve MAP-Elites)
 
 ```bash
 # Generate a config template (all 6 required sections)

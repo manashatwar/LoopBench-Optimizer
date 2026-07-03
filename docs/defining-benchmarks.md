@@ -13,7 +13,9 @@ These combine into a single `combined_score` that drives evolution:
 combined_score = correctness × metric_score
 ```
 
-There are three ways to define this, from fastest to most flexible. Pick one.
+There are four ways to define this, from fastest to most flexible (A–D below).
+Pick one — then see [Optimizing an external repo](#optimizing-an-external-repo-config-driven)
+to package it as a config job for someone else's repo.
 
 ---
 

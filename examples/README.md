@@ -5,6 +5,16 @@ Optimizer. Each optimizer example is a small, self-contained project you can
 point the optimizer at to watch it evolve faster code while keeping every test
 green.
 
+> **Optimizing an external repo instead of these examples?** You don't add files
+> here — scaffold a job folder in your own workspace and point it at the repo:
+> ```bash
+> loopbench init --job my_job
+> loopbench run --config my_job/loopbench.yaml
+> ```
+> See [Defining Your Benchmark → Optimizing an external repo](../docs/defining-benchmarks.md).
+> The examples below use the same building blocks (a test that prints
+> `LOOPBENCH_SPEED_MS`), just bundled as self-contained demos.
+
 ## Contents
 
 | Path | What it is |
