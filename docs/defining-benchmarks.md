@@ -285,23 +285,32 @@ code **read-only** (**no unsafe file writes**).
 Real code imports packages that aren't in the base sandbox. LoopBench detects
 them and installs them into a cached, per-dependency-set image layered on the
 base — the install is the only networked step; the scored run stays
-`--network=none`. Detection priority:
+`--network=none`. Detection priority (authoritative first):
 
 1. `--pip "numpy scipy"` (explicit; also settable as `sandbox.pip` in config)
 2. a `requirements.txt` at the repo root
-3. imports scanned across **every** `.py` file in the repo (import names are
-   mapped to PyPI names, and standard-library/local modules are filtered out)
+3. `pyproject.toml` dependencies (PEP 621 or Poetry)
+4. imports scanned across **every** `.py` file in the repo — a best-effort
+   fallback (import names mapped to PyPI names; stdlib/local modules filtered)
 
 ```bash
-# Auto-detected from the repo's imports / requirements.txt:
+# Auto-detected from the repo's requirements.txt / pyproject.toml / imports:
 loopbench run --target . --target-file src/model.py --metric latency
 
-# Or pin them explicitly (fast, deterministic):
+# Or pin them explicitly (fast, deterministic — recommended for real projects):
 loopbench run --target . --target-file src/model.py --pip "numpy scipy"
 ```
 
-The first run with a new dependency set builds the image (a minute or two);
-later runs reuse it.
+The run prints which source the dependencies came from, so you can gauge
+confidence. The first run with a new dependency set builds the image (a minute
+or two); later runs reuse it.
+
+> **Reliability note.** Import-scanning is a convenience, not a guarantee — it
+> can't resolve every import→PyPI name (e.g. `cv2`→opencv-python), misses
+> dynamic/optional imports, and infers no versions. For large or real projects,
+> prefer a declared source: a `requirements.txt`/`pyproject.toml` in the repo,
+> or an explicit `--pip` / `sandbox.pip`. LoopBench always trusts those over the
+> import scan.
 
 ### Custom sandbox commands (any test/benchmark runner)
 

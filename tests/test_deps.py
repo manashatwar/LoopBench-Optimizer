@@ -64,6 +64,46 @@ class TestDetectPythonDeps:
         assert detect_python_deps(tmp_path, tmp_path / "main.py") == ["numpy"]
 
 
+class TestSourcePrecedence:
+    def test_pep621_pyproject(self, tmp_path):
+        from loopbench.deps import resolve_deps_with_source
+        _w(tmp_path / "pyproject.toml",
+           '[project]\nname="x"\ndependencies = ["numpy>=1.22", "scipy"]\n')
+        _w(tmp_path / "main.py", "import pandas\n")
+        pkgs, src = resolve_deps_with_source(tmp_path, tmp_path / "main.py")
+        assert pkgs == ["numpy>=1.22", "scipy"]
+        assert src == "pyproject.toml"
+
+    def test_poetry_pyproject(self, tmp_path):
+        from loopbench.deps import resolve_deps_with_source
+        _w(tmp_path / "pyproject.toml",
+           '[tool.poetry.dependencies]\npython = "^3.11"\nnumpy = "^1.22"\nrequests = "*"\n')
+        pkgs, src = resolve_deps_with_source(tmp_path)
+        assert "numpy" in pkgs and "requests" in pkgs and "python" not in pkgs
+        assert src == "pyproject.toml"
+
+    def test_requirements_beats_pyproject(self, tmp_path):
+        from loopbench.deps import resolve_deps_with_source
+        _w(tmp_path / "requirements.txt", "numpy\n")
+        _w(tmp_path / "pyproject.toml", '[project]\ndependencies = ["scipy"]\n')
+        pkgs, src = resolve_deps_with_source(tmp_path)
+        assert pkgs == ["numpy"]
+        assert src == "requirements.txt"
+
+    def test_scan_reports_best_effort(self, tmp_path):
+        from loopbench.deps import resolve_deps_with_source
+        _w(tmp_path / "main.py", "import numpy\n")
+        pkgs, src = resolve_deps_with_source(tmp_path, tmp_path / "main.py")
+        assert pkgs == ["numpy"]
+        assert "best-effort" in src
+
+    def test_explicit_source_label(self, tmp_path):
+        from loopbench.deps import resolve_deps_with_source
+        pkgs, src = resolve_deps_with_source(tmp_path, None, explicit=["torch"])
+        assert pkgs == ["torch"]
+        assert "explicit" in src
+
+
 class TestNormalizeAndResolve:
     def test_normalize_from_string(self):
         assert _normalize_packages("numpy scipy numpy") == ["numpy", "scipy"]

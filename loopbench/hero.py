@@ -318,16 +318,21 @@ def run_target_pipeline(args: argparse.Namespace) -> int:
         # Detect third-party dependencies so the sandbox can run the code.
         # Priority: --pip > requirements.txt > imports scanned across the repo.
         try:
-            from loopbench.deps import detect_python_deps
+            from loopbench.deps import resolve_deps_with_source
             explicit_pip = None
             if getattr(args, "pip", None):
                 explicit_pip = str(args.pip).split()
-            pip_pkgs = detect_python_deps(Path(repo_path), Path(target_path), explicit=explicit_pip)
+            pip_pkgs, dep_source = resolve_deps_with_source(
+                Path(repo_path), Path(target_path), explicit=explicit_pip
+            )
         except Exception as exc:
             print(f"[LoopBench] WARNING: dependency detection failed: {exc}")
-            pip_pkgs = []
+            pip_pkgs, dep_source = [], "none"
         if pip_pkgs:
-            print(f"[LoopBench] Dependencies: {', '.join(pip_pkgs)}")
+            print(f"[LoopBench] Dependencies: {', '.join(pip_pkgs)}  (from {dep_source})")
+            if "best-effort" in dep_source:
+                print("[LoopBench]   note: inferred from imports — if a package fails to "
+                      "install, pin deps with --pip or a requirements.txt/pyproject.toml")
 
         # 4. Build config + LLM ensemble
         db_dir = tempfile.mkdtemp(prefix="loopbench_db_")

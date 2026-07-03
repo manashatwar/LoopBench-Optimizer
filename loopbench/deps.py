@@ -144,31 +144,84 @@ def scan_repo_imports(repo_path: Path, max_files: int = 3000) -> List[str]:
     return sorted(out)
 
 
+def _parse_pyproject(path: Path) -> List[str]:
+    """Extract dependencies from pyproject.toml (PEP 621 and Poetry)."""
+    try:
+        import tomllib  # Python 3.11+
+    except ModuleNotFoundError:  # pragma: no cover
+        return []
+    try:
+        data = tomllib.loads(path.read_text(encoding="utf-8"))
+    except Exception:
+        return []
+
+    pkgs: List[str] = []
+    # PEP 621: [project] dependencies = ["numpy>=1.22", ...]
+    project = data.get("project", {})
+    for dep in project.get("dependencies", []) or []:
+        if isinstance(dep, str) and dep.strip():
+            pkgs.append(dep.strip())
+    # Poetry: [tool.poetry.dependencies] { numpy = "^1.22", python = "..." }
+    poetry = data.get("tool", {}).get("poetry", {}).get("dependencies", {})
+    for name in poetry:
+        if name.lower() != "python":
+            pkgs.append(name)  # poetry version specs aren't pip syntax — drop them
+
+    # Filter skips and de-dup.
+    out, seen = [], set()
+    for p in pkgs:
+        base = p.split("==")[0].split(">")[0].split("<")[0].split("~")[0].strip()
+        if base in _SKIP or p in seen:
+            continue
+        seen.add(p)
+        out.append(p)
+    return out
+
+
+def resolve_deps_with_source(
+    repo_path: Path,
+    target_file: Optional[Path] = None,
+    explicit: Optional[List[str]] = None,
+) -> tuple:
+    """Resolve pip packages and report where they came from.
+
+    Priority (authoritative first): explicit > requirements.txt > pyproject.toml
+    > imports scanned across the repo. Returns (packages, source_label).
+    """
+    if explicit:
+        return [p for p in explicit if p and p not in _SKIP], "explicit --pip/config"
+
+    repo_path = Path(repo_path)
+
+    req = repo_path / "requirements.txt"
+    if req.exists():
+        pkgs = [p for p in _parse_requirements(req)
+                if p.split("==")[0].split(">")[0].strip() not in _SKIP]
+        if pkgs:
+            return pkgs, "requirements.txt"
+
+    pyproject = repo_path / "pyproject.toml"
+    if pyproject.exists():
+        pkgs = _parse_pyproject(pyproject)
+        if pkgs:
+            return pkgs, "pyproject.toml"
+
+    pkgs = scan_repo_imports(repo_path)
+    if pkgs:
+        return pkgs, "scanned imports (best-effort)"
+    if target_file is not None:
+        pkgs = scan_imports(Path(target_file))
+        if pkgs:
+            return pkgs, "scanned imports (best-effort)"
+    return [], "none"
+
+
 def detect_python_deps(
     repo_path: Path,
     target_file: Optional[Path] = None,
     explicit: Optional[List[str]] = None,
 ) -> List[str]:
-    """Resolve the pip packages the sandbox should install.
-
-    Priority: explicit list > requirements.txt at repo root > scanned imports.
-    Returns a de-duplicated list (may be empty).
-    """
-    if explicit:
-        return [p for p in explicit if p and p not in _SKIP]
-
-    repo_path = Path(repo_path)
-    req = repo_path / "requirements.txt"
-    if req.exists():
-        pkgs = [p for p in _parse_requirements(req) if p.split("==")[0].split(">")[0].strip() not in _SKIP]
-        if pkgs:
-            return pkgs
-
-    # No requirements file: scan the whole repo's imports (like the context
-    # mapper), falling back to the single target file if the repo scan is empty.
-    pkgs = scan_repo_imports(repo_path)
-    if pkgs:
-        return pkgs
-    if target_file is not None:
-        return scan_imports(Path(target_file))
-    return []
+    """Resolve the pip packages the sandbox should install (see
+    :func:`resolve_deps_with_source`). Returns a de-duplicated list."""
+    pkgs, _ = resolve_deps_with_source(repo_path, target_file, explicit)
+    return pkgs
