@@ -322,6 +322,11 @@ def build_parser() -> argparse.ArgumentParser:
     run_p.add_argument("--output", "-o", help="Output directory (default: loopbench_output/)")
     run_p.add_argument("--iterations", "-i", type=int, help="Override max iterations")
     run_p.add_argument("--target-score", "-t", type=float, help="Override target score threshold")
+    run_p.add_argument("--max-tokens", dest="max_tokens", type=int,
+                       help="Stop the loop after this many total LLM tokens (cost bound)")
+    run_p.add_argument("--max-cost", dest="max_cost", type=float,
+                       help="Stop the loop after this estimated USD spend "
+                            "(requires pricing in loopbench.yaml constraints)")
     run_p.add_argument(
         "--log-level", "-l",
         choices=["DEBUG", "INFO", "WARNING", "ERROR"],

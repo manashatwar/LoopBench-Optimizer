@@ -246,6 +246,40 @@ can also drop the cases in a conventional file next to the target
 
 ---
 
+## Constraints & cost budget
+
+LoopBench is cost-bounded: the loop stops early when a token or dollar budget is
+reached (in addition to `--iterations`). This applies to hero mode
+(`--target ...`).
+
+```bash
+# Stop after 50k total LLM tokens (works with any provider — tokens are
+# reported by the API and always enforceable)
+loopbench run --target . --target-file src/hot.py --metric latency --max-tokens 50000
+
+# Stop after an estimated $0.25 spend (requires pricing, see below)
+loopbench run --target . --target-file src/hot.py --metric latency --max-cost 0.25
+```
+
+Or declare them in `loopbench.yaml` under `constraints` (CLI flags override):
+
+```yaml
+constraints:
+  max_iterations: 20
+  max_tokens_total: 50000          # hard token budget
+  max_token_cost_usd: 0.25         # dollar budget (needs pricing below)
+  usd_per_1k_prompt: 0.00059       # your provider's input price per 1k tokens
+  usd_per_1k_completion: 0.00079   # output price per 1k tokens
+```
+
+Token counts come from the provider's `usage` field (OpenAI, Groq, and Google
+AI Studio all report it). The dollar estimate needs the two pricing fields — if
+they're 0, the USD budget is inactive but the token budget still works. Every
+generation's token/cost delta is written to the run's audit log, and the run
+summary reports total tokens, estimated cost, and whether the budget stopped it.
+
+---
+
 ## Inspecting the benchmark result
 
 Every run writes artifacts to `loopbench_output/` (hero mode) or your
@@ -278,5 +312,8 @@ python -m http.server 8080 --directory docs   # then open http://localhost:8080
 | Full control over the score formula | **B** | `evaluator.py` + `metric.threshold` in `loopbench.yaml` |
 | Reuse existing perf output | **C** | `metrics.patterns` regex in the config |
 | Optimize a stdin/stdout script | **D** | `--io-tests` JSON of input/output cases |
+
+All modes are cost-bounded — see [Constraints & cost budget](#constraints--cost-budget)
+to cap tokens or dollars.
 
 See the [Quick Start](../QUICKSTART.md) for the end-to-end 5-minute walkthrough.

@@ -64,6 +64,12 @@ class OpenAILLM(LLMInterface):
         self.random_seed = getattr(model_cfg, "random_seed", None)
         self.reasoning_effort = getattr(model_cfg, "reasoning_effort", None)
 
+        # ── Token accounting (for cost budgeting / audit) ─────────────────────
+        # Updated from each API response's `usage` field when available.
+        self.total_prompt_tokens = 0
+        self.total_completion_tokens = 0
+        self.api_call_count = 0
+
         # Manual mode: enabled via llm.manual_mode in config.yaml
         self.manual_mode = (getattr(model_cfg, "manual_mode", False) is True)
         self.manual_queue_dir: Optional[Path] = None
@@ -223,6 +229,16 @@ class OpenAILLM(LLMInterface):
         response = await loop.run_in_executor(
             None, lambda: self.client.chat.completions.create(**params)
         )
+        # Record token usage for cost budgeting / audit (when the provider
+        # returns it — OpenAI, Groq, and Google AI Studio all do).
+        try:
+            usage = getattr(response, "usage", None)
+            if usage is not None:
+                self.total_prompt_tokens += int(getattr(usage, "prompt_tokens", 0) or 0)
+                self.total_completion_tokens += int(getattr(usage, "completion_tokens", 0) or 0)
+            self.api_call_count += 1
+        except Exception:  # pragma: no cover - accounting must never break a run
+            pass
         # Logging of system prompt, user message and response content
         logger = logging.getLogger(__name__)
         logger.debug(f"API parameters: {params}")

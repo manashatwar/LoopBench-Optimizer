@@ -21,7 +21,7 @@ from __future__ import annotations
 import asyncio
 import logging
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 logger = logging.getLogger(__name__)
 
@@ -219,6 +219,15 @@ class OptimizerLoop:
 
         # ── Sandbox cfg (passed through to run_in_sandbox) ────────────────────
         self.sandbox_cfg: Dict[str, Any] = config.get("sandbox_cfg") or {}
+
+        # ── Cost / token budgeting ────────────────────────────────────────────
+        # The loop stops early when either budget is set and reached. Token
+        # counts come from the LLM provider's usage field; the USD estimate
+        # additionally needs per-1k pricing (0 → USD budget is inactive).
+        self.max_tokens_total: Optional[int] = config.get("max_tokens_total")
+        self.max_usd: Optional[float] = config.get("max_usd")
+        self.usd_per_1k_prompt: float = float(config.get("usd_per_1k_prompt", 0.0) or 0.0)
+        self.usd_per_1k_completion: float = float(config.get("usd_per_1k_completion", 0.0) or 0.0)
 
         # ── Generation mode ───────────────────────────────────────────────────
         # "diff": LLM returns a unified diff applied via git apply (fragile).
@@ -798,6 +807,34 @@ class OptimizerLoop:
     # Task 10.4 – Multi-generation loop with early stopping
     # -------------------------------------------------------------------------
 
+    def _budget_snapshot(self) -> Dict[str, Any]:
+        """Current cumulative token usage and estimated cost from the LLM."""
+        usage = {"prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0, "api_calls": 0}
+        if self.llm_ensemble is not None and hasattr(self.llm_ensemble, "usage_totals"):
+            try:
+                usage = dict(self.llm_ensemble.usage_totals())
+            except Exception:
+                pass
+        cost = (
+            (usage.get("prompt_tokens", 0) / 1000.0) * self.usd_per_1k_prompt
+            + (usage.get("completion_tokens", 0) / 1000.0) * self.usd_per_1k_completion
+        )
+        usage["cost_usd"] = round(cost, 6)
+        return usage
+
+    def _budget_exceeded(self) -> Tuple[bool, str]:
+        """Return (exceeded, reason) based on configured token / USD budgets."""
+        snap = self._budget_snapshot()
+        if self.max_tokens_total and snap["total_tokens"] >= int(self.max_tokens_total):
+            return True, (
+                f"token budget reached ({snap['total_tokens']} >= {self.max_tokens_total})"
+            )
+        if self.max_usd and snap["cost_usd"] >= float(self.max_usd):
+            return True, (
+                f"cost budget reached (${snap['cost_usd']:.4f} >= ${float(self.max_usd):.4f})"
+            )
+        return False, ""
+
     def run(self) -> Dict[str, Any]:
         """Execute the complete optimization run.
 
@@ -829,10 +866,21 @@ class OptimizerLoop:
         generations_without_improvement: int = 0
         total_generations: int = 0
         final_status = "completed"
+        stopped_on_budget = False
 
         # 3. Main generation loop
         for generation in range(1, self.max_iterations + 1):
+            # 3a. Cost/token budget gate — stop before spending more.
+            exceeded, reason = self._budget_exceeded()
+            if exceeded:
+                logger.info("Stopping before generation %d: %s", generation, reason)
+                final_status = "budget_exhausted"
+                stopped_on_budget = True
+                self.db.log_event("budget_exhausted", {"generation": generation, "reason": reason})
+                break
+
             total_generations = generation
+            pre_budget = self._budget_snapshot()
             try:
                 candidate = self.execute_generation(generation, current_baseline)
             except (KeyboardInterrupt, SystemExit):
@@ -849,6 +897,24 @@ class OptimizerLoop:
                 continue
 
             candidate_score: float = candidate.get("score") or 0.0
+
+            # 3a-bis. Record this generation's token/cost delta to the audit log.
+            post_budget = self._budget_snapshot()
+            try:
+                self.db.log_event(
+                    "generation_cost",
+                    {
+                        "generation": generation,
+                        "prompt_tokens": post_budget["prompt_tokens"] - pre_budget["prompt_tokens"],
+                        "completion_tokens": post_budget["completion_tokens"] - pre_budget["completion_tokens"],
+                        "cost_usd": round(post_budget["cost_usd"] - pre_budget["cost_usd"], 6),
+                        "cumulative_cost_usd": post_budget["cost_usd"],
+                        "cumulative_tokens": post_budget["total_tokens"],
+                    },
+                    candidate_id=candidate.get("id"),
+                )
+            except Exception:
+                pass
 
             # 3b. Update best candidate
             if candidate_score > best_score:
@@ -905,6 +971,19 @@ class OptimizerLoop:
         )
         export = self.db.export_run(run_id=self._run_id)
         report["export"] = export
+
+        # Attach cost / token usage summary for the report and dashboard.
+        snap = self._budget_snapshot()
+        report["cost"] = {
+            "prompt_tokens": snap["prompt_tokens"],
+            "completion_tokens": snap["completion_tokens"],
+            "total_tokens": snap["total_tokens"],
+            "api_calls": snap.get("api_calls", 0),
+            "cost_usd": snap["cost_usd"],
+            "max_usd": self.max_usd,
+            "max_tokens_total": self.max_tokens_total,
+            "stopped_on_budget": stopped_on_budget,
+        }
         return report
 
     # -------------------------------------------------------------------------

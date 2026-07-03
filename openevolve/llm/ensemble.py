@@ -77,6 +77,23 @@ class LLMEnsemble:
         model = self._sample_model()
         return await model.generate_with_context(system_message, messages, **kwargs)
 
+    def usage_totals(self) -> Dict[str, int]:
+        """Aggregate token usage across all models in the ensemble.
+
+        Returns a dict with ``prompt_tokens``, ``completion_tokens``,
+        ``total_tokens``, and ``api_calls``. Values are cumulative since the
+        ensemble was created (providers that omit usage contribute 0).
+        """
+        prompt = sum(int(getattr(m, "total_prompt_tokens", 0) or 0) for m in self.models)
+        completion = sum(int(getattr(m, "total_completion_tokens", 0) or 0) for m in self.models)
+        calls = sum(int(getattr(m, "api_call_count", 0) or 0) for m in self.models)
+        return {
+            "prompt_tokens": prompt,
+            "completion_tokens": completion,
+            "total_tokens": prompt + completion,
+            "api_calls": calls,
+        }
+
     def _sample_model(self) -> LLMInterface:
         """Sample a model from the ensemble based on weights"""
         index = self.random_state.choices(range(len(self.models)), weights=self.weights, k=1)[0]

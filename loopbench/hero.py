@@ -337,6 +337,17 @@ def run_target_pipeline(args: argparse.Namespace) -> int:
         if not raw.get("llm"):
             raw["llm"] = _default_llm_cfg()
 
+        # ── Cost / token budget (CLI flags override loopbench.yaml constraints) ─
+        constraints = raw.get("constraints") if isinstance(raw.get("constraints"), dict) else {}
+        opt_cfg["max_tokens_total"] = getattr(args, "max_tokens", None) or constraints.get("max_tokens_total")
+        opt_cfg["max_usd"] = getattr(args, "max_cost", None) or constraints.get("max_token_cost_usd")
+        opt_cfg["usd_per_1k_prompt"] = constraints.get("usd_per_1k_prompt", 0.0)
+        opt_cfg["usd_per_1k_completion"] = constraints.get("usd_per_1k_completion", 0.0)
+        if opt_cfg["max_tokens_total"]:
+            print(f"[LoopBench] Token budget: {opt_cfg['max_tokens_total']} tokens")
+        if opt_cfg["max_usd"]:
+            print(f"[LoopBench] Cost budget : ${float(opt_cfg['max_usd']):.4f}")
+
         try:
             ensemble = _build_llm_ensemble(raw)
         except Exception as exc:
@@ -391,6 +402,16 @@ def run_target_pipeline(args: argparse.Namespace) -> int:
         print(f"  Improvement    : {imp:+.2f}%")
         if not best_patch.strip():
             print("  ⚠️  No improving patch was found (best == baseline).")
+        cost = result.get("cost") or {}
+        if cost:
+            tokens = cost.get("total_tokens", 0)
+            usd = cost.get("cost_usd", 0.0)
+            line = f"  Tokens used    : {tokens:,} ({cost.get('api_calls', 0)} API calls)"
+            if usd:
+                line += f"  |  est. cost ${usd:.4f}"
+            print(line)
+            if cost.get("stopped_on_budget"):
+                print("  ⏹️  Run stopped early: budget reached.")
         print("-" * 60)
         print("  Artifacts:")
         print(f"    Patch      : {patch_file}")
