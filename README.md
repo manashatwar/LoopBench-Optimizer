@@ -140,29 +140,36 @@ Each generation learns from previous failures, compounding improvements over tim
 
 ---
 
-## Quick Start — one command
+## Quick Start
 
 > New here? The [**5-minute Quick Start**](QUICKSTART.md) walks you from clone to
 > a verified optimization step by step.
 
-
-Point LoopBench at any repo (GitHub URL or local path) and let it evolve your code:
+There is one command — `loopbench run`. First, install and add your LLM key:
 
 ```bash
-# Install
 pip install -e .
-
-# Set your LLM key in .env (any OpenAI-compatible provider — Groq, Gemini, OpenAI…)
-#   GEMINI_API_KEY="..."
-#   LLM_API_BASE="https://api.groq.com/openai/v1"
+cp .env.example .env        # then edit .env with your key:
+#   GEMINI_API_KEY="..."                              # any OpenAI-compatible provider
+#   LLM_API_BASE="https://api.groq.com/openai/v1"     # Groq, Gemini, OpenAI, …
 #   LLM_MODEL="llama-3.3-70b-versatile"
-
-# Run the optimizer end-to-end
-loopbench run --target https://github.com/user/slow-repo --metric latency
-
-# …or a local path, naming the file to optimize
-loopbench run --target . --target-file src/hotpath.py --metric latency -i 5
 ```
+
+To optimize code, LoopBench needs **the file** *and* **a test that measures it**
+(so it can prove each change is faster and still correct). Two situations:
+
+```bash
+# A) The file already has a test that times it → run directly:
+loopbench run --target . --target-file src/hotpath.py --metric latency -i 5
+
+# B) Any other repo (no test yet) → scaffold a tiny one, then run:
+loopbench init --job my_job                    # creates my_job/loopbench.yaml + test_target.py
+#   edit the two files (repo/file + what to test), then:
+loopbench run --config my_job/loopbench.yaml
+```
+
+Case **B** is the usual path for someone else's repo — see
+[Optimize any repo](#optimize-any-repo) below for the details.
 
 Minutes later you get four artifacts:
 
@@ -177,17 +184,11 @@ Minutes later you get four artifacts:
 
 ---
 
-## Two ways to run
+## Optimize any repo
 
-| Mode | Command | Best for |
-|------|---------|----------|
-| **Hero** (above) | `loopbench run --target <repo> --target-file <file> --metric latency` | A quick run; files that already have tests, or simple targets |
-| **Config job** (below) | `loopbench run --config my_job/loopbench.yaml` | Real projects and **external repos** — declarative, repeatable, no edits inside the target repo |
-
-## Optimize an external repo (config mode)
-
-For someone else's repo, keep everything in a small **job folder in your own
-workspace** — you never edit files inside the target repo. Scaffold it in one
+This is the usual path (case **B** above): for someone else's repo — or any file
+without a test yet — keep everything in a small **job folder in your own
+workspace**. You never edit files inside the target repo. Scaffold it in one
 command, so you only fill in configuration:
 
 ```bash
@@ -270,8 +271,8 @@ LoopBench-Optimizer/
 │   ├── entrypoint.sh            # container entrypoint
 │   └── Dockerfile.sandbox       # test execution image
 │
-├── loopbench/                   # LoopBench CLI + hero/config pipeline
-│   ├── cli.py                   # run (hero + --config) / init (--job) / check
+├── loopbench/                   # LoopBench CLI + run pipeline
+│   ├── cli.py                   # run (direct + --config) / init (--job) / check
 │   ├── hero.py                  # clone → optimize → emit patch + dashboard + log
 │   ├── scaffold.py              # `init --job` job-folder generator
 │   ├── deps.py                  # dependency detection (requirements/pyproject/imports)
@@ -292,7 +293,7 @@ LoopBench-Optimizer/
 │   ├── integration/
 │   ├── test_optimizer_loop*.py  # OptimizerLoop tests
 │   ├── test_search_replace_edits.py  # SEARCH/REPLACE block parsing + apply
-│   ├── test_hero_command.py     # loopbench run --target unit tests
+│   ├── test_hero_command.py     # loopbench run (--target) unit tests
 │   ├── test_search_strategy.py
 │   ├── test_config_validator.py
 │   ├── test_report_generator.py
@@ -311,16 +312,11 @@ LoopBench-Optimizer/
 
 ## Command reference
 
-Two commands cover almost everything:
+The two run styles are shown in [Quick Start](#quick-start) and
+[Optimize any repo](#optimize-any-repo). One more handy command:
 
 ```bash
-# Quick run — optimize a file directly (clone URL or local path)
-loopbench run --target <repo> --target-file <file> --metric latency [-i 5]
-
-# Config job — scaffold, edit, run (recommended for external/real repos)
-loopbench init --job my_job                  # creates my_job/loopbench.yaml + test_target.py
-loopbench run  --config my_job/loopbench.yaml
-loopbench check --config my_job/loopbench.yaml   # validate + dry-run before a full run
+loopbench check --config my_job/loopbench.yaml   # validate a job + dry-run its test first
 ```
 
 Common `loopbench run` flags (full list via `loopbench run --help`):
