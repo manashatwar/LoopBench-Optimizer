@@ -25,6 +25,16 @@ sequenceDiagram
     H-->>H: return score dict
 ```
 
+## Dependencies
+
+The target's third-party packages (numpy, pandas, …) are detected
+(`requirements.txt` or imports scanned across the repo) and installed into a
+cached image `loopbench-sandbox:deps-<hash>` layered on the base. The `pip
+install` build is the **only** networked step; the scored run still executes
+with `--network=none`. `ensure_deps_image()` caches by the hash of the package
+set, so repeated runs reuse it, and falls back to the base image if a build
+fails.
+
 ## Isolation guarantees
 
 | Control | Effect |

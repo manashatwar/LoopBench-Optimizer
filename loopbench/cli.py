@@ -329,6 +329,9 @@ def build_parser() -> argparse.ArgumentParser:
                             "(requires pricing in loopbench.yaml constraints)")
     run_p.add_argument("--max-runtime", dest="max_runtime", type=float,
                        help="Stop the loop after this many seconds of wall-clock time")
+    run_p.add_argument("--pip", dest="pip",
+                       help="Space-separated pip packages to install in the sandbox "
+                            "(overrides auto-detection), e.g. --pip \"numpy scipy\"")
     run_p.add_argument(
         "--log-level", "-l",
         choices=["DEBUG", "INFO", "WARNING", "ERROR"],

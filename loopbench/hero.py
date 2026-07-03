@@ -315,6 +315,20 @@ def run_target_pipeline(args: argparse.Namespace) -> int:
         print(f"[LoopBench] Test command: {test_cmd or '(default pytest)'}")
         print(f"[LoopBench] Metric      : {metric}")
 
+        # Detect third-party dependencies so the sandbox can run the code.
+        # Priority: --pip > requirements.txt > imports scanned across the repo.
+        try:
+            from loopbench.deps import detect_python_deps
+            explicit_pip = None
+            if getattr(args, "pip", None):
+                explicit_pip = str(args.pip).split()
+            pip_pkgs = detect_python_deps(Path(repo_path), Path(target_path), explicit=explicit_pip)
+        except Exception as exc:
+            print(f"[LoopBench] WARNING: dependency detection failed: {exc}")
+            pip_pkgs = []
+        if pip_pkgs:
+            print(f"[LoopBench] Dependencies: {', '.join(pip_pkgs)}")
+
         # 4. Build config + LLM ensemble
         db_dir = tempfile.mkdtemp(prefix="loopbench_db_")
         db_path = str(Path(db_dir) / "loopbench.db")
@@ -330,7 +344,7 @@ def run_target_pipeline(args: argparse.Namespace) -> int:
             "metric_patterns": None,
             "rewrite_mode": "auto",
             "full_rewrite_max_lines": 300,
-            "sandbox_cfg": {"test_command": test_cmd, "timeout": 120},
+            "sandbox_cfg": {"test_command": test_cmd, "timeout": 120, "pip_install": pip_pkgs},
         }
 
         raw: Dict[str, Any] = {}

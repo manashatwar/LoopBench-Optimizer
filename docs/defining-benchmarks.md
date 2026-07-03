@@ -280,6 +280,29 @@ The other two constraints from the spec are always on and need no config: the
 sandbox runs with `--network=none` (**no external network**) and mounts your
 code **read-only** (**no unsafe file writes**).
 
+### Third-party dependencies (numpy, pandas, …)
+
+Real code imports packages that aren't in the base sandbox. LoopBench detects
+them and installs them into a cached, per-dependency-set image layered on the
+base — the install is the only networked step; the scored run stays
+`--network=none`. Detection priority:
+
+1. `--pip "numpy scipy"` (explicit; also settable as `sandbox.pip` in config)
+2. a `requirements.txt` at the repo root
+3. imports scanned across **every** `.py` file in the repo (import names are
+   mapped to PyPI names, and standard-library/local modules are filtered out)
+
+```bash
+# Auto-detected from the repo's imports / requirements.txt:
+loopbench run --target . --target-file src/model.py --metric latency
+
+# Or pin them explicitly (fast, deterministic):
+loopbench run --target . --target-file src/model.py --pip "numpy scipy"
+```
+
+The first run with a new dependency set builds the image (a minute or two);
+later runs reuse it.
+
 ### Custom sandbox commands (any test/benchmark runner)
 
 By default the sandbox runs `pytest`. To use a different command — a benchmark

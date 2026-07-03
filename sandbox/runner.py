@@ -26,13 +26,14 @@ Security:
   --rm              container is removed after each run
 """
 
+import hashlib
 import json
 import subprocess
 import tempfile
 import time
 import uuid
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any, List, Optional
 
 # Docker image name — built from sandbox/Dockerfile.sandbox
 SANDBOX_IMAGE = "loopbench-sandbox"
@@ -238,6 +239,70 @@ def _resolve_test_cmd(sandbox_cfg: Optional[dict], container_test: str) -> str:
     return f"pytest {container_test} -v -s -q --tb=short"
 
 
+def _normalize_packages(pip_install: Any) -> List[str]:
+    """Coerce the pip_install config into a clean, sorted list of packages."""
+    if not pip_install:
+        return []
+    items = pip_install.split() if isinstance(pip_install, str) else list(pip_install)
+    seen = set()
+    out = []
+    for it in items:
+        it = str(it).strip()
+        if it and it not in seen:
+            seen.add(it)
+            out.append(it)
+    return sorted(out)
+
+
+def ensure_deps_image(packages: List[str], repo_root: Optional[str] = None) -> str:
+    """Return an image that has ``packages`` installed on top of the base image.
+
+    Builds (with network enabled — the ONLY networked step) a small derived
+    image ``loopbench-sandbox:deps-<hash>`` and caches it by the hash of the
+    package set, so repeated runs reuse it. The scored run still executes with
+    --network=none. Falls back to the base image if the build fails.
+    """
+    if not packages:
+        return SANDBOX_IMAGE
+    if not build_sandbox_image(repo_root=repo_root):
+        return SANDBOX_IMAGE
+
+    digest = hashlib.sha1(("\n".join(packages)).encode()).hexdigest()[:12]
+    tag = f"{SANDBOX_IMAGE}:deps-{digest}"
+
+    exists = subprocess.run(["docker", "image", "inspect", tag], capture_output=True)
+    if exists.returncode == 0:
+        return tag
+
+    dockerfile = (
+        f"FROM {SANDBOX_IMAGE}\n"
+        f"RUN pip install --no-cache-dir {' '.join(packages)}\n"
+    )
+    print(f"[sandbox] Installing dependencies into image: {', '.join(packages)}")
+    try:
+        build = subprocess.run(
+            ["docker", "build", "-t", tag, "-"],
+            input=dockerfile,
+            text=True,
+            capture_output=True,
+            timeout=600,
+        )
+    except (subprocess.TimeoutExpired, FileNotFoundError) as exc:
+        print(f"[sandbox] WARNING: dependency image build failed ({exc}); using base image")
+        return SANDBOX_IMAGE
+    if build.returncode != 0:
+        print(f"[sandbox] WARNING: dependency install failed; using base image.\n{build.stderr[-800:]}")
+        return SANDBOX_IMAGE
+    print(f"[sandbox] Dependency image ready: {tag}")
+    return tag
+
+
+def _resolve_image(sandbox_cfg: Optional[dict], repo_root: Optional[str]) -> str:
+    """Pick the container image, layering in pip dependencies when requested."""
+    packages = _normalize_packages((sandbox_cfg or {}).get("pip_install"))
+    return ensure_deps_image(packages, repo_root=repo_root)
+
+
 def run_in_sandbox(
     program_path: str,
     test_file: str,
@@ -270,9 +335,10 @@ def run_in_sandbox(
     prog_path = Path(program_path).resolve()
     test_path = Path(test_file).resolve()
 
-    # Ensure image is built
+    # Ensure image is built (and layer in any requested pip dependencies).
     if not build_sandbox_image(repo_root=repo_root):
         return _error_result("Docker image build failed")
+    image = _resolve_image(sandbox_cfg, repo_root)
 
     # ── Set up host directories ───────────────────────────────────────────────
     # When a worktree_path is provided we mount it directly — the worktree
@@ -322,7 +388,7 @@ def run_in_sandbox(
                 "-v", f"{results_path}:/results",
                 "-e", f"LOOPBENCH_PROGRAM_PATH={container_program}",
                 "-e", f"LOOPBENCH_TEST_CMD={test_cmd}",
-                SANDBOX_IMAGE,
+                image,
             ]
 
             print(f"[sandbox] Running container (worktree) for: {prog_path.name}")
@@ -358,7 +424,7 @@ def run_in_sandbox(
             "-v", f"{results_path}:/results",       # results: read-write
             "-e", f"LOOPBENCH_PROGRAM_PATH={container_program}",
             "-e", f"LOOPBENCH_TEST_CMD={test_cmd}",
-            SANDBOX_IMAGE,
+            image,
         ]
 
         print(f"[sandbox] Running container for: {prog_path.name}")

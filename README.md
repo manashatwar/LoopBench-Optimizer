@@ -292,6 +292,7 @@ loopbench run --target . --target-file src/main.py --metric latency -i 5
 #   --max-tokens    stop after N total LLM tokens (cost bound)
 #   --max-cost      stop after estimated USD spend (needs pricing in loopbench.yaml)
 #   --max-runtime   stop after N seconds of wall-clock time
+#   --pip           space-separated pip packages for the sandbox (else auto-detected)
 #   -i / --iterations   max generations (default: 5)
 #   -o / --output   output directory (default: loopbench_output/)
 
@@ -420,6 +421,7 @@ Built on top of the [OpenEvolve](https://github.com/algorithmicsuperintelligence
 - **SQLite audit trail** with full lineage
 - **Bounded runs** — stop on a token (`--max-tokens`), dollar (`--max-cost`), runtime (`--max-runtime`), or iteration budget; per-generation token/cost is logged and reported
 - **Any sandbox command** — `pytest` by default, or bring your own via `--test-command` (benchmarks, type checks, plain scripts); non-pytest correctness comes from the exit code
+- **Automatic dependencies** — detects the target's Python packages (`requirements.txt` or scanned imports) and installs them into a cached sandbox image; override with `--pip`
 - **Custom metric** — `--metric <name>` optimizes whichever metric your evaluator emits (falls back to `combined_score`)
 - **Run mode** — optimize stdin/stdout scripts (competitive-programming solutions, CLI tools) via `--io-tests`
 - **GitHub Pages dashboard** (no server required for sharing)
