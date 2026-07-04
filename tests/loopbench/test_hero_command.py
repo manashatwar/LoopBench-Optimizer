@@ -13,7 +13,7 @@ import pytest
 from loopbench import hero
 from loopbench.cli import build_parser
 
-REPO_ROOT = Path(__file__).parent.parent.resolve()
+REPO_ROOT = Path(__file__).resolve().parents[2]
 FIB_DIR = REPO_ROOT / "examples" / "fibonacci_optimizer"
 
 

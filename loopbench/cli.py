@@ -438,6 +438,10 @@ def build_parser() -> argparse.ArgumentParser:
                             "(requires pricing in loopbench.yaml constraints)")
     run_p.add_argument("--max-runtime", dest="max_runtime", type=float,
                        help="Stop the loop after this many seconds of wall-clock time")
+    run_p.add_argument("--strategy", dest="strategy",
+                       choices=["auto", "greedy", "beam", "random_restart"],
+                       help="Search strategy (default: auto — greedy that escalates to "
+                            "restart/diversify on a plateau). Overrides `search.strategy` in config.")
     run_p.add_argument("--pip", dest="pip",
                        help="Space-separated pip packages to install in the sandbox "
                             "(overrides auto-detection), e.g. --pip \"numpy scipy\"")

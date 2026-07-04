@@ -2,11 +2,13 @@
 Search strategy abstraction layer for OptimizerLoop.
 
 Provides a pluggable interface that determines how the optimizer selects the
-baseline candidate for each generation.  Three concrete strategies are supplied:
+baseline candidate for each generation.  Concrete strategies supplied:
 
-  GreedySearch        — always picks the single best candidate (default)
-  BeamSearch          — maintains top-K and samples randomly from them
-  RandomRestartSearch — periodically reverts to the original baseline
+  AutoEscalationSearch — greedy by default, deterministically escalates to
+                         restart/diversify on a plateau (the `loopbench` default)
+  GreedySearch         — always picks the single best candidate
+  BeamSearch           — maintains top-K and samples randomly from them
+  RandomRestartSearch  — periodically reverts to the original baseline
 
 A factory function ``create_strategy`` instantiates the correct class from a
 plain-dict or dataclass-like config.
@@ -74,6 +76,15 @@ def _score_of(candidate: Any) -> float:
             return sum(numeric) / len(numeric)
 
     return 0.0
+
+
+def _generation_of(candidate: Any) -> Optional[int]:
+    """Return the candidate's generation index if available, else ``None``."""
+    if isinstance(candidate, dict):
+        gen = candidate.get("generation")
+    else:
+        gen = getattr(candidate, "generation", None)
+    return gen if isinstance(gen, int) else None
 
 
 # ---------------------------------------------------------------------------
@@ -275,6 +286,117 @@ class RandomRestartSearch(SearchStrategy):
 
 
 # ---------------------------------------------------------------------------
+# AutoEscalationSearch  (self-tuning, deterministic)
+# ---------------------------------------------------------------------------
+
+class AutoEscalationSearch(SearchStrategy):
+    """Deterministic self-tuning strategy: greedy by default, escalate on plateau.
+
+    Starts greedy (fastest, cheapest). When the run stops improving, it escalates
+    through exploration tiers based purely on ``stall`` — the number of
+    generations since the last strict improvement in best score. No extra LLM
+    calls, fully reproducible:
+
+      * ``stall < restart_patience``                     → **greedy**
+        (build on the best-so-far)
+      * ``restart_patience <= stall < diversify_patience`` → **restart**
+        (revert to the original generation-0 baseline for a fresh mutation path)
+      * ``stall >= diversify_patience``                   → **diversify**
+        (rotate deterministically through the top-K candidates)
+
+    Escalation only steers *exploration*; the OptimizerLoop still reports the
+    highest-scoring candidate as best, so ``auto`` never regresses the result
+    below plain greedy.
+
+    Requirements: 13.1, 13.7
+    """
+
+    def __init__(
+        self,
+        restart_patience: int = 2,
+        diversify_patience: int = 4,
+        beam_width: int = 3,
+    ) -> None:
+        if restart_patience < 1:
+            raise ValueError(f"restart_patience must be >= 1, got {restart_patience}")
+        if diversify_patience <= restart_patience:
+            raise ValueError(
+                "diversify_patience must be > restart_patience (got "
+                f"diversify_patience={diversify_patience}, restart_patience={restart_patience})"
+            )
+        if beam_width < 1:
+            raise ValueError(f"beam_width must be >= 1, got {beam_width}")
+        self.restart_patience = restart_patience
+        self.diversify_patience = diversify_patience
+        self.beam_width = beam_width
+        self._original_baseline: Optional[Any] = None
+        self._last_tier: Optional[str] = None
+
+    @staticmethod
+    def _stall(history: Sequence[Any]) -> int:
+        """Number of entries since the last strict improvement in best score."""
+        best = float("-inf")
+        last_improve_idx = 0
+        for i, candidate in enumerate(history):
+            score = _score_of(candidate)
+            if score > best:
+                best = score
+                last_improve_idx = i
+        return (len(history) - 1) - last_improve_idx
+
+    def select_baseline(
+        self,
+        history: Sequence[Any],
+        generation: int,
+    ) -> Any:
+        if not history:
+            raise ValueError("select_baseline called with empty history")
+
+        hist = list(history)
+        if self._original_baseline is None:
+            gen0 = [c for c in hist if _generation_of(c) == 0]
+            self._original_baseline = gen0[0] if gen0 else hist[0]
+
+        stall = self._stall(hist)
+
+        if stall < self.restart_patience:
+            tier = "greedy"
+            chosen = max(reversed(hist), key=_score_of)
+        elif stall < self.diversify_patience:
+            tier = "restart"
+            chosen = self._original_baseline
+        else:
+            tier = "diversify"
+            k = min(self.beam_width, len(hist))
+            top_k = sorted(hist, key=_score_of)[-k:]
+            idx = (stall - self.diversify_patience) % k
+            chosen = top_k[idx]
+
+        if tier != self._last_tier:
+            logger.info(
+                "AutoEscalationSearch gen=%d stall=%d → '%s' tier",
+                generation, stall, tier,
+            )
+            self._last_tier = tier
+        else:
+            logger.debug(
+                "AutoEscalationSearch gen=%d stall=%d tier=%s score=%.4f",
+                generation, stall, tier, _score_of(chosen),
+            )
+        return chosen
+
+    def should_parallelize(self) -> bool:
+        return False
+
+    def __repr__(self) -> str:
+        return (
+            f"AutoEscalationSearch(restart_patience={self.restart_patience}, "
+            f"diversify_patience={self.diversify_patience}, "
+            f"beam_width={self.beam_width})"
+        )
+
+
+# ---------------------------------------------------------------------------
 # Strategy factory  (Task 8.5)
 # ---------------------------------------------------------------------------
 
@@ -282,6 +404,7 @@ def create_strategy(config: Any) -> SearchStrategy:
     """Instantiate a :class:`SearchStrategy` from a config object or dict.
 
     Supported ``strategy`` values (case-insensitive):
+      - ``"auto"``           → :class:`AutoEscalationSearch` (greedy, escalates on plateau)
       - ``"greedy"``         → :class:`GreedySearch`
       - ``"beam"``           → :class:`BeamSearch` (requires ``beam_width``)
       - ``"random_restart"`` → :class:`RandomRestartSearch` (requires ``restart_interval``)
@@ -310,6 +433,13 @@ def create_strategy(config: Any) -> SearchStrategy:
     if strategy_name == "greedy":
         instance = GreedySearch()
 
+    elif strategy_name == "auto":
+        instance = AutoEscalationSearch(
+            restart_patience=int(_get("restart_patience", 2)),
+            diversify_patience=int(_get("diversify_patience", 4)),
+            beam_width=int(_get("beam_width", 3)),
+        )
+
     elif strategy_name == "beam":
         beam_width = _get("beam_width")
         if beam_width is None:
@@ -326,7 +456,7 @@ def create_strategy(config: Any) -> SearchStrategy:
     else:
         raise ValueError(
             f"Unknown search strategy '{strategy_name}'. "
-            "Supported: 'greedy', 'beam', 'random_restart'."
+            "Supported: 'auto', 'greedy', 'beam', 'random_restart'."
         )
 
     logger.info("Created search strategy: %r", instance)

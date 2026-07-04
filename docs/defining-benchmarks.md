@@ -233,6 +233,39 @@ The other two constraints from the spec are always on and need no config: the
 sandbox runs with `--network=none` (**no external network**) and mounts your
 code **read-only** (**no unsafe file writes**).
 
+### Search strategy (auto-tuning)
+
+`loopbench run` chooses *which* prior candidate each new generation builds on.
+By default this is **`auto`**: it starts greedy (cheapest) and escalates only
+when the run stops improving — no extra LLM calls, fully deterministic.
+
+| `stall` (generations since last improvement) | Behavior |
+|-----------------------------------------------|----------|
+| `< restart_patience` (default 2) | **greedy** — build on the best so far |
+| `restart_patience … diversify_patience` (2–4) | **restart** — revert to the original baseline for a fresh path |
+| `≥ diversify_patience` (default 4) | **diversify** — rotate through the top-K candidates |
+
+You rarely need to touch this. To pin a strategy, use `--strategy` or a
+`search:` block in `loopbench.yaml` (CLI overrides config):
+
+```bash
+loopbench run --target . --target-file src/hot.py --strategy random_restart
+```
+
+```yaml
+search:
+  strategy: auto            # auto (default) | greedy | beam | random_restart
+  restart_patience: 2       # auto: greedy → restart threshold
+  diversify_patience: 4     # auto: restart → diversify threshold
+  beam_width: 3             # auto (diversify tier) and beam
+  restart_interval: 20      # random_restart only
+```
+
+Escalation only steers exploration — the run always reports the highest-scoring
+candidate, so `auto` never does worse than plain `greedy`. For the design and
+per-strategy details, see
+[Architecture → Search Strategy](architecture/search-strategy.md).
+
 ### Optimizing an external repo (config-driven)
 
 To optimize a file in someone else's repo, you write a small **job folder in your

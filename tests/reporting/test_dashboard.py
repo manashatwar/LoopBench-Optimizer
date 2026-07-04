@@ -160,10 +160,10 @@ class TestDataJsonGeneration:
 class TestStaticHtml:
     @pytest.fixture
     def html(self):
-        return (Path(__file__).parent.parent / "docs" / "index.html").read_text(encoding="utf-8")
+        return (Path(__file__).resolve().parents[2] / "docs" / "index.html").read_text(encoding="utf-8")
 
     def test_html_file_exists(self):
-        assert (Path(__file__).parent.parent / "docs" / "index.html").exists()
+        assert (Path(__file__).resolve().parents[2] / "docs" / "index.html").exists()
 
     def test_html_has_react_cdn(self, html):
         assert "react" in html.lower()

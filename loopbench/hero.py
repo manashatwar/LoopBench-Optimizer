@@ -384,6 +384,18 @@ def run_target_pipeline(args: argparse.Namespace) -> int:
         if opt_cfg["max_runtime_seconds"]:
             print(f"[LoopBench] Runtime limit: {opt_cfg['max_runtime_seconds']}s")
 
+        # ── Search strategy (CLI --strategy overrides loopbench.yaml `search`) ─
+        # Default is `auto`: starts greedy and deterministically escalates to
+        # restart/diversify on a plateau — no extra LLM calls.
+        search_cfg = raw.get("search") if isinstance(raw.get("search"), dict) else {}
+        strategy_name = getattr(args, "strategy", None) or search_cfg.get("strategy") or "auto"
+        strategy_cfg: Dict[str, Any] = {"strategy": str(strategy_name).lower()}
+        for key in ("restart_patience", "diversify_patience", "beam_width", "restart_interval"):
+            if search_cfg.get(key) is not None:
+                strategy_cfg[key] = search_cfg[key]
+        opt_cfg["search_strategy"] = strategy_cfg
+        print(f"[LoopBench] Search       : {strategy_cfg['strategy']}")
+
         try:
             ensemble = _build_llm_ensemble(raw)
         except Exception as exc:

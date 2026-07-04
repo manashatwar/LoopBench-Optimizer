@@ -12,13 +12,13 @@ Covers:
 Requirements: 13.1 – 13.7
 """
 
-import random
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional
+from typing import Dict, Optional
 
 import pytest
 
 from openevolve.search_strategy import (
+    AutoEscalationSearch,
     BeamSearch,
     GreedySearch,
     RandomRestartSearch,
@@ -416,6 +416,106 @@ class TestCreateStrategy:
         rrs.select_baseline(history, generation=1)
         result = rrs.select_baseline(history, generation=5)
         assert result.generation == 0
+
+    # ── auto (AutoEscalationSearch) ────────────────────────────────────────
+
+    def test_auto_from_dict_defaults(self):
+        s = create_strategy({"strategy": "auto"})
+        assert isinstance(s, AutoEscalationSearch)
+        assert s.restart_patience == 2
+        assert s.diversify_patience == 4
+        assert s.beam_width == 3
+
+    def test_auto_with_params(self):
+        s = create_strategy({
+            "strategy": "auto",
+            "restart_patience": 1,
+            "diversify_patience": 3,
+            "beam_width": 5,
+        })
+        assert isinstance(s, AutoEscalationSearch)
+        assert s.restart_patience == 1
+        assert s.diversify_patience == 3
+        assert s.beam_width == 5
+
+    def test_auto_case_insensitive(self):
+        assert isinstance(create_strategy({"strategy": "AUTO"}), AutoEscalationSearch)
+
+
+# ---------------------------------------------------------------------------
+# AutoEscalationSearch — deterministic plateau escalation
+# ---------------------------------------------------------------------------
+
+class TestAutoEscalationSearch:
+    def _hist(self, scored_gens):
+        """scored_gens: list of (score, generation) tuples."""
+        return [SimpleCandidate(id=i, score=s, generation=g)
+                for i, (s, g) in enumerate(scored_gens)]
+
+    def test_greedy_tier_while_improving(self):
+        """No stall → behaves greedily (returns the best-so-far)."""
+        auto = AutoEscalationSearch(restart_patience=2, diversify_patience=4)
+        history = self._hist([(0.5, 0), (0.9, 1)])  # improved last step, stall=0
+        result = auto.select_baseline(history, generation=1)
+        assert _score_of(result) == pytest.approx(0.9)
+
+    def test_restart_tier_reverts_to_original_baseline(self):
+        """restart_patience <= stall < diversify_patience → original gen-0 baseline."""
+        auto = AutoEscalationSearch(restart_patience=2, diversify_patience=4)
+        # last strict improvement at idx 1; two flat gens after → stall == 2
+        history = self._hist([(0.5, 0), (0.9, 1), (0.9, 2), (0.9, 3)])
+        result = auto.select_baseline(history, generation=3)
+        assert result.generation == 0
+        assert _score_of(result) == pytest.approx(0.5)
+
+    def test_diversify_tier_picks_non_best_top_k_deterministically(self):
+        """stall >= diversify_patience → deterministic pick among the top-K."""
+        auto = AutoEscalationSearch(restart_patience=2, diversify_patience=4, beam_width=3)
+        # max 0.9 at idx1; four non-improving gens after → stall == 4
+        history = self._hist([(0.5, 0), (0.9, 1), (0.8, 2), (0.7, 3), (0.85, 4), (0.6, 5)])
+        result = auto.select_baseline(history, generation=5)
+        # top-3 ascending = [0.8, 0.85, 0.9]; idx = (4-4) % 3 = 0 → 0.8 (not the best)
+        assert _score_of(result) == pytest.approx(0.8)
+
+    def test_deterministic_same_history_same_choice(self):
+        auto1 = AutoEscalationSearch()
+        auto2 = AutoEscalationSearch()
+        history = self._hist([(0.5, 0), (0.9, 1), (0.8, 2), (0.7, 3), (0.85, 4), (0.6, 5)])
+        r1 = auto1.select_baseline(history, generation=5)
+        r2 = auto2.select_baseline(history, generation=5)
+        assert r1.id == r2.id
+
+    def test_fallback_when_no_gen0(self):
+        """Restart tier with no generation-0 candidate uses first in history."""
+        auto = AutoEscalationSearch(restart_patience=1, diversify_patience=9)
+        history = self._hist([(0.5, 1), (0.9, 2), (0.9, 3)])  # stall=1 → restart
+        result = auto.select_baseline(history, generation=3)
+        assert result.id == history[0].id
+
+    def test_should_not_parallelize(self):
+        assert AutoEscalationSearch().should_parallelize() is False
+
+    def test_raises_on_empty_history(self):
+        with pytest.raises((ValueError, Exception)):
+            AutoEscalationSearch().select_baseline([], generation=1)
+
+    def test_invalid_restart_patience_raises(self):
+        with pytest.raises(ValueError):
+            AutoEscalationSearch(restart_patience=0)
+
+    def test_diversify_must_exceed_restart(self):
+        with pytest.raises(ValueError):
+            AutoEscalationSearch(restart_patience=3, diversify_patience=3)
+
+    def test_invalid_beam_width_raises(self):
+        with pytest.raises(ValueError):
+            AutoEscalationSearch(beam_width=0)
+
+    def test_repr(self):
+        r = repr(AutoEscalationSearch(restart_patience=2, diversify_patience=5, beam_width=4))
+        assert "AutoEscalationSearch" in r
+        assert "restart_patience=2" in r
+        assert "diversify_patience=5" in r
 
 
 # ---------------------------------------------------------------------------
