@@ -6,7 +6,10 @@ on:
   push:
     branches: [main]
     paths:
-      - "docs/**"
+      # Only the files actually served by the dashboard — editing architecture
+      # markdown (which GitHub renders directly) should not trigger a redeploy.
+      - "docs/index.html"
+      - "docs/data.json"
       - ".github/workflows/pages.yml"
   workflow_dispatch:
 
@@ -16,10 +19,11 @@ permissions:
   pages: write
   id-token: write
 
-# One deployment at a time; don't cancel an in-progress publish.
+# One deployment at a time. Cancel a superseded run so rapid pushes don't pile
+# up and fail against the single-deployment github-pages environment.
 concurrency:
   group: pages
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   deploy:
