@@ -645,10 +645,14 @@ class WorkspaceManager:
         _slog(logging.DEBUG, "worktree_remove_start", path=worktree_path)
         start_time = time.time()
 
-        # Attempt 1: Normal removal
-        logger.info(f"Attempt 1: Normal removal - git worktree remove {worktree_path}")
+        # Attempt 1: Normal removal. A disposable candidate worktree is
+        # intentionally dirtied (we write the evolved file into it), so a
+        # non-forced remove is EXPECTED to fail with "modified or untracked
+        # files" — that's not an error, we just fall through to --force. Keep
+        # this attempt quiet; genuine problems still surface in attempts 2/3.
+        logger.debug(f"Removing worktree (normal): {worktree_path}")
         try:
-            self._run_git_command(["worktree", "remove", worktree_path])
+            self._run_git_command(["worktree", "remove", worktree_path], quiet=True)
             duration_ms = int((time.time() - start_time) * 1000)
             _slog(logging.INFO, "worktree_removed",
                   path=worktree_path,
@@ -662,14 +666,13 @@ class WorkspaceManager:
                       threshold_ms=3000)
             return
         except RuntimeError as e:
-            _slog(logging.WARNING, "worktree_error",
-                  event_sub="normal_removal_failed",
+            _slog(logging.DEBUG, "worktree_normal_removal_failed_forcing",
                   path=worktree_path,
-                  error_type=self._classify_git_error(str(e)),
-                  message=str(e)[:200])
+                  error_type=self._classify_git_error(str(e)))
 
-        # Attempt 2: Forced removal
-        logger.info(f"Attempt 2: Forced removal - git worktree remove --force {worktree_path}")
+        # Attempt 2: Forced removal (the expected path for a dirtied candidate
+        # worktree). This is where real failures start logging loudly.
+        logger.debug(f"Removing worktree (forced): {worktree_path}")
         try:
             self._run_git_command(["worktree", "remove", "--force", worktree_path])
             duration_ms = int((time.time() - start_time) * 1000)
@@ -803,6 +806,7 @@ class WorkspaceManager:
         args: List[str],
         check: bool = True,
         timeout: Optional[int] = None,
+        quiet: bool = False,
     ) -> subprocess.CompletedProcess:
         """
         Execute a Git command with error handling.
@@ -837,8 +841,12 @@ class WorkspaceManager:
                 
                 # Classify error type for better error messages
                 error_type = self._classify_git_error(error_output)
-                
-                logger.error(
+
+                # ``quiet`` downgrades expected/handled failures (e.g. the first
+                # non-forced worktree-remove attempt on a candidate worktree we
+                # intentionally dirtied) to DEBUG so they don't spam ERROR logs.
+                # The RuntimeError is still raised, so control flow is unchanged.
+                (logger.debug if quiet else logger.error)(
                     f"Git command failed: {' '.join(cmd)}\n"
                     f"Exit code: {result.returncode}\n"
                     f"Error type: {error_type}\n"

@@ -17,15 +17,12 @@ import logging
 import subprocess
 from pathlib import Path
 from types import SimpleNamespace
-from unittest.mock import Mock, patch, call
+from unittest.mock import Mock, patch
 
 import pytest
 
 from openevolve.workspace_errors import (
-    GitVersionError,
     RepositoryValidationError,
-    WorktreeCreationError,
-    WorktreeRemovalError,
 )
 from openevolve.workspace_manager import WorkspaceManager
 
@@ -227,7 +224,7 @@ class TestForcedAndManualRemovalPaths:
         mgr = _make_manager(tmp_path)
         ok = Mock(returncode=0, stdout="", stderr="")
 
-        def _side_effect(args, check=True, timeout=None):
+        def _side_effect(args, check=True, timeout=None, quiet=False):
             if args[:2] == ["worktree", "remove"] and "--force" not in args:
                 raise RuntimeError("modified changes")
             return ok
@@ -249,7 +246,7 @@ class TestForcedAndManualRemovalPaths:
         worktree_dir = tmp_path / "wt_to_remove"
         worktree_dir.mkdir()
 
-        def _fail_removes(args, check=True, timeout=None):
+        def _fail_removes(args, check=True, timeout=None, quiet=False):
             if "remove" in args:
                 raise RuntimeError("cannot remove")
             return ok
@@ -281,7 +278,7 @@ class TestForcedAndManualRemovalPaths:
         mgr = _make_manager(tmp_path)
         ok = Mock(returncode=0, stdout="", stderr="")
 
-        def _fail_removes(args, check=True, timeout=None):
+        def _fail_removes(args, check=True, timeout=None, quiet=False):
             if "remove" in args:
                 raise RuntimeError("cannot remove")
             return ok

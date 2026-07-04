@@ -10,17 +10,14 @@ Covers:
 - Detached HEAD scenarios (_get_base_branch)
 """
 
-import shutil
 import subprocess
-from pathlib import Path
 from types import SimpleNamespace
-from unittest.mock import MagicMock, Mock, call, patch
+from unittest.mock import Mock, patch
 
 import pytest
 
 from openevolve.workspace_errors import (
     GitVersionError,
-    RepositoryValidationError,
     WorktreeCreationError,
     WorktreeRemovalError,
 )
@@ -234,15 +231,15 @@ class TestCascadingCleanup:
         with patch.object(mgr, "_run_git_command", return_value=ok) as mock_git:
             mgr.remove_worktree("/fake/path")
 
-        # Only one git call: normal removal
-        mock_git.assert_called_once_with(["worktree", "remove", "/fake/path"])
+        # Only one git call: normal removal (quiet — expected-failure path is silenced)
+        mock_git.assert_called_once_with(["worktree", "remove", "/fake/path"], quiet=True)
 
     def test_falls_back_to_forced_removal(self, tmp_path):
         mgr = _make_manager(tmp_path)
         ok = Mock(returncode=0, stdout="", stderr="")
         call_log = []
 
-        def _side_effect(args, check=True, timeout=None):
+        def _side_effect(args, check=True, timeout=None, quiet=False):
             call_log.append(args[:])
             if args[:2] == ["worktree", "remove"] and "--force" not in args:
                 raise RuntimeError("modified files in worktree")
@@ -260,7 +257,7 @@ class TestCascadingCleanup:
         worktree_dir = tmp_path / "orphan_wt"
         worktree_dir.mkdir()
 
-        def _side_effect(args, check=True, timeout=None):
+        def _side_effect(args, check=True, timeout=None, quiet=False):
             if "remove" in args:
                 raise RuntimeError("removal failed")
             return Mock(returncode=0, stdout="", stderr="")
@@ -275,7 +272,7 @@ class TestCascadingCleanup:
         """WorktreeRemovalError raised when all 3 stages fail."""
         mgr = _make_manager(tmp_path)
 
-        def _always_fail(args, check=True, timeout=None):
+        def _always_fail(args, check=True, timeout=None, quiet=False):
             raise RuntimeError("everything broken")
 
         with patch.object(mgr, "_run_git_command", side_effect=_always_fail), \
