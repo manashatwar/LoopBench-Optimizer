@@ -1,0 +1,22 @@
+# LoopBench example — Bubble Sort: naive O(n^2) → an O(n log n) sort.
+# Run either way:
+#   loopbench run --target . --target-file examples/bubblesort_optimizer/initial_program.py --metric latency
+#   loopbench run --config examples/bubblesort_optimizer/loopbench.yaml
+
+target:
+  file: initial_program.py
+  evaluator: test_bubble_sort.py
+
+sandbox:
+  command: "pytest test_bubble_sort.py -v -s -q"
+  pip: []                       # pure Python — no third-party deps
+
+metric:
+  name: "combined_score"
+  threshold: 0.95
+
+search:
+  strategy: auto
+
+constraints:
+  max_iterations: 10

@@ -20,6 +20,7 @@ watch it evolve faster code while keeping every test green.
 |------|------------|
 | [`fibonacci_optimizer/`](fibonacci_optimizer/) | Hello-world optimizer: naive recursive Fibonacci → memoized/iterative |
 | [`prime_counter_optimizer/`](prime_counter_optimizer/) | Naive trial-division prime counting → Sieve of Eratosthenes |
+| [`bubblesort_optimizer/`](bubblesort_optimizer/) | Naive O(n²) bubble sort → a faster sort (correctness gated against `sorted`) |
 | [`json_parser_optimizer/`](json_parser_optimizer/) | Hand-written JSON parser with a concatenation bottleneck (correctness verified against `json.loads`) |
 | [`palindrome_optimizer/`](palindrome_optimizer/) | Longest palindromic substring (CodeChef PRINCESS): naive O(n³) → expand-around-center O(n²) |
 | [`stdin_palindrome/`](stdin_palindrome/) | **Run mode** demo: a stdin/stdout script (reads `input()`) optimized via subprocess I/O test cases, no import needed |
