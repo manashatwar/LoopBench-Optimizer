@@ -74,23 +74,25 @@ sequenceDiagram
     participant L as OptimizerLoop
     participant M as RepoContextMapper
     participant E as LLMEnsemble
-    participant W as WorkspaceManager
     participant S as Docker Sandbox
     participant DB as CandidateDatabase
 
     L->>M: get_context_map(repo, target)
     M-->>L: ContextMap (relevant files)
     L->>E: generate(prompt)
-    E-->>L: improved file / SEARCH-REPLACE blocks
-    L->>L: apply edit + compute diff via difflib
-    L->>W: create_worktree()
-    W-->>L: isolated worktree path
-    L->>S: run tests (--network=none, read-only mount)
+    E-->>L: full improved file / SEARCH-REPLACE blocks
+    L->>L: apply edit in-memory + compute unified diff via difflib
+    L->>S: run tests on an isolated copy<br/>(--network=none, read-only mount)
     S-->>L: score.json (passed, speed_ms, combined_score)
     L->>DB: insert_candidate(patch, metrics, score)
-    L->>W: remove_worktree()
-    Note over L: SearchStrategy selects the next baseline<br/>(best candidate is kept separately, never regresses)
+    Note over L: SearchStrategy.select_baseline picks the next<br/>baseline; best candidate is tracked separately<br/>and never regresses
 ```
+
+> This is the **default** flow (`auto` → `full` / `search_replace`): the edit is
+> applied in-memory and the diff is computed with `difflib`, so the emitted
+> `.patch` is always valid. The legacy `diff` mode instead applies the LLM's raw
+> patch inside a disposable git worktree via the
+> [Ghost Worktree System](ghost-worktree-system.md).
 
 ## Core components
 
@@ -108,7 +110,6 @@ classDiagram
     }
     class WorkspaceManager {
       +str repo_root
-      +str worktree_pattern
       +create_worktree() str
       +apply_patch(worktree, patch) ApplyResult
       +remove_worktree(path)
