@@ -95,12 +95,40 @@ LoopBench-Optimizer/
 # Full suite
 python -m pytest tests/ -v
 
+# A single subsystem
+python -m pytest tests/loopbench/ -v      # fork CLI + run pipeline
+python -m pytest tests/engine/ -v         # optimizer loop + evolution core
+
 # Property-based tests only (Hypothesis)
 python -m pytest tests/property/ -v
 
-# End-to-end tests
-python -m pytest tests/test_end_to_end.py -v
+# End-to-end / integration tests (fast subset)
+python -m pytest tests/integration/ -m "not slow" -v
 ```
+
+### Test layout
+
+Unit tests are grouped by subsystem so they're easy to navigate:
+
+| Directory | Covers |
+|-----------|--------|
+| `tests/loopbench/` | Fork CLI, hero pipeline, scaffold, deps, run mode, cost budget |
+| `tests/engine/` | Optimizer loop, search strategy, checkpointing, metric parsing |
+| `tests/islands/` | MAP-Elites / island-model population evolution |
+| `tests/llm/` | LLM ensemble, patch extraction, provider/model handling, prompts |
+| `tests/repo_mapper/` | Repository scanning, analysis, relevance, context building |
+| `tests/storage/` | Candidate database, audit trail, artifacts, cache |
+| `tests/workspace/` | Git worktree isolation and cleanup |
+| `tests/sandbox/` | Docker sandbox runner and custom commands |
+| `tests/config/` | Config validation |
+| `tests/reporting/` | Dashboard, report generator, visualization |
+| `tests/integration/` | End-to-end flows (some require external services; `-m "not slow"` for CI) |
+| `tests/property/` | Hypothesis property-based tests |
+| `tests/performance/` | Performance benchmarks |
+| `tests/examples/` | Example-project fixtures |
+
+`tests/test_utils.py` stays at the root — it's a shared helper imported by the
+integration test harness, not a test module itself.
 
 ## Code Style
 

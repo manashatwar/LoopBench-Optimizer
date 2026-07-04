@@ -44,7 +44,7 @@ markers = [
     "integration: marks tests as integration tests requiring external services",
     "performance: marks tests as performance benchmarks",
 ]
-addopts = "--strict-markers"
+addopts = "--strict-markers --import-mode=importlib"
 
 [tool.setuptools.packages.find]
 include = ["openevolve*", "loopbench*", "sandbox*"]

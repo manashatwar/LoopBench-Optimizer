@@ -17,7 +17,7 @@ class TestCheckJsonFloat(unittest.TestCase):
     def setUpClass(cls):
         """Add scripts directory to path for importing visualizer"""
         cls.scripts_path = os.path.join(
-            os.path.dirname(__file__), "..", "scripts"
+            os.path.dirname(__file__), "..", "..", "scripts"
         )
         sys.path.insert(0, cls.scripts_path)
 
@@ -105,7 +105,7 @@ class TestSanitizeProgramForVisualization(unittest.TestCase):
     def setUpClass(cls):
         """Add scripts directory to path for importing visualizer"""
         cls.scripts_path = os.path.join(
-            os.path.dirname(__file__), "..", "scripts"
+            os.path.dirname(__file__), "..", "..", "scripts"
         )
         sys.path.insert(0, cls.scripts_path)
 
