@@ -46,6 +46,62 @@ The variable name `GEMINI_API_KEY` is used regardless of provider; point
 `LLM_API_BASE` at whichever OpenAI-compatible service you use (Groq, OpenAI,
 etc.).
 
+## Repository layout
+
+```
+LoopBench-Optimizer/
+│
+├── openevolve/                  # Core library (extended from the OpenEvolve fork)
+│   ├── cli.py                   # optimizer CLI entry point (init/run/resume/export/dashboard)
+│   ├── optimizer_loop.py        # 7-phase generation orchestrator
+│   ├── search_strategy.py       # GreedySearch, BeamSearch, RandomRestartSearch
+│   ├── repo_manager.py          # clone_repository, detect_language, detect_test_framework
+│   ├── config_validator.py      # validate_optimizer_config, generate_template
+│   ├── report_generator.py      # FinalReportWriter (patch, validation, README, PR)
+│   ├── database.py              # CandidateDatabase with SQLite audit trail
+│   ├── metric_parser.py         # MetricParser (regex + JSON patterns)
+│   ├── workspace_manager.py     # git worktree isolation
+│   ├── llm/                     # LLM providers (OpenAI-compatible, retry logic)
+│   └── repo_mapper/             # repository-to-context mapper
+│
+├── sandbox/                     # Docker sandbox execution
+│   ├── runner.py                # run_in_sandbox, verify_output_streams
+│   ├── entrypoint.sh            # container entrypoint + scoring formula
+│   └── Dockerfile.sandbox       # test execution image
+│
+├── loopbench/                   # LoopBench CLI + run pipeline
+│   ├── cli.py                   # run (direct + --config) / init (--job) / check
+│   ├── hero.py                  # clone → optimize → emit patch + dashboard + log
+│   ├── scaffold.py              # `init --job` job-folder generator
+│   ├── deps.py                  # dependency detection (requirements/pyproject/imports)
+│   └── io_harness.py            # run mode: stdin/stdout subprocess harness
+│
+├── docs/                        # Documentation + static GitHub Pages dashboard
+│   ├── index.html               # single-file dashboard (no build step)
+│   ├── defining-benchmarks.md   # every scoring mode + full CLI reference
+│   └── architecture/            # per-subsystem design docs with diagrams
+│
+├── configs/                     # Example configuration files
+├── examples/                    # Runnable optimization examples
+├── tests/                       # Test suite (unit + property + integration)
+├── pyproject.toml               # Package config + entry points
+├── Makefile                     # Common dev commands
+└── LICENSE
+```
+
+## Running the tests
+
+```bash
+# Full suite
+python -m pytest tests/ -v
+
+# Property-based tests only (Hypothesis)
+python -m pytest tests/property/ -v
+
+# End-to-end tests
+python -m pytest tests/test_end_to_end.py -v
+```
+
 ## Code Style
 
 The project uses [ruff](https://docs.astral.sh/ruff/) for both linting and
