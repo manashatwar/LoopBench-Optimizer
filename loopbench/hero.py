@@ -342,9 +342,9 @@ def run_target_pipeline(args: argparse.Namespace) -> int:
         # Priority: --pip > requirements.txt > imports scanned across the repo.
         try:
             from loopbench.deps import resolve_deps_with_source
-            explicit_pip = None
-            if getattr(args, "pip", None):
-                explicit_pip = str(args.pip).split()
+            # None = not specified (auto-detect); "" or [] = explicitly no deps.
+            pip_attr = getattr(args, "pip", None)
+            explicit_pip = None if pip_attr is None else str(pip_attr).split()
             pip_pkgs, dep_source = resolve_deps_with_source(
                 Path(repo_path), Path(target_path), explicit=explicit_pip
             )

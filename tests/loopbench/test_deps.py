@@ -119,3 +119,31 @@ class TestNormalizeAndResolve:
         # No packages -> base image, no Docker build attempted.
         assert _resolve_image({}, None) == SANDBOX_IMAGE
         assert _resolve_image({"pip_install": []}, None) == SANDBOX_IMAGE
+
+
+class TestExplicitPipHandling:
+    """`--pip`/`sandbox.pip` semantics: None = auto-detect, [] = install nothing."""
+
+    def test_explicit_list_is_authoritative(self, tmp_path):
+        from loopbench.deps import resolve_deps_with_source
+        # A repo full of imports must be ignored when an explicit list is given.
+        _w(tmp_path / "a.py", "import numpy\nimport pandas\n")
+        pkgs, source = resolve_deps_with_source(tmp_path, explicit=["scipy"])
+        assert pkgs == ["scipy"]
+        assert "explicit" in source
+
+    def test_explicit_empty_installs_nothing(self, tmp_path):
+        from loopbench.deps import resolve_deps_with_source
+        # `pip: []` (explicit empty) must NOT fall back to scanning the repo.
+        _w(tmp_path / "a.py", "import numpy\nimport pandas\n")
+        pkgs, source = resolve_deps_with_source(tmp_path, explicit=[])
+        assert pkgs == []
+        assert source == "explicit (no deps)"
+
+    def test_none_falls_back_to_scan(self, tmp_path):
+        from loopbench.deps import resolve_deps_with_source
+        # No explicit list (None) => auto-detect from the repo's imports.
+        _w(tmp_path / "a.py", "import numpy\n")
+        pkgs, source = resolve_deps_with_source(tmp_path, explicit=None)
+        assert "numpy" in pkgs
+        assert "scanned imports" in source

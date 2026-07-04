@@ -188,9 +188,12 @@ def resolve_deps_with_source(
     Priority (authoritative first): explicit > requirements.txt > pyproject.toml
     > imports scanned across the repo. Returns (packages, source_label).
     """
-    if explicit:
+    if explicit is not None:
         # An explicit list is authoritative — honor it verbatim (no _SKIP filter).
-        return [p for p in explicit if p], "explicit --pip/config"
+        # An *empty* explicit list means "install nothing" (do NOT fall back to
+        # scanning the repo). ``None`` alone means "not specified → auto-detect".
+        pkgs = [p for p in explicit if p]
+        return pkgs, ("explicit --pip/config" if pkgs else "explicit (no deps)")
 
     repo_path = Path(repo_path)
 
