@@ -34,5 +34,5 @@ jobs:
         env:
           OPENAI_API_KEY: test
         run: |
-          python -m pytest tests/test_metric_parser.py \
+          python -m pytest tests/engine/test_metric_parser.py \
             -v --tb=short --timeout=60 -p no:warnings

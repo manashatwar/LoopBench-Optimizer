@@ -62,21 +62,21 @@ jobs:
           OPENAI_API_KEY: test-key
         run: |
           python -m pytest \
-            tests/test_optimizer_loop_database.py \
+            tests/engine/test_optimizer_loop_database.py \
             tests/property/ \
-            tests/test_sandbox_runner.py \
-            tests/test_llm_patch.py \
-            tests/test_search_strategy.py \
-            tests/test_config_validator.py \
-            tests/test_optimizer_loop.py \
-            tests/test_report_generator.py \
-            tests/test_optimizer_cli.py \
-            tests/test_audit_trail.py \
-            tests/test_dashboard.py \
-            tests/test_repo_manager.py \
-            tests/test_end_to_end.py \
-            tests/test_repo_mapper_integration.py \
-            tests/test_optimizer_prompt.py \
+            tests/sandbox/test_sandbox_runner.py \
+            tests/llm/test_llm_patch.py \
+            tests/engine/test_search_strategy.py \
+            tests/config/test_config_validator.py \
+            tests/engine/test_optimizer_loop.py \
+            tests/reporting/test_report_generator.py \
+            tests/engine/test_optimizer_cli.py \
+            tests/storage/test_audit_trail.py \
+            tests/reporting/test_dashboard.py \
+            tests/repo_mapper/test_repo_manager.py \
+            tests/integration/test_end_to_end.py \
+            tests/repo_mapper/test_repo_mapper_integration.py \
+            tests/engine/test_optimizer_prompt.py \
             -v --tb=short \
             --timeout=120 \
             -p no:warnings
