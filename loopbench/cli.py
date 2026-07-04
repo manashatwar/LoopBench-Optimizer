@@ -298,7 +298,7 @@ def _cmd_init(args: argparse.Namespace) -> int:
     import shutil
     shutil.copy(template_path, output)
     print(f"[LoopBench] ✅ Created: {output}")
-    print("[LoopBench] Edit target.program and target.evaluator, then run:")
+    print("[LoopBench] Edit target.file and evaluator (your test), then run:")
     print(f"  loopbench run --config {output}")
     return 0
 
