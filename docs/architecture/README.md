@@ -82,10 +82,10 @@ sequenceDiagram
     L->>E: generate(prompt)
     E-->>L: full improved file / SEARCH-REPLACE blocks
     L->>L: apply edit in-memory + compute unified diff via difflib
-    L->>S: run tests on an isolated copy<br/>(--network=none, read-only mount)
+    L->>S: run tests on an isolated copy (network off, read-only mount)
     S-->>L: score.json (passed, speed_ms, combined_score)
     L->>DB: insert_candidate(patch, metrics, score)
-    Note over L: SearchStrategy.select_baseline picks the next<br/>baseline; best candidate is tracked separately<br/>and never regresses
+    Note over L: SearchStrategy picks the next baseline; the best candidate is tracked separately and never regresses
 ```
 
 > This is the **default** flow (`auto` → `full` / `search_replace`): the edit is
