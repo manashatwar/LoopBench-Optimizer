@@ -685,6 +685,48 @@ class OptimizerLoop:
             "```\n"
         )
 
+    def _test_rewrite_candidate(
+        self, new_content: str, target_path: Path, rel_str: str
+    ) -> Dict[str, Any]:
+        """Run a rewritten candidate in an isolated git worktree, then in the
+        Docker sandbox — the same isolation path used by diff mode.
+
+        A fresh worktree is created per candidate, the evolved file is written
+        at its real path inside the worktree, and the sandbox mounts that
+        worktree read-only. When the target isn't in a git repo (worktree
+        creation fails), it falls back to a disposable temp-dir copy so the
+        loop still runs.
+        """
+        run_in_sandbox, _ = _import_sandbox()
+        WorkspaceManager = _import_workspace_manager()
+        try:
+            wm = WorkspaceManager(repo_root=self.repo_path)
+            with wm as worktree_path:
+                wt_file = Path(worktree_path) / rel_str
+                wt_file.parent.mkdir(parents=True, exist_ok=True)
+                wt_file.write_text(new_content, encoding="utf-8")
+                return run_in_sandbox(
+                    program_path=str(wt_file),
+                    test_file=self.test_file,
+                    sandbox_cfg=self.sandbox_cfg,
+                    repo_root=self.repo_path,
+                    worktree_path=str(worktree_path),
+                )
+        except Exception as exc:
+            logger.warning(
+                "Worktree isolation unavailable (%s) — falling back to temp-copy", exc
+            )
+            import tempfile
+            with tempfile.TemporaryDirectory(prefix="loopbench_rw_") as td:
+                improved = Path(td) / target_path.name
+                improved.write_text(new_content, encoding="utf-8")
+                return run_in_sandbox(
+                    program_path=str(improved),
+                    test_file=self.test_file,
+                    sandbox_cfg=self.sandbox_cfg,
+                    repo_root=self.repo_path,
+                )
+
     def _finalize_rewrite_candidate(
         self,
         generation: int,
@@ -694,7 +736,6 @@ class OptimizerLoop:
     ) -> Dict[str, Any]:
         """Shared tail: compute diff, test in sandbox, score, record candidate."""
         import difflib
-        import tempfile
 
         run_in_sandbox, verify_output_streams = _import_sandbox()
         target_path = Path(self.target_file)
@@ -721,16 +762,10 @@ class OptimizerLoop:
             fromfile=f"a/{rel_str}", tofile=f"b/{rel_str}",
         ))
 
-        # Test the improved file via the sandbox (temp-copy mode)
-        with tempfile.TemporaryDirectory(prefix="loopbench_rw_") as td:
-            improved = Path(td) / target_path.name
-            improved.write_text(new_content, encoding="utf-8")
-            result = run_in_sandbox(
-                program_path=str(improved),
-                test_file=self.test_file,
-                sandbox_cfg=self.sandbox_cfg,
-                repo_root=self.repo_path,
-            )
+        # Evaluate the rewritten candidate inside an isolated, disposable git
+        # worktree (same isolation path as diff mode). Falls back to a temp-dir
+        # copy only when the target isn't in a git repo.
+        result = self._test_rewrite_candidate(new_content, target_path, rel_str)
 
         streams_ok = verify_output_streams(result.get("stdout"), result.get("stderr"))
         metrics: Dict[str, Any] = {}

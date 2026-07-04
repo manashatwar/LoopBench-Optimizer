@@ -361,9 +361,13 @@ def run_in_sandbox(
             results_path = Path(results_tmp) / "results"
             results_path.mkdir()
 
-            if not prog_in_wt:
+            if prog_in_wt:
+                # Mounted in place — reference it at its real path in the tree.
+                prog_rel = prog_path.relative_to(wt_path).as_posix()
+            else:
                 import shutil as _shutil
                 _shutil.copy2(prog_path, wt_path / prog_path.name)
+                prog_rel = prog_path.name
 
             # Copy test file into worktree if not already there
             try:
@@ -372,12 +376,15 @@ def run_in_sandbox(
             except ValueError:
                 test_in_wt = False
 
-            if not test_in_wt:
+            if test_in_wt:
+                test_rel = test_path.relative_to(wt_path).as_posix()
+            else:
                 import shutil as _shutil
                 _shutil.copy2(test_path, wt_path / test_path.name)
+                test_rel = test_path.name
 
-            container_program = f"/workspace/{prog_path.name}"
-            container_test = f"/workspace/{test_path.name}"
+            container_program = f"/workspace/{prog_rel}"
+            container_test = f"/workspace/{test_rel}"
             test_cmd = _resolve_test_cmd(sandbox_cfg, container_test)
 
             docker_cmd = [

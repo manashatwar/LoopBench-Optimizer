@@ -1,12 +1,12 @@
 {
   "run": {
-    "id": "d5d8e21f-e4dc-418b-900d-466299193c51",
+    "id": "b625d758-a308-4473-9e18-ce5d0313f437",
     "target_repo": "C:\\Users\\manis\\LoopBench-Optimizer",
-    "start_time": 1783201031.5060227,
-    "end_time": 1783201053.922416,
+    "start_time": 1783203607.1535192,
+    "end_time": 1783203643.935233,
     "status": "successful",
     "success_threshold": 0.05,
-    "final_improvement": 18.809419930589986,
+    "final_improvement": 17.42018588868808,
     "config": {
       "repo_path": "C:\\Users\\manis\\LoopBench-Optimizer",
       "target_file": "C:\\Users\\manis\\LoopBench-Optimizer\\examples\\bubblesort_optimizer\\initial_program.py",
@@ -14,7 +14,7 @@
       "max_iterations": 10,
       "patience": 5,
       "success_threshold": 0.05,
-      "db_path": "C:\\Users\\manis\\AppData\\Local\\Temp\\loopbench_db_9tk0h5uc\\loopbench.db",
+      "db_path": "C:\\Users\\manis\\AppData\\Local\\Temp\\loopbench_db_e0cjn2v4\\loopbench.db",
       "language": "Python",
       "search_strategy": {
         "strategy": "auto"
@@ -38,303 +38,303 @@
   },
   "candidates": [
     {
-      "id": "6953af0c-a30d-42d7-a46f-f1714d87c8c6",
-      "run_id": "d5d8e21f-e4dc-418b-900d-466299193c51",
+      "id": "55beae0b-76df-4981-8563-228ad8091df2",
+      "run_id": "b625d758-a308-4473-9e18-ce5d0313f437",
       "generation": 0,
       "parent_id": null,
-      "timestamp": 1783201033.6921616,
+      "timestamp": 1783203610.910649,
       "patch_content": "",
       "applied": true,
       "tested": true,
       "exit_code": 0,
-      "stdout": "[sandbox] Starting test run at 2026-07-04T21:37:12Z\n[sandbox] Program: /workspace/initial_program.py\n[sandbox] Command: pytest test_bubble_sort.py -v -s -q\n\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\n============================= test session starts ==============================\nplatform linux -- Python 3.12.13, pytest-8.3.5, pluggy-1.6.0\nrootdir: /workspace\nplugins: metadata-3.1.1, json-report-1.5.0\ncollected 5 items\n\ntest_bubble_sort.py ....\nLOOPBENCH_SPEED_MS=448.0899\n.\n\n=============================== warnings summary ===============================\n../usr/local/lib/python3.12/site-packages/_pytest/cacheprovider.py:475\n  /usr/local/lib/python3.12/site-packages/_pytest/cacheprovider.py:475: PytestCacheWarning: could not create cache path /workspace/.pytest_cache/v/cache/nodeids: [Errno 30] Read-only file system: '/workspace/pytest-cache-files-ac9s_yfk'\n    config.cache.set(\"cache/nodeids\", sorted(self.cached_nodeids))\n\n../usr/local/lib/python3.12/site-packages/_pytest/stepwise.py:51\n  /usr/local/lib/python3.12/site-packages/_pytest/stepwise.py:51: PytestCacheWarning: could not create cache path /workspace/.pytest_cache/v/cache/stepwise: [Errno 30] Read-only file system: '/workspace/pytest-cache-files-eofchwgm'\n    session.config.cache.set(STEPWISE_CACHE_DIR, [])\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n--------------------------------- JSON report ----------------------------------\nreport saved to: /results/pytest_report.json\n======================== 5 passed, 2 warnings in 0.53s =========================\n\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\n[sandbox] command exit code: 0\n[sandbox] score.json written: passed=5, failed=0, exit=0, score=0.0504\n[sandbox] Done.\n",
+      "stdout": "[sandbox] Starting test run at 2026-07-04T22:20:09Z\n[sandbox] Program: /workspace/initial_program.py\n[sandbox] Command: pytest test_bubble_sort.py -v -s -q\n\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\n============================= test session starts ==============================\nplatform linux -- Python 3.12.13, pytest-8.3.5, pluggy-1.6.0\nrootdir: /workspace\nplugins: metadata-3.1.1, json-report-1.5.0\ncollected 5 items\n\ntest_bubble_sort.py ....\nLOOPBENCH_SPEED_MS=437.1880\n.\n\n=============================== warnings summary ===============================\n../usr/local/lib/python3.12/site-packages/_pytest/cacheprovider.py:475\n  /usr/local/lib/python3.12/site-packages/_pytest/cacheprovider.py:475: PytestCacheWarning: could not create cache path /workspace/.pytest_cache/v/cache/nodeids: [Errno 30] Read-only file system: '/workspace/pytest-cache-files-1f86nul1'\n    config.cache.set(\"cache/nodeids\", sorted(self.cached_nodeids))\n\n../usr/local/lib/python3.12/site-packages/_pytest/stepwise.py:51\n  /usr/local/lib/python3.12/site-packages/_pytest/stepwise.py:51: PytestCacheWarning: could not create cache path /workspace/.pytest_cache/v/cache/stepwise: [Errno 30] Read-only file system: '/workspace/pytest-cache-files-qzzi_6z0'\n    session.config.cache.set(STEPWISE_CACHE_DIR, [])\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n--------------------------------- JSON report ----------------------------------\nreport saved to: /results/pytest_report.json\n======================== 5 passed, 2 warnings in 0.52s =========================\n\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\n[sandbox] command exit code: 0\n[sandbox] score.json written: passed=5, failed=0, exit=0, score=0.0542\n[sandbox] Done.\n",
+      "stderr": "",
+      "execution_time": 3.514999999999418,
+      "score": 0.054226,
+      "failed": false,
+      "failure_phase": null,
+      "error_message": null,
+      "metrics": {
+        "combined_score": 0.054226,
+        "correctness": 1.0,
+        "speed_score": 0.054226
+      },
+      "program": null
+    },
+    {
+      "id": "01070556-d909-4df7-b815-47cc33f43718",
+      "run_id": "b625d758-a308-4473-9e18-ce5d0313f437",
+      "generation": 1,
+      "parent_id": "55beae0b-76df-4981-8563-228ad8091df2",
+      "timestamp": 1783203614.8407767,
+      "patch_content": "--- a/examples/bubblesort_optimizer/initial_program.py\n+++ b/examples/bubblesort_optimizer/initial_program.py\n@@ -11,13 +11,8 @@\n \n def bubble_sort(data):\n     \"\"\"Naive bubble sort \u2014 O(n^2). Returns a new sorted (ascending) list.\"\"\"\n-    arr = list(data)\n-    n = len(arr)\n-    for i in range(n):\n-        for j in range(n - 1, i, -1):\n-            if arr[j] < arr[j - 1]:\n-                arr[j], arr[j - 1] = arr[j - 1], arr[j]\n-    return arr\n+    # Using the built-in sorted function which is implemented in C and has a time complexity of O(n log n)\n+    return sorted(data)\n \n \n # EVOLVE-BLOCK-END\n",
+      "applied": true,
+      "tested": true,
+      "exit_code": 0,
+      "stdout": "[sandbox] Starting test run at 2026-07-04T22:20:13Z\n[sandbox] Program: /workspace/examples/bubblesort_optimizer/initial_program.py\n[sandbox] Command: pytest test_bubble_sort.py -v -s -q\n\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\n============================= test session starts ==============================\nplatform linux -- Python 3.12.13, pytest-8.3.5, pluggy-1.6.0\nrootdir: /workspace\nconfigfile: pyproject.toml\nplugins: metadata-3.1.1, json-report-1.5.0\ncollected 5 items\n\ntest_bubble_sort.py ....\nLOOPBENCH_SPEED_MS=0.3510\n.\n\n=============================== warnings summary ===============================\n../usr/local/lib/python3.12/site-packages/_pytest/cacheprovider.py:475\n  /usr/local/lib/python3.12/site-packages/_pytest/cacheprovider.py:475: PytestCacheWarning: could not create cache path /workspace/.pytest_cache/v/cache/nodeids: [Errno 30] Read-only file system: '/workspace/pytest-cache-files-kal4hjri'\n    config.cache.set(\"cache/nodeids\", sorted(self.cached_nodeids))\n\n../usr/local/lib/python3.12/site-packages/_pytest/stepwise.py:51\n  /usr/local/lib/python3.12/site-packages/_pytest/stepwise.py:51: PytestCacheWarning: could not create cache path /workspace/.pytest_cache/v/cache/stepwise: [Errno 30] Read-only file system: '/workspace/pytest-cache-files-zltsswbk'\n    session.config.cache.set(STEPWISE_CACHE_DIR, [])\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n--------------------------------- JSON report ----------------------------------\nreport saved to: /results/pytest_report.json\n======================== 5 passed, 2 warnings in 0.20s =========================\n\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\n[sandbox] command exit code: 0\n[sandbox] score.json written: passed=5, failed=0, exit=0, score=0.9977\n[sandbox] Done.\n",
+      "stderr": "",
+      "execution_time": 1.5939999999973224,
+      "score": 0.997663,
+      "failed": false,
+      "failure_phase": null,
+      "error_message": null,
+      "metrics": {
+        "combined_score": 0.997663,
+        "correctness": 1.0,
+        "speed_score": 0.997663,
+        "speed_ms": 0.351
+      },
+      "program": null
+    },
+    {
+      "id": "f4e4a828-79c4-480f-8340-45c1334bef4c",
+      "run_id": "b625d758-a308-4473-9e18-ce5d0313f437",
+      "generation": 2,
+      "parent_id": "01070556-d909-4df7-b815-47cc33f43718",
+      "timestamp": 1783203617.90908,
+      "patch_content": "--- a/examples/bubblesort_optimizer/initial_program.py\n+++ b/examples/bubblesort_optimizer/initial_program.py\n@@ -11,13 +11,7 @@\n \n def bubble_sort(data):\n     \"\"\"Naive bubble sort \u2014 O(n^2). Returns a new sorted (ascending) list.\"\"\"\n-    arr = list(data)\n-    n = len(arr)\n-    for i in range(n):\n-        for j in range(n - 1, i, -1):\n-            if arr[j] < arr[j - 1]:\n-                arr[j], arr[j - 1] = arr[j - 1], arr[j]\n-    return arr\n+    return sorted(data)\n \n \n # EVOLVE-BLOCK-END\n",
+      "applied": true,
+      "tested": true,
+      "exit_code": 0,
+      "stdout": "[sandbox] Starting test run at 2026-07-04T22:20:16Z\n[sandbox] Program: /workspace/examples/bubblesort_optimizer/initial_program.py\n[sandbox] Command: pytest test_bubble_sort.py -v -s -q\n\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\n============================= test session starts ==============================\nplatform linux -- Python 3.12.13, pytest-8.3.5, pluggy-1.6.0\nrootdir: /workspace\nconfigfile: pyproject.toml\nplugins: metadata-3.1.1, json-report-1.5.0\ncollected 5 items\n\ntest_bubble_sort.py ....\nLOOPBENCH_SPEED_MS=0.3392\n.\n\n=============================== warnings summary ===============================\n../usr/local/lib/python3.12/site-packages/_pytest/cacheprovider.py:475\n  /usr/local/lib/python3.12/site-packages/_pytest/cacheprovider.py:475: PytestCacheWarning: could not create cache path /workspace/.pytest_cache/v/cache/nodeids: [Errno 30] Read-only file system: '/workspace/pytest-cache-files-kty_w5dv'\n    config.cache.set(\"cache/nodeids\", sorted(self.cached_nodeids))\n\n../usr/local/lib/python3.12/site-packages/_pytest/stepwise.py:51\n  /usr/local/lib/python3.12/site-packages/_pytest/stepwise.py:51: PytestCacheWarning: could not create cache path /workspace/.pytest_cache/v/cache/stepwise: [Errno 30] Read-only file system: '/workspace/pytest-cache-files-y6in7md0'\n    session.config.cache.set(STEPWISE_CACHE_DIR, [])\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n--------------------------------- JSON report ----------------------------------\nreport saved to: /results/pytest_report.json\n======================== 5 passed, 2 warnings in 0.17s =========================\n\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\n[sandbox] command exit code: 0\n[sandbox] score.json written: passed=5, failed=0, exit=0, score=0.9977\n[sandbox] Done.\n",
+      "stderr": "",
+      "execution_time": 1.5930000000007567,
+      "score": 0.997741,
+      "failed": false,
+      "failure_phase": null,
+      "error_message": null,
+      "metrics": {
+        "combined_score": 0.997741,
+        "correctness": 1.0,
+        "speed_score": 0.997741,
+        "speed_ms": 0.3392
+      },
+      "program": null
+    },
+    {
+      "id": "cf3e6e70-c78e-47ce-aa62-5287a8aa4b43",
+      "run_id": "b625d758-a308-4473-9e18-ce5d0313f437",
+      "generation": 3,
+      "parent_id": "f4e4a828-79c4-480f-8340-45c1334bef4c",
+      "timestamp": 1783203621.2063804,
+      "patch_content": "--- a/examples/bubblesort_optimizer/initial_program.py\n+++ b/examples/bubblesort_optimizer/initial_program.py\n@@ -11,13 +11,8 @@\n \n def bubble_sort(data):\n     \"\"\"Naive bubble sort \u2014 O(n^2). Returns a new sorted (ascending) list.\"\"\"\n-    arr = list(data)\n-    n = len(arr)\n-    for i in range(n):\n-        for j in range(n - 1, i, -1):\n-            if arr[j] < arr[j - 1]:\n-                arr[j], arr[j - 1] = arr[j - 1], arr[j]\n-    return arr\n+    # Using built-in sorted function with Timsort algorithm (O(n log n))\n+    return sorted(data)\n \n \n # EVOLVE-BLOCK-END\n",
+      "applied": true,
+      "tested": true,
+      "exit_code": 0,
+      "stdout": "[sandbox] Starting test run at 2026-07-04T22:20:19Z\n[sandbox] Program: /workspace/examples/bubblesort_optimizer/initial_program.py\n[sandbox] Command: pytest test_bubble_sort.py -v -s -q\n\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\n============================= test session starts ==============================\nplatform linux -- Python 3.12.13, pytest-8.3.5, pluggy-1.6.0\nrootdir: /workspace\nconfigfile: pyproject.toml\nplugins: metadata-3.1.1, json-report-1.5.0\ncollected 5 items\n\ntest_bubble_sort.py ....\nLOOPBENCH_SPEED_MS=0.1841\n.\n\n=============================== warnings summary ===============================\n../usr/local/lib/python3.12/site-packages/_pytest/cacheprovider.py:475\n  /usr/local/lib/python3.12/site-packages/_pytest/cacheprovider.py:475: PytestCacheWarning: could not create cache path /workspace/.pytest_cache/v/cache/nodeids: [Errno 30] Read-only file system: '/workspace/pytest-cache-files-s9uqd7g5'\n    config.cache.set(\"cache/nodeids\", sorted(self.cached_nodeids))\n\n../usr/local/lib/python3.12/site-packages/_pytest/stepwise.py:51\n  /usr/local/lib/python3.12/site-packages/_pytest/stepwise.py:51: PytestCacheWarning: could not create cache path /workspace/.pytest_cache/v/cache/stepwise: [Errno 30] Read-only file system: '/workspace/pytest-cache-files-6z_05ywj'\n    session.config.cache.set(STEPWISE_CACHE_DIR, [])\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n--------------------------------- JSON report ----------------------------------\nreport saved to: /results/pytest_report.json\n======================== 5 passed, 2 warnings in 0.18s =========================\n\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\n[sandbox] command exit code: 0\n[sandbox] score.json written: passed=5, failed=0, exit=0, score=0.9988\n[sandbox] Done.\n",
+      "stderr": "",
+      "execution_time": 1.9689999999973224,
+      "score": 0.998773,
+      "failed": false,
+      "failure_phase": null,
+      "error_message": null,
+      "metrics": {
+        "combined_score": 0.998773,
+        "correctness": 1.0,
+        "speed_score": 0.998773,
+        "speed_ms": 0.1841
+      },
+      "program": null
+    },
+    {
+      "id": "a3f26595-efc6-48a6-a260-899d899e02ff",
+      "run_id": "b625d758-a308-4473-9e18-ce5d0313f437",
+      "generation": 4,
+      "parent_id": "cf3e6e70-c78e-47ce-aa62-5287a8aa4b43",
+      "timestamp": 1783203624.6165442,
+      "patch_content": "--- a/examples/bubblesort_optimizer/initial_program.py\n+++ b/examples/bubblesort_optimizer/initial_program.py\n@@ -11,13 +11,7 @@\n \n def bubble_sort(data):\n     \"\"\"Naive bubble sort \u2014 O(n^2). Returns a new sorted (ascending) list.\"\"\"\n-    arr = list(data)\n-    n = len(arr)\n-    for i in range(n):\n-        for j in range(n - 1, i, -1):\n-            if arr[j] < arr[j - 1]:\n-                arr[j], arr[j - 1] = arr[j - 1], arr[j]\n-    return arr\n+    return sorted(data)\n \n \n # EVOLVE-BLOCK-END\n",
+      "applied": true,
+      "tested": true,
+      "exit_code": 0,
+      "stdout": "[sandbox] Starting test run at 2026-07-04T22:20:22Z\n[sandbox] Program: /workspace/examples/bubblesort_optimizer/initial_program.py\n[sandbox] Command: pytest test_bubble_sort.py -v -s -q\n\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\n============================= test session starts ==============================\nplatform linux -- Python 3.12.13, pytest-8.3.5, pluggy-1.6.0\nrootdir: /workspace\nconfigfile: pyproject.toml\nplugins: metadata-3.1.1, json-report-1.5.0\ncollected 5 items\n\ntest_bubble_sort.py ....\nLOOPBENCH_SPEED_MS=0.1998\n.\n\n=============================== warnings summary ===============================\n../usr/local/lib/python3.12/site-packages/_pytest/cacheprovider.py:475\n  /usr/local/lib/python3.12/site-packages/_pytest/cacheprovider.py:475: PytestCacheWarning: could not create cache path /workspace/.pytest_cache/v/cache/nodeids: [Errno 30] Read-only file system: '/workspace/pytest-cache-files-ha5ymtei'\n    config.cache.set(\"cache/nodeids\", sorted(self.cached_nodeids))\n\n../usr/local/lib/python3.12/site-packages/_pytest/stepwise.py:51\n  /usr/local/lib/python3.12/site-packages/_pytest/stepwise.py:51: PytestCacheWarning: could not create cache path /workspace/.pytest_cache/v/cache/stepwise: [Errno 30] Read-only file system: '/workspace/pytest-cache-files-ko5q6yot'\n    session.config.cache.set(STEPWISE_CACHE_DIR, [])\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n--------------------------------- JSON report ----------------------------------\nreport saved to: /results/pytest_report.json\n======================== 5 passed, 2 warnings in 0.16s =========================\n\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\n[sandbox] command exit code: 0\n[sandbox] score.json written: passed=5, failed=0, exit=0, score=0.9987\n[sandbox] Done.\n",
+      "stderr": "",
+      "execution_time": 2.0789999999979045,
+      "score": 0.998669,
+      "failed": false,
+      "failure_phase": null,
+      "error_message": null,
+      "metrics": {
+        "combined_score": 0.998669,
+        "correctness": 1.0,
+        "speed_score": 0.998669,
+        "speed_ms": 0.1998
+      },
+      "program": null
+    },
+    {
+      "id": "69ede069-6764-4f8e-bc67-9086105b0c0a",
+      "run_id": "b625d758-a308-4473-9e18-ce5d0313f437",
+      "generation": 5,
+      "parent_id": "cf3e6e70-c78e-47ce-aa62-5287a8aa4b43",
+      "timestamp": 1783203627.694721,
+      "patch_content": "--- a/examples/bubblesort_optimizer/initial_program.py\n+++ b/examples/bubblesort_optimizer/initial_program.py\n@@ -11,13 +11,8 @@\n \n def bubble_sort(data):\n     \"\"\"Naive bubble sort \u2014 O(n^2). Returns a new sorted (ascending) list.\"\"\"\n-    arr = list(data)\n-    n = len(arr)\n-    for i in range(n):\n-        for j in range(n - 1, i, -1):\n-            if arr[j] < arr[j - 1]:\n-                arr[j], arr[j - 1] = arr[j - 1], arr[j]\n-    return arr\n+    # Replaced the entire algorithm with a faster approach using built-in sorted function\n+    return sorted(data)\n \n \n # EVOLVE-BLOCK-END\n",
+      "applied": true,
+      "tested": true,
+      "exit_code": 0,
+      "stdout": "[sandbox] Starting test run at 2026-07-04T22:20:26Z\n[sandbox] Program: /workspace/examples/bubblesort_optimizer/initial_program.py\n[sandbox] Command: pytest test_bubble_sort.py -v -s -q\n\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\n============================= test session starts ==============================\nplatform linux -- Python 3.12.13, pytest-8.3.5, pluggy-1.6.0\nrootdir: /workspace\nconfigfile: pyproject.toml\nplugins: metadata-3.1.1, json-report-1.5.0\ncollected 5 items\n\ntest_bubble_sort.py ....\nLOOPBENCH_SPEED_MS=0.3705\n.\n\n=============================== warnings summary ===============================\n../usr/local/lib/python3.12/site-packages/_pytest/cacheprovider.py:475\n  /usr/local/lib/python3.12/site-packages/_pytest/cacheprovider.py:475: PytestCacheWarning: could not create cache path /workspace/.pytest_cache/v/cache/nodeids: [Errno 30] Read-only file system: '/workspace/pytest-cache-files-03kb629m'\n    config.cache.set(\"cache/nodeids\", sorted(self.cached_nodeids))\n\n../usr/local/lib/python3.12/site-packages/_pytest/stepwise.py:51\n  /usr/local/lib/python3.12/site-packages/_pytest/stepwise.py:51: PytestCacheWarning: could not create cache path /workspace/.pytest_cache/v/cache/stepwise: [Errno 30] Read-only file system: '/workspace/pytest-cache-files-rgwakpmb'\n    session.config.cache.set(STEPWISE_CACHE_DIR, [])\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n--------------------------------- JSON report ----------------------------------\nreport saved to: /results/pytest_report.json\n======================== 5 passed, 2 warnings in 0.34s =========================\n\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\n[sandbox] command exit code: 0\n[sandbox] score.json written: passed=5, failed=0, exit=0, score=0.9975\n[sandbox] Done.\n",
+      "stderr": "",
+      "execution_time": 1.7969999999986612,
+      "score": 0.997533,
+      "failed": false,
+      "failure_phase": null,
+      "error_message": null,
+      "metrics": {
+        "combined_score": 0.997533,
+        "correctness": 1.0,
+        "speed_score": 0.997533,
+        "speed_ms": 0.3705
+      },
+      "program": null
+    },
+    {
+      "id": "dae71857-2a53-47b1-838d-77d44934e970",
+      "run_id": "b625d758-a308-4473-9e18-ce5d0313f437",
+      "generation": 6,
+      "parent_id": "55beae0b-76df-4981-8563-228ad8091df2",
+      "timestamp": 1783203630.6618793,
+      "patch_content": "--- a/examples/bubblesort_optimizer/initial_program.py\n+++ b/examples/bubblesort_optimizer/initial_program.py\n@@ -11,13 +11,10 @@\n \n def bubble_sort(data):\n     \"\"\"Naive bubble sort \u2014 O(n^2). Returns a new sorted (ascending) list.\"\"\"\n-    arr = list(data)\n-    n = len(arr)\n-    for i in range(n):\n-        for j in range(n - 1, i, -1):\n-            if arr[j] < arr[j - 1]:\n-                arr[j], arr[j - 1] = arr[j - 1], arr[j]\n-    return arr\n+    # Improved bubble sort implementation using Python's built-in sorted function\n+    # This has a time complexity of O(n log n), which is significantly faster\n+    # than the original O(n^2) bubble sort\n+    return sorted(data)\n \n \n # EVOLVE-BLOCK-END\n",
+      "applied": true,
+      "tested": true,
+      "exit_code": 0,
+      "stdout": "[sandbox] Starting test run at 2026-07-04T22:20:29Z\n[sandbox] Program: /workspace/examples/bubblesort_optimizer/initial_program.py\n[sandbox] Command: pytest test_bubble_sort.py -v -s -q\n\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\n============================= test session starts ==============================\nplatform linux -- Python 3.12.13, pytest-8.3.5, pluggy-1.6.0\nrootdir: /workspace\nconfigfile: pyproject.toml\nplugins: metadata-3.1.1, json-report-1.5.0\ncollected 5 items\n\ntest_bubble_sort.py ....\nLOOPBENCH_SPEED_MS=0.1722\n.\n\n=============================== warnings summary ===============================\n../usr/local/lib/python3.12/site-packages/_pytest/cacheprovider.py:475\n  /usr/local/lib/python3.12/site-packages/_pytest/cacheprovider.py:475: PytestCacheWarning: could not create cache path /workspace/.pytest_cache/v/cache/nodeids: [Errno 30] Read-only file system: '/workspace/pytest-cache-files-kswlqynz'\n    config.cache.set(\"cache/nodeids\", sorted(self.cached_nodeids))\n\n../usr/local/lib/python3.12/site-packages/_pytest/stepwise.py:51\n  /usr/local/lib/python3.12/site-packages/_pytest/stepwise.py:51: PytestCacheWarning: could not create cache path /workspace/.pytest_cache/v/cache/stepwise: [Errno 30] Read-only file system: '/workspace/pytest-cache-files-_xastqqc'\n    session.config.cache.set(STEPWISE_CACHE_DIR, [])\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n--------------------------------- JSON report ----------------------------------\nreport saved to: /results/pytest_report.json\n======================== 5 passed, 2 warnings in 0.13s =========================\n\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\n[sandbox] command exit code: 0\n[sandbox] score.json written: passed=5, failed=0, exit=0, score=0.9989\n[sandbox] Done.\n",
+      "stderr": "",
+      "execution_time": 1.4219999999986612,
+      "score": 0.998853,
+      "failed": false,
+      "failure_phase": null,
+      "error_message": null,
+      "metrics": {
+        "combined_score": 0.998853,
+        "correctness": 1.0,
+        "speed_score": 0.998853,
+        "speed_ms": 0.1722
+      },
+      "program": null
+    },
+    {
+      "id": "9c294db6-5aec-4e7e-ad80-9aad3ca25932",
+      "run_id": "b625d758-a308-4473-9e18-ce5d0313f437",
+      "generation": 7,
+      "parent_id": "dae71857-2a53-47b1-838d-77d44934e970",
+      "timestamp": 1783203634.1505399,
+      "patch_content": "--- a/examples/bubblesort_optimizer/initial_program.py\n+++ b/examples/bubblesort_optimizer/initial_program.py\n@@ -11,13 +11,8 @@\n \n def bubble_sort(data):\n     \"\"\"Naive bubble sort \u2014 O(n^2). Returns a new sorted (ascending) list.\"\"\"\n-    arr = list(data)\n-    n = len(arr)\n-    for i in range(n):\n-        for j in range(n - 1, i, -1):\n-            if arr[j] < arr[j - 1]:\n-                arr[j], arr[j - 1] = arr[j - 1], arr[j]\n-    return arr\n+    # Replaced with Python's built-in sorting function for better performance\n+    return sorted(data)\n \n \n # EVOLVE-BLOCK-END\n",
+      "applied": true,
+      "tested": true,
+      "exit_code": 0,
+      "stdout": "[sandbox] Starting test run at 2026-07-04T22:20:32Z\n[sandbox] Program: /workspace/examples/bubblesort_optimizer/initial_program.py\n[sandbox] Command: pytest test_bubble_sort.py -v -s -q\n\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\n============================= test session starts ==============================\nplatform linux -- Python 3.12.13, pytest-8.3.5, pluggy-1.6.0\nrootdir: /workspace\nconfigfile: pyproject.toml\nplugins: metadata-3.1.1, json-report-1.5.0\ncollected 5 items\n\ntest_bubble_sort.py ....\nLOOPBENCH_SPEED_MS=0.2263\n.\n\n=============================== warnings summary ===============================\n../usr/local/lib/python3.12/site-packages/_pytest/cacheprovider.py:475\n  /usr/local/lib/python3.12/site-packages/_pytest/cacheprovider.py:475: PytestCacheWarning: could not create cache path /workspace/.pytest_cache/v/cache/nodeids: [Errno 30] Read-only file system: '/workspace/pytest-cache-files-60wctzq5'\n    config.cache.set(\"cache/nodeids\", sorted(self.cached_nodeids))\n\n../usr/local/lib/python3.12/site-packages/_pytest/stepwise.py:51\n  /usr/local/lib/python3.12/site-packages/_pytest/stepwise.py:51: PytestCacheWarning: could not create cache path /workspace/.pytest_cache/v/cache/stepwise: [Errno 30] Read-only file system: '/workspace/pytest-cache-files-b7pm2e5p'\n    session.config.cache.set(STEPWISE_CACHE_DIR, [])\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n--------------------------------- JSON report ----------------------------------\nreport saved to: /results/pytest_report.json\n======================== 5 passed, 2 warnings in 0.18s =========================\n\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\n[sandbox] command exit code: 0\n[sandbox] score.json written: passed=5, failed=0, exit=0, score=0.9985\n[sandbox] Done.\n",
       "stderr": "",
       "execution_time": 2.0780000000013388,
-      "score": 0.050425,
+      "score": 0.998492,
       "failed": false,
       "failure_phase": null,
       "error_message": null,
       "metrics": {
-        "combined_score": 0.050425,
+        "combined_score": 0.998492,
         "correctness": 1.0,
-        "speed_score": 0.050425
+        "speed_score": 0.998492,
+        "speed_ms": 0.2263
       },
       "program": null
     },
     {
-      "id": "c0d08108-746b-4775-b043-0bdb074a94ff",
-      "run_id": "d5d8e21f-e4dc-418b-900d-466299193c51",
-      "generation": 1,
-      "parent_id": "6953af0c-a30d-42d7-a46f-f1714d87c8c6",
-      "timestamp": 1783201036.3497543,
-      "patch_content": "--- a/examples/bubblesort_optimizer/initial_program.py\n+++ b/examples/bubblesort_optimizer/initial_program.py\n@@ -11,13 +11,7 @@\n \n def bubble_sort(data):\n     \"\"\"Naive bubble sort \u2014 O(n^2). Returns a new sorted (ascending) list.\"\"\"\n-    arr = list(data)\n-    n = len(arr)\n-    for i in range(n):\n-        for j in range(n - 1, i, -1):\n-            if arr[j] < arr[j - 1]:\n-                arr[j], arr[j - 1] = arr[j - 1], arr[j]\n-    return arr\n+    return sorted(data)\n \n \n # EVOLVE-BLOCK-END\n",
-      "applied": true,
-      "tested": true,
-      "exit_code": 0,
-      "stdout": "[sandbox] Starting test run at 2026-07-04T21:37:15Z\n[sandbox] Program: /workspace/initial_program.py\n[sandbox] Command: pytest test_bubble_sort.py -v -s -q\n\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\n============================= test session starts ==============================\nplatform linux -- Python 3.12.13, pytest-8.3.5, pluggy-1.6.0\nrootdir: /workspace\nplugins: metadata-3.1.1, json-report-1.5.0\ncollected 5 items\n\ntest_bubble_sort.py ....\nLOOPBENCH_SPEED_MS=0.1811\n.\n\n=============================== warnings summary ===============================\n../usr/local/lib/python3.12/site-packages/_pytest/cacheprovider.py:475\n  /usr/local/lib/python3.12/site-packages/_pytest/cacheprovider.py:475: PytestCacheWarning: could not create cache path /workspace/.pytest_cache/v/cache/nodeids: [Errno 30] Read-only file system: '/workspace/pytest-cache-files-rgxzs_qm'\n    config.cache.set(\"cache/nodeids\", sorted(self.cached_nodeids))\n\n../usr/local/lib/python3.12/site-packages/_pytest/stepwise.py:51\n  /usr/local/lib/python3.12/site-packages/_pytest/stepwise.py:51: PytestCacheWarning: could not create cache path /workspace/.pytest_cache/v/cache/stepwise: [Errno 30] Read-only file system: '/workspace/pytest-cache-files-m5xjeg4z'\n    session.config.cache.set(STEPWISE_CACHE_DIR, [])\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n--------------------------------- JSON report ----------------------------------\nreport saved to: /results/pytest_report.json\n======================== 5 passed, 2 warnings in 0.08s =========================\n\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\n[sandbox] command exit code: 0\n[sandbox] score.json written: passed=5, failed=0, exit=0, score=0.9988\n[sandbox] Done.\n",
-      "stderr": "",
-      "execution_time": 1.3130000000019209,
-      "score": 0.998793,
-      "failed": false,
-      "failure_phase": null,
-      "error_message": null,
-      "metrics": {
-        "combined_score": 0.998793,
-        "correctness": 1.0,
-        "speed_score": 0.998793,
-        "speed_ms": 0.1811
-      },
-      "program": null
-    },
-    {
-      "id": "64490d0a-40a1-43d2-a149-8109050b2df8",
-      "run_id": "d5d8e21f-e4dc-418b-900d-466299193c51",
-      "generation": 2,
-      "parent_id": "c0d08108-746b-4775-b043-0bdb074a94ff",
-      "timestamp": 1783201038.3939044,
-      "patch_content": "--- a/examples/bubblesort_optimizer/initial_program.py\n+++ b/examples/bubblesort_optimizer/initial_program.py\n@@ -11,13 +11,8 @@\n \n def bubble_sort(data):\n     \"\"\"Naive bubble sort \u2014 O(n^2). Returns a new sorted (ascending) list.\"\"\"\n-    arr = list(data)\n-    n = len(arr)\n-    for i in range(n):\n-        for j in range(n - 1, i, -1):\n-            if arr[j] < arr[j - 1]:\n-                arr[j], arr[j - 1] = arr[j - 1], arr[j]\n-    return arr\n+    # Replace the naive bubble sort with the built-in sorted function, which uses Timsort (a hybrid sorting algorithm derived from merge sort and insertion sort) \u2014 O(n log n)\n+    return sorted(data)\n \n \n # EVOLVE-BLOCK-END\n",
-      "applied": true,
-      "tested": true,
-      "exit_code": 0,
-      "stdout": "[sandbox] Starting test run at 2026-07-04T21:37:17Z\n[sandbox] Program: /workspace/initial_program.py\n[sandbox] Command: pytest test_bubble_sort.py -v -s -q\n\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\n============================= test session starts ==============================\nplatform linux -- Python 3.12.13, pytest-8.3.5, pluggy-1.6.0\nrootdir: /workspace\nplugins: metadata-3.1.1, json-report-1.5.0\ncollected 5 items\n\ntest_bubble_sort.py ....\nLOOPBENCH_SPEED_MS=0.1782\n.\n\n=============================== warnings summary ===============================\n../usr/local/lib/python3.12/site-packages/_pytest/cacheprovider.py:475\n  /usr/local/lib/python3.12/site-packages/_pytest/cacheprovider.py:475: PytestCacheWarning: could not create cache path /workspace/.pytest_cache/v/cache/nodeids: [Errno 30] Read-only file system: '/workspace/pytest-cache-files-3p931b7k'\n    config.cache.set(\"cache/nodeids\", sorted(self.cached_nodeids))\n\n../usr/local/lib/python3.12/site-packages/_pytest/stepwise.py:51\n  /usr/local/lib/python3.12/site-packages/_pytest/stepwise.py:51: PytestCacheWarning: could not create cache path /workspace/.pytest_cache/v/cache/stepwise: [Errno 30] Read-only file system: '/workspace/pytest-cache-files-xl6esryb'\n    session.config.cache.set(STEPWISE_CACHE_DIR, [])\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n--------------------------------- JSON report ----------------------------------\nreport saved to: /results/pytest_report.json\n======================== 5 passed, 2 warnings in 0.07s =========================\n\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\n[sandbox] command exit code: 0\n[sandbox] score.json written: passed=5, failed=0, exit=0, score=0.9988\n[sandbox] Done.\n",
-      "stderr": "",
-      "execution_time": 1.2190000000045984,
-      "score": 0.998813,
-      "failed": false,
-      "failure_phase": null,
-      "error_message": null,
-      "metrics": {
-        "combined_score": 0.998813,
-        "correctness": 1.0,
-        "speed_score": 0.998813,
-        "speed_ms": 0.1782
-      },
-      "program": null
-    },
-    {
-      "id": "603a74f8-d6e0-4716-a2db-69378f407659",
-      "run_id": "d5d8e21f-e4dc-418b-900d-466299193c51",
-      "generation": 3,
-      "parent_id": "64490d0a-40a1-43d2-a149-8109050b2df8",
-      "timestamp": 1783201040.3841503,
-      "patch_content": "--- a/examples/bubblesort_optimizer/initial_program.py\n+++ b/examples/bubblesort_optimizer/initial_program.py\n@@ -11,13 +11,8 @@\n \n def bubble_sort(data):\n     \"\"\"Naive bubble sort \u2014 O(n^2). Returns a new sorted (ascending) list.\"\"\"\n-    arr = list(data)\n-    n = len(arr)\n-    for i in range(n):\n-        for j in range(n - 1, i, -1):\n-            if arr[j] < arr[j - 1]:\n-                arr[j], arr[j - 1] = arr[j - 1], arr[j]\n-    return arr\n+    # Use built-in sorted function which has a time complexity of O(n log n)\n+    return sorted(data)\n \n \n # EVOLVE-BLOCK-END\n",
-      "applied": true,
-      "tested": true,
-      "exit_code": 0,
-      "stdout": "[sandbox] Starting test run at 2026-07-04T21:37:19Z\n[sandbox] Program: /workspace/initial_program.py\n[sandbox] Command: pytest test_bubble_sort.py -v -s -q\n\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\n============================= test session starts ==============================\nplatform linux -- Python 3.12.13, pytest-8.3.5, pluggy-1.6.0\nrootdir: /workspace\nplugins: metadata-3.1.1, json-report-1.5.0\ncollected 5 items\n\ntest_bubble_sort.py ....\nLOOPBENCH_SPEED_MS=0.1811\n.\n\n=============================== warnings summary ===============================\n../usr/local/lib/python3.12/site-packages/_pytest/cacheprovider.py:475\n  /usr/local/lib/python3.12/site-packages/_pytest/cacheprovider.py:475: PytestCacheWarning: could not create cache path /workspace/.pytest_cache/v/cache/nodeids: [Errno 30] Read-only file system: '/workspace/pytest-cache-files-03ejqrou'\n    config.cache.set(\"cache/nodeids\", sorted(self.cached_nodeids))\n\n../usr/local/lib/python3.12/site-packages/_pytest/stepwise.py:51\n  /usr/local/lib/python3.12/site-packages/_pytest/stepwise.py:51: PytestCacheWarning: could not create cache path /workspace/.pytest_cache/v/cache/stepwise: [Errno 30] Read-only file system: '/workspace/pytest-cache-files-7j8gfzun'\n    session.config.cache.set(STEPWISE_CACHE_DIR, [])\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n--------------------------------- JSON report ----------------------------------\nreport saved to: /results/pytest_report.json\n======================== 5 passed, 2 warnings in 0.07s =========================\n\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\n[sandbox] command exit code: 0\n[sandbox] score.json written: passed=5, failed=0, exit=0, score=0.9988\n[sandbox] Done.\n",
-      "stderr": "",
-      "execution_time": 1.25,
-      "score": 0.998793,
-      "failed": false,
-      "failure_phase": null,
-      "error_message": null,
-      "metrics": {
-        "combined_score": 0.998793,
-        "correctness": 1.0,
-        "speed_score": 0.998793,
-        "speed_ms": 0.1811
-      },
-      "program": null
-    },
-    {
-      "id": "24fb8180-1896-4761-85e8-fa8a22c59d2d",
-      "run_id": "d5d8e21f-e4dc-418b-900d-466299193c51",
-      "generation": 4,
-      "parent_id": "64490d0a-40a1-43d2-a149-8109050b2df8",
-      "timestamp": 1783201042.2998812,
-      "patch_content": "--- a/examples/bubblesort_optimizer/initial_program.py\n+++ b/examples/bubblesort_optimizer/initial_program.py\n@@ -11,13 +11,7 @@\n \n def bubble_sort(data):\n     \"\"\"Naive bubble sort \u2014 O(n^2). Returns a new sorted (ascending) list.\"\"\"\n-    arr = list(data)\n-    n = len(arr)\n-    for i in range(n):\n-        for j in range(n - 1, i, -1):\n-            if arr[j] < arr[j - 1]:\n-                arr[j], arr[j - 1] = arr[j - 1], arr[j]\n-    return arr\n+    return sorted(data)\n \n \n # EVOLVE-BLOCK-END\n",
-      "applied": true,
-      "tested": true,
-      "exit_code": 0,
-      "stdout": "[sandbox] Starting test run at 2026-07-04T21:37:21Z\n[sandbox] Program: /workspace/initial_program.py\n[sandbox] Command: pytest test_bubble_sort.py -v -s -q\n\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\n============================= test session starts ==============================\nplatform linux -- Python 3.12.13, pytest-8.3.5, pluggy-1.6.0\nrootdir: /workspace\nplugins: metadata-3.1.1, json-report-1.5.0\ncollected 5 items\n\ntest_bubble_sort.py ....\nLOOPBENCH_SPEED_MS=0.1752\n.\n\n=============================== warnings summary ===============================\n../usr/local/lib/python3.12/site-packages/_pytest/cacheprovider.py:475\n  /usr/local/lib/python3.12/site-packages/_pytest/cacheprovider.py:475: PytestCacheWarning: could not create cache path /workspace/.pytest_cache/v/cache/nodeids: [Errno 30] Read-only file system: '/workspace/pytest-cache-files-_x0p_kjo'\n    config.cache.set(\"cache/nodeids\", sorted(self.cached_nodeids))\n\n../usr/local/lib/python3.12/site-packages/_pytest/stepwise.py:51\n  /usr/local/lib/python3.12/site-packages/_pytest/stepwise.py:51: PytestCacheWarning: could not create cache path /workspace/.pytest_cache/v/cache/stepwise: [Errno 30] Read-only file system: '/workspace/pytest-cache-files-774cz_ku'\n    session.config.cache.set(STEPWISE_CACHE_DIR, [])\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n--------------------------------- JSON report ----------------------------------\nreport saved to: /results/pytest_report.json\n======================== 5 passed, 2 warnings in 0.07s =========================\n\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\n[sandbox] command exit code: 0\n[sandbox] score.json written: passed=5, failed=0, exit=0, score=0.9988\n[sandbox] Done.\n",
-      "stderr": "",
-      "execution_time": 1.2339999999967404,
-      "score": 0.998833,
-      "failed": false,
-      "failure_phase": null,
-      "error_message": null,
-      "metrics": {
-        "combined_score": 0.998833,
-        "correctness": 1.0,
-        "speed_score": 0.998833,
-        "speed_ms": 0.1752
-      },
-      "program": null
-    },
-    {
-      "id": "87afa89e-3fa1-46a1-9d70-baad148c5883",
-      "run_id": "d5d8e21f-e4dc-418b-900d-466299193c51",
-      "generation": 5,
-      "parent_id": "24fb8180-1896-4761-85e8-fa8a22c59d2d",
-      "timestamp": 1783201044.251342,
-      "patch_content": "--- a/examples/bubblesort_optimizer/initial_program.py\n+++ b/examples/bubblesort_optimizer/initial_program.py\n@@ -11,13 +11,8 @@\n \n def bubble_sort(data):\n     \"\"\"Naive bubble sort \u2014 O(n^2). Returns a new sorted (ascending) list.\"\"\"\n-    arr = list(data)\n-    n = len(arr)\n-    for i in range(n):\n-        for j in range(n - 1, i, -1):\n-            if arr[j] < arr[j - 1]:\n-                arr[j], arr[j - 1] = arr[j - 1], arr[j]\n-    return arr\n+    # Replaced with a faster sorting algorithm (Timsort) which is O(n log n)\n+    return sorted(data)\n \n \n # EVOLVE-BLOCK-END\n",
-      "applied": true,
-      "tested": true,
-      "exit_code": 0,
-      "stdout": "[sandbox] Starting test run at 2026-07-04T21:37:23Z\n[sandbox] Program: /workspace/initial_program.py\n[sandbox] Command: pytest test_bubble_sort.py -v -s -q\n\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\n============================= test session starts ==============================\nplatform linux -- Python 3.12.13, pytest-8.3.5, pluggy-1.6.0\nrootdir: /workspace\nplugins: metadata-3.1.1, json-report-1.5.0\ncollected 5 items\n\ntest_bubble_sort.py ....\nLOOPBENCH_SPEED_MS=0.1757\n.\n\n=============================== warnings summary ===============================\n../usr/local/lib/python3.12/site-packages/_pytest/cacheprovider.py:475\n  /usr/local/lib/python3.12/site-packages/_pytest/cacheprovider.py:475: PytestCacheWarning: could not create cache path /workspace/.pytest_cache/v/cache/nodeids: [Errno 30] Read-only file system: '/workspace/pytest-cache-files-ac10qz1j'\n    config.cache.set(\"cache/nodeids\", sorted(self.cached_nodeids))\n\n../usr/local/lib/python3.12/site-packages/_pytest/stepwise.py:51\n  /usr/local/lib/python3.12/site-packages/_pytest/stepwise.py:51: PytestCacheWarning: could not create cache path /workspace/.pytest_cache/v/cache/stepwise: [Errno 30] Read-only file system: '/workspace/pytest-cache-files-2itl9f2l'\n    session.config.cache.set(STEPWISE_CACHE_DIR, [])\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n--------------------------------- JSON report ----------------------------------\nreport saved to: /results/pytest_report.json\n======================== 5 passed, 2 warnings in 0.07s =========================\n\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\n[sandbox] command exit code: 0\n[sandbox] score.json written: passed=5, failed=0, exit=0, score=0.9988\n[sandbox] Done.\n",
-      "stderr": "",
-      "execution_time": 1.2189999999973224,
-      "score": 0.998829,
-      "failed": false,
-      "failure_phase": null,
-      "error_message": null,
-      "metrics": {
-        "combined_score": 0.998829,
-        "correctness": 1.0,
-        "speed_score": 0.998829,
-        "speed_ms": 0.1757
-      },
-      "program": null
-    },
-    {
-      "id": "02ff6a67-9c91-48fb-ad42-c2fe86a15d05",
-      "run_id": "d5d8e21f-e4dc-418b-900d-466299193c51",
-      "generation": 6,
-      "parent_id": "24fb8180-1896-4761-85e8-fa8a22c59d2d",
-      "timestamp": 1783201046.2523205,
-      "patch_content": "--- a/examples/bubblesort_optimizer/initial_program.py\n+++ b/examples/bubblesort_optimizer/initial_program.py\n@@ -11,13 +11,8 @@\n \n def bubble_sort(data):\n     \"\"\"Naive bubble sort \u2014 O(n^2). Returns a new sorted (ascending) list.\"\"\"\n-    arr = list(data)\n-    n = len(arr)\n-    for i in range(n):\n-        for j in range(n - 1, i, -1):\n-            if arr[j] < arr[j - 1]:\n-                arr[j], arr[j - 1] = arr[j - 1], arr[j]\n-    return arr\n+    # Replaced with built-in sorted function which uses Timsort, an O(n log n) algorithm\n+    return sorted(data)\n \n \n # EVOLVE-BLOCK-END\n",
-      "applied": true,
-      "tested": true,
-      "exit_code": 0,
-      "stdout": "[sandbox] Starting test run at 2026-07-04T21:37:25Z\n[sandbox] Program: /workspace/initial_program.py\n[sandbox] Command: pytest test_bubble_sort.py -v -s -q\n\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\n============================= test session starts ==============================\nplatform linux -- Python 3.12.13, pytest-8.3.5, pluggy-1.6.0\nrootdir: /workspace\nplugins: metadata-3.1.1, json-report-1.5.0\ncollected 5 items\n\ntest_bubble_sort.py ....\nLOOPBENCH_SPEED_MS=0.1953\n.\n\n=============================== warnings summary ===============================\n../usr/local/lib/python3.12/site-packages/_pytest/cacheprovider.py:475\n  /usr/local/lib/python3.12/site-packages/_pytest/cacheprovider.py:475: PytestCacheWarning: could not create cache path /workspace/.pytest_cache/v/cache/nodeids: [Errno 30] Read-only file system: '/workspace/pytest-cache-files-277kpbuu'\n    config.cache.set(\"cache/nodeids\", sorted(self.cached_nodeids))\n\n../usr/local/lib/python3.12/site-packages/_pytest/stepwise.py:51\n  /usr/local/lib/python3.12/site-packages/_pytest/stepwise.py:51: PytestCacheWarning: could not create cache path /workspace/.pytest_cache/v/cache/stepwise: [Errno 30] Read-only file system: '/workspace/pytest-cache-files-h4prvei3'\n    session.config.cache.set(STEPWISE_CACHE_DIR, [])\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n--------------------------------- JSON report ----------------------------------\nreport saved to: /results/pytest_report.json\n======================== 5 passed, 2 warnings in 0.07s =========================\n\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\n[sandbox] command exit code: 0\n[sandbox] score.json written: passed=5, failed=0, exit=0, score=0.9987\n[sandbox] Done.\n",
-      "stderr": "",
-      "execution_time": 1.3119999999980791,
-      "score": 0.998699,
-      "failed": false,
-      "failure_phase": null,
-      "error_message": null,
-      "metrics": {
-        "combined_score": 0.998699,
-        "correctness": 1.0,
-        "speed_score": 0.998699,
-        "speed_ms": 0.1953
-      },
-      "program": null
-    },
-    {
-      "id": "c56ac4ef-e2c1-4de4-bfe1-e083109420b2",
-      "run_id": "d5d8e21f-e4dc-418b-900d-466299193c51",
-      "generation": 7,
-      "parent_id": "6953af0c-a30d-42d7-a46f-f1714d87c8c6",
-      "timestamp": 1783201048.2031956,
-      "patch_content": "--- a/examples/bubblesort_optimizer/initial_program.py\n+++ b/examples/bubblesort_optimizer/initial_program.py\n@@ -11,13 +11,8 @@\n \n def bubble_sort(data):\n     \"\"\"Naive bubble sort \u2014 O(n^2). Returns a new sorted (ascending) list.\"\"\"\n-    arr = list(data)\n-    n = len(arr)\n-    for i in range(n):\n-        for j in range(n - 1, i, -1):\n-            if arr[j] < arr[j - 1]:\n-                arr[j], arr[j - 1] = arr[j - 1], arr[j]\n-    return arr\n+    # Improved implementation using Python's built-in sorting functionality\n+    return sorted(data)\n \n \n # EVOLVE-BLOCK-END\n",
-      "applied": true,
-      "tested": true,
-      "exit_code": 0,
-      "stdout": "[sandbox] Starting test run at 2026-07-04T21:37:27Z\n[sandbox] Program: /workspace/initial_program.py\n[sandbox] Command: pytest test_bubble_sort.py -v -s -q\n\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\n============================= test session starts ==============================\nplatform linux -- Python 3.12.13, pytest-8.3.5, pluggy-1.6.0\nrootdir: /workspace\nplugins: metadata-3.1.1, json-report-1.5.0\ncollected 5 items\n\ntest_bubble_sort.py ....\nLOOPBENCH_SPEED_MS=0.1666\n.\n\n=============================== warnings summary ===============================\n../usr/local/lib/python3.12/site-packages/_pytest/cacheprovider.py:475\n  /usr/local/lib/python3.12/site-packages/_pytest/cacheprovider.py:475: PytestCacheWarning: could not create cache path /workspace/.pytest_cache/v/cache/nodeids: [Errno 30] Read-only file system: '/workspace/pytest-cache-files-2ay1iqq_'\n    config.cache.set(\"cache/nodeids\", sorted(self.cached_nodeids))\n\n../usr/local/lib/python3.12/site-packages/_pytest/stepwise.py:51\n  /usr/local/lib/python3.12/site-packages/_pytest/stepwise.py:51: PytestCacheWarning: could not create cache path /workspace/.pytest_cache/v/cache/stepwise: [Errno 30] Read-only file system: '/workspace/pytest-cache-files-r0m6ky30'\n    session.config.cache.set(STEPWISE_CACHE_DIR, [])\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n--------------------------------- JSON report ----------------------------------\nreport saved to: /results/pytest_report.json\n======================== 5 passed, 2 warnings in 0.06s =========================\n\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\n[sandbox] command exit code: 0\n[sandbox] score.json written: passed=5, failed=0, exit=0, score=0.9989\n[sandbox] Done.\n",
-      "stderr": "",
-      "execution_time": 1.1869999999980791,
-      "score": 0.99889,
-      "failed": false,
-      "failure_phase": null,
-      "error_message": null,
-      "metrics": {
-        "combined_score": 0.99889,
-        "correctness": 1.0,
-        "speed_score": 0.99889,
-        "speed_ms": 0.1666
-      },
-      "program": null
-    },
-    {
-      "id": "d04a0b64-7009-4efe-9769-62a687ea6bdd",
-      "run_id": "d5d8e21f-e4dc-418b-900d-466299193c51",
+      "id": "db1e7ea8-40bc-4626-a590-9ce13485dc73",
+      "run_id": "b625d758-a308-4473-9e18-ce5d0313f437",
       "generation": 8,
-      "parent_id": "c56ac4ef-e2c1-4de4-bfe1-e083109420b2",
-      "timestamp": 1783201050.1065598,
-      "patch_content": "--- a/examples/bubblesort_optimizer/initial_program.py\n+++ b/examples/bubblesort_optimizer/initial_program.py\n@@ -11,13 +11,8 @@\n \n def bubble_sort(data):\n     \"\"\"Naive bubble sort \u2014 O(n^2). Returns a new sorted (ascending) list.\"\"\"\n-    arr = list(data)\n-    n = len(arr)\n-    for i in range(n):\n-        for j in range(n - 1, i, -1):\n-            if arr[j] < arr[j - 1]:\n-                arr[j], arr[j - 1] = arr[j - 1], arr[j]\n-    return arr\n+    # Using built-in sorted function which has a time complexity of O(n log n)\n+    return sorted(data)\n \n \n # EVOLVE-BLOCK-END\n",
+      "parent_id": "dae71857-2a53-47b1-838d-77d44934e970",
+      "timestamp": 1783203637.2341108,
+      "patch_content": "--- a/examples/bubblesort_optimizer/initial_program.py\n+++ b/examples/bubblesort_optimizer/initial_program.py\n@@ -11,13 +11,8 @@\n \n def bubble_sort(data):\n     \"\"\"Naive bubble sort \u2014 O(n^2). Returns a new sorted (ascending) list.\"\"\"\n-    arr = list(data)\n-    n = len(arr)\n-    for i in range(n):\n-        for j in range(n - 1, i, -1):\n-            if arr[j] < arr[j - 1]:\n-                arr[j], arr[j - 1] = arr[j - 1], arr[j]\n-    return arr\n+    # Replaced with a more efficient sorting algorithm: Timsort\n+    return sorted(data)\n \n \n # EVOLVE-BLOCK-END\n",
       "applied": true,
       "tested": true,
       "exit_code": 0,
-      "stdout": "[sandbox] Starting test run at 2026-07-04T21:37:29Z\n[sandbox] Program: /workspace/initial_program.py\n[sandbox] Command: pytest test_bubble_sort.py -v -s -q\n\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\n============================= test session starts ==============================\nplatform linux -- Python 3.12.13, pytest-8.3.5, pluggy-1.6.0\nrootdir: /workspace\nplugins: metadata-3.1.1, json-report-1.5.0\ncollected 5 items\n\ntest_bubble_sort.py ....\nLOOPBENCH_SPEED_MS=0.3503\n.\n\n=============================== warnings summary ===============================\n../usr/local/lib/python3.12/site-packages/_pytest/cacheprovider.py:475\n  /usr/local/lib/python3.12/site-packages/_pytest/cacheprovider.py:475: PytestCacheWarning: could not create cache path /workspace/.pytest_cache/v/cache/nodeids: [Errno 30] Read-only file system: '/workspace/pytest-cache-files-w51bdukp'\n    config.cache.set(\"cache/nodeids\", sorted(self.cached_nodeids))\n\n../usr/local/lib/python3.12/site-packages/_pytest/stepwise.py:51\n  /usr/local/lib/python3.12/site-packages/_pytest/stepwise.py:51: PytestCacheWarning: could not create cache path /workspace/.pytest_cache/v/cache/stepwise: [Errno 30] Read-only file system: '/workspace/pytest-cache-files-grtdms6d'\n    session.config.cache.set(STEPWISE_CACHE_DIR, [])\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n--------------------------------- JSON report ----------------------------------\nreport saved to: /results/pytest_report.json\n======================== 5 passed, 2 warnings in 0.07s =========================\n\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\n[sandbox] command exit code: 0\n[sandbox] score.json written: passed=5, failed=0, exit=0, score=0.9977\n[sandbox] Done.\n",
+      "stdout": "[sandbox] Starting test run at 2026-07-04T22:20:35Z\n[sandbox] Program: /workspace/examples/bubblesort_optimizer/initial_program.py\n[sandbox] Command: pytest test_bubble_sort.py -v -s -q\n\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\n============================= test session starts ==============================\nplatform linux -- Python 3.12.13, pytest-8.3.5, pluggy-1.6.0\nrootdir: /workspace\nconfigfile: pyproject.toml\nplugins: metadata-3.1.1, json-report-1.5.0\ncollected 5 items\n\ntest_bubble_sort.py ....\nLOOPBENCH_SPEED_MS=0.2028\n.\n\n=============================== warnings summary ===============================\n../usr/local/lib/python3.12/site-packages/_pytest/cacheprovider.py:475\n  /usr/local/lib/python3.12/site-packages/_pytest/cacheprovider.py:475: PytestCacheWarning: could not create cache path /workspace/.pytest_cache/v/cache/nodeids: [Errno 30] Read-only file system: '/workspace/pytest-cache-files-ldcabrm8'\n    config.cache.set(\"cache/nodeids\", sorted(self.cached_nodeids))\n\n../usr/local/lib/python3.12/site-packages/_pytest/stepwise.py:51\n  /usr/local/lib/python3.12/site-packages/_pytest/stepwise.py:51: PytestCacheWarning: could not create cache path /workspace/.pytest_cache/v/cache/stepwise: [Errno 30] Read-only file system: '/workspace/pytest-cache-files-v13jx0h9'\n    session.config.cache.set(STEPWISE_CACHE_DIR, [])\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n--------------------------------- JSON report ----------------------------------\nreport saved to: /results/pytest_report.json\n======================== 5 passed, 2 warnings in 0.15s =========================\n\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\n[sandbox] command exit code: 0\n[sandbox] score.json written: passed=5, failed=0, exit=0, score=0.9986\n[sandbox] Done.\n",
       "stderr": "",
-      "execution_time": 1.1880000000019209,
-      "score": 0.997667,
+      "execution_time": 1.625,
+      "score": 0.998649,
       "failed": false,
       "failure_phase": null,
       "error_message": null,
       "metrics": {
-        "combined_score": 0.997667,
+        "combined_score": 0.998649,
         "correctness": 1.0,
-        "speed_score": 0.997667,
-        "speed_ms": 0.3503
+        "speed_score": 0.998649,
+        "speed_ms": 0.2028
       },
       "program": null
     },
     {
-      "id": "470e7d69-d82e-4b21-941f-de2dda6a0903",
-      "run_id": "d5d8e21f-e4dc-418b-900d-466299193c51",
+      "id": "2bde0699-3485-48bd-9ded-6cf4710926c5",
+      "run_id": "b625d758-a308-4473-9e18-ce5d0313f437",
       "generation": 9,
-      "parent_id": "c56ac4ef-e2c1-4de4-bfe1-e083109420b2",
-      "timestamp": 1783201052.0699806,
-      "patch_content": "--- a/examples/bubblesort_optimizer/initial_program.py\n+++ b/examples/bubblesort_optimizer/initial_program.py\n@@ -11,13 +11,9 @@\n \n def bubble_sort(data):\n     \"\"\"Naive bubble sort \u2014 O(n^2). Returns a new sorted (ascending) list.\"\"\"\n-    arr = list(data)\n-    n = len(arr)\n-    for i in range(n):\n-        for j in range(n - 1, i, -1):\n-            if arr[j] < arr[j - 1]:\n-                arr[j], arr[j - 1] = arr[j - 1], arr[j]\n-    return arr\n+    # Using the built-in sorted function, which uses Timsort (a hybrid sorting algorithm derived from merge sort and insertion sort) \n+    # with a worst-case time complexity of O(n log n)\n+    return sorted(data)\n \n \n # EVOLVE-BLOCK-END\n",
+      "parent_id": "55beae0b-76df-4981-8563-228ad8091df2",
+      "timestamp": 1783203640.5248632,
+      "patch_content": "--- a/examples/bubblesort_optimizer/initial_program.py\n+++ b/examples/bubblesort_optimizer/initial_program.py\n@@ -1,6 +1,6 @@\n # EVOLVE-BLOCK-START\n \"\"\"\n-LoopBench example \u2014 Bubble Sort optimizer.\n+LoopBench example \u2014 Optimized Sort.\n \n Generation 0: a naive O(n^2) bubble sort (intentionally slow). The evolutionary\n loop will rewrite bubble_sort() into something faster (e.g. an O(n log n) sort)\n@@ -10,14 +10,8 @@\n \n \n def bubble_sort(data):\n-    \"\"\"Naive bubble sort \u2014 O(n^2). Returns a new sorted (ascending) list.\"\"\"\n-    arr = list(data)\n-    n = len(arr)\n-    for i in range(n):\n-        for j in range(n - 1, i, -1):\n-            if arr[j] < arr[j - 1]:\n-                arr[j], arr[j - 1] = arr[j - 1], arr[j]\n-    return arr\n+    \"\"\"Timsort \u2014 O(n log n). Returns a new sorted (ascending) list.\"\"\"\n+    return sorted(data)\n \n \n # EVOLVE-BLOCK-END\n",
       "applied": true,
       "tested": true,
       "exit_code": 0,
-      "stdout": "[sandbox] Starting test run at 2026-07-04T21:37:31Z\n[sandbox] Program: /workspace/initial_program.py\n[sandbox] Command: pytest test_bubble_sort.py -v -s -q\n\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\n============================= test session starts ==============================\nplatform linux -- Python 3.12.13, pytest-8.3.5, pluggy-1.6.0\nrootdir: /workspace\nplugins: metadata-3.1.1, json-report-1.5.0\ncollected 5 items\n\ntest_bubble_sort.py ....\nLOOPBENCH_SPEED_MS=0.1754\n.\n\n=============================== warnings summary ===============================\n../usr/local/lib/python3.12/site-packages/_pytest/cacheprovider.py:475\n  /usr/local/lib/python3.12/site-packages/_pytest/cacheprovider.py:475: PytestCacheWarning: could not create cache path /workspace/.pytest_cache/v/cache/nodeids: [Errno 30] Read-only file system: '/workspace/pytest-cache-files-a2izlhmo'\n    config.cache.set(\"cache/nodeids\", sorted(self.cached_nodeids))\n\n../usr/local/lib/python3.12/site-packages/_pytest/stepwise.py:51\n  /usr/local/lib/python3.12/site-packages/_pytest/stepwise.py:51: PytestCacheWarning: could not create cache path /workspace/.pytest_cache/v/cache/stepwise: [Errno 30] Read-only file system: '/workspace/pytest-cache-files-cbrmy3n9'\n    session.config.cache.set(STEPWISE_CACHE_DIR, [])\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n--------------------------------- JSON report ----------------------------------\nreport saved to: /results/pytest_report.json\n======================== 5 passed, 2 warnings in 0.07s =========================\n\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\n[sandbox] command exit code: 0\n[sandbox] score.json written: passed=5, failed=0, exit=0, score=0.9988\n[sandbox] Done.\n",
+      "stdout": "[sandbox] Starting test run at 2026-07-04T22:20:39Z\n[sandbox] Program: /workspace/examples/bubblesort_optimizer/initial_program.py\n[sandbox] Command: pytest test_bubble_sort.py -v -s -q\n\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\n============================= test session starts ==============================\nplatform linux -- Python 3.12.13, pytest-8.3.5, pluggy-1.6.0\nrootdir: /workspace\nconfigfile: pyproject.toml\nplugins: metadata-3.1.1, json-report-1.5.0\ncollected 5 items\n\ntest_bubble_sort.py ....\nLOOPBENCH_SPEED_MS=0.2030\n.\n\n=============================== warnings summary ===============================\n../usr/local/lib/python3.12/site-packages/_pytest/cacheprovider.py:475\n  /usr/local/lib/python3.12/site-packages/_pytest/cacheprovider.py:475: PytestCacheWarning: could not create cache path /workspace/.pytest_cache/v/cache/nodeids: [Errno 30] Read-only file system: '/workspace/pytest-cache-files-89zeqinx'\n    config.cache.set(\"cache/nodeids\", sorted(self.cached_nodeids))\n\n../usr/local/lib/python3.12/site-packages/_pytest/stepwise.py:51\n  /usr/local/lib/python3.12/site-packages/_pytest/stepwise.py:51: PytestCacheWarning: could not create cache path /workspace/.pytest_cache/v/cache/stepwise: [Errno 30] Read-only file system: '/workspace/pytest-cache-files-6kdk9qqy'\n    session.config.cache.set(STEPWISE_CACHE_DIR, [])\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n--------------------------------- JSON report ----------------------------------\nreport saved to: /results/pytest_report.json\n======================== 5 passed, 2 warnings in 0.17s =========================\n\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\n[sandbox] command exit code: 0\n[sandbox] score.json written: passed=5, failed=0, exit=0, score=0.9986\n[sandbox] Done.\n",
       "stderr": "",
-      "execution_time": 1.2030000000013388,
-      "score": 0.998831,
+      "execution_time": 1.6409999999959837,
+      "score": 0.998648,
       "failed": false,
       "failure_phase": null,
       "error_message": null,
       "metrics": {
-        "combined_score": 0.998831,
+        "combined_score": 0.998648,
         "correctness": 1.0,
-        "speed_score": 0.998831,
-        "speed_ms": 0.1754
+        "speed_score": 0.998648,
+        "speed_ms": 0.203
       },
       "program": null
     },
     {
-      "id": "796dba55-89b9-47e7-bcb3-f3c58c2ee554",
-      "run_id": "d5d8e21f-e4dc-418b-900d-466299193c51",
+      "id": "516687f2-e597-4f1d-9ee7-749a460ad197",
+      "run_id": "b625d758-a308-4473-9e18-ce5d0313f437",
       "generation": 10,
-      "parent_id": "6953af0c-a30d-42d7-a46f-f1714d87c8c6",
-      "timestamp": 1783201053.9057658,
-      "patch_content": "--- a/examples/bubblesort_optimizer/initial_program.py\n+++ b/examples/bubblesort_optimizer/initial_program.py\n@@ -11,13 +11,7 @@\n \n def bubble_sort(data):\n     \"\"\"Naive bubble sort \u2014 O(n^2). Returns a new sorted (ascending) list.\"\"\"\n-    arr = list(data)\n-    n = len(arr)\n-    for i in range(n):\n-        for j in range(n - 1, i, -1):\n-            if arr[j] < arr[j - 1]:\n-                arr[j], arr[j - 1] = arr[j - 1], arr[j]\n-    return arr\n+    return sorted(data)\n \n \n # EVOLVE-BLOCK-END\n",
+      "parent_id": "55beae0b-76df-4981-8563-228ad8091df2",
+      "timestamp": 1783203643.915313,
+      "patch_content": "--- a/examples/bubblesort_optimizer/initial_program.py\n+++ b/examples/bubblesort_optimizer/initial_program.py\n@@ -11,13 +11,8 @@\n \n def bubble_sort(data):\n     \"\"\"Naive bubble sort \u2014 O(n^2). Returns a new sorted (ascending) list.\"\"\"\n-    arr = list(data)\n-    n = len(arr)\n-    for i in range(n):\n-        for j in range(n - 1, i, -1):\n-            if arr[j] < arr[j - 1]:\n-                arr[j], arr[j - 1] = arr[j - 1], arr[j]\n-    return arr\n+    # Using built-in sorted function, which uses Timsort (a hybrid sorting algorithm derived from merge sort and insertion sort)\n+    return sorted(data)\n \n \n # EVOLVE-BLOCK-END\n",
       "applied": true,
       "tested": true,
       "exit_code": 0,
-      "stdout": "[sandbox] Starting test run at 2026-07-04T21:37:33Z\n[sandbox] Program: /workspace/initial_program.py\n[sandbox] Command: pytest test_bubble_sort.py -v -s -q\n\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\n============================= test session starts ==============================\nplatform linux -- Python 3.12.13, pytest-8.3.5, pluggy-1.6.0\nrootdir: /workspace\nplugins: metadata-3.1.1, json-report-1.5.0\ncollected 5 items\n\ntest_bubble_sort.py ....\nLOOPBENCH_SPEED_MS=0.1755\n.\n\n=============================== warnings summary ===============================\n../usr/local/lib/python3.12/site-packages/_pytest/cacheprovider.py:475\n  /usr/local/lib/python3.12/site-packages/_pytest/cacheprovider.py:475: PytestCacheWarning: could not create cache path /workspace/.pytest_cache/v/cache/nodeids: [Errno 30] Read-only file system: '/workspace/pytest-cache-files-9bsra432'\n    config.cache.set(\"cache/nodeids\", sorted(self.cached_nodeids))\n\n../usr/local/lib/python3.12/site-packages/_pytest/stepwise.py:51\n  /usr/local/lib/python3.12/site-packages/_pytest/stepwise.py:51: PytestCacheWarning: could not create cache path /workspace/.pytest_cache/v/cache/stepwise: [Errno 30] Read-only file system: '/workspace/pytest-cache-files-31nzg2ax'\n    session.config.cache.set(STEPWISE_CACHE_DIR, [])\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n--------------------------------- JSON report ----------------------------------\nreport saved to: /results/pytest_report.json\n======================== 5 passed, 2 warnings in 0.06s =========================\n\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\n[sandbox] command exit code: 0\n[sandbox] score.json written: passed=5, failed=0, exit=0, score=0.9988\n[sandbox] Done.\n",
+      "stdout": "[sandbox] Starting test run at 2026-07-04T22:20:42Z\n[sandbox] Program: /workspace/examples/bubblesort_optimizer/initial_program.py\n[sandbox] Command: pytest test_bubble_sort.py -v -s -q\n\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\n============================= test session starts ==============================\nplatform linux -- Python 3.12.13, pytest-8.3.5, pluggy-1.6.0\nrootdir: /workspace\nconfigfile: pyproject.toml\nplugins: metadata-3.1.1, json-report-1.5.0\ncollected 5 items\n\ntest_bubble_sort.py ....\nLOOPBENCH_SPEED_MS=0.2241\n.\n\n=============================== warnings summary ===============================\n../usr/local/lib/python3.12/site-packages/_pytest/cacheprovider.py:475\n  /usr/local/lib/python3.12/site-packages/_pytest/cacheprovider.py:475: PytestCacheWarning: could not create cache path /workspace/.pytest_cache/v/cache/nodeids: [Errno 30] Read-only file system: '/workspace/pytest-cache-files-xa49pd1f'\n    config.cache.set(\"cache/nodeids\", sorted(self.cached_nodeids))\n\n../usr/local/lib/python3.12/site-packages/_pytest/stepwise.py:51\n  /usr/local/lib/python3.12/site-packages/_pytest/stepwise.py:51: PytestCacheWarning: could not create cache path /workspace/.pytest_cache/v/cache/stepwise: [Errno 30] Read-only file system: '/workspace/pytest-cache-files-cvqjke38'\n    session.config.cache.set(STEPWISE_CACHE_DIR, [])\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n--------------------------------- JSON report ----------------------------------\nreport saved to: /results/pytest_report.json\n======================== 5 passed, 2 warnings in 0.18s =========================\n\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\n[sandbox] command exit code: 0\n[sandbox] score.json written: passed=5, failed=0, exit=0, score=0.9985\n[sandbox] Done.\n",
       "stderr": "",
-      "execution_time": 1.2030000000013388,
-      "score": 0.998831,
+      "execution_time": 1.6089999999967404,
+      "score": 0.998507,
       "failed": false,
       "failure_phase": null,
       "error_message": null,
       "metrics": {
-        "combined_score": 0.998831,
+        "combined_score": 0.998507,
         "correctness": 1.0,
-        "speed_score": 0.998831,
-        "speed_ms": 0.1755
+        "speed_score": 0.998507,
+        "speed_ms": 0.2241
       },
       "program": null
     }
   ],
   "programs": [],
   "best_candidate": {
-    "id": "c56ac4ef-e2c1-4de4-bfe1-e083109420b2",
-    "run_id": "d5d8e21f-e4dc-418b-900d-466299193c51",
-    "generation": 7,
-    "parent_id": "6953af0c-a30d-42d7-a46f-f1714d87c8c6",
-    "timestamp": 1783201048.2031956,
-    "patch_content": "--- a/examples/bubblesort_optimizer/initial_program.py\n+++ b/examples/bubblesort_optimizer/initial_program.py\n@@ -11,13 +11,8 @@\n \n def bubble_sort(data):\n     \"\"\"Naive bubble sort \u2014 O(n^2). Returns a new sorted (ascending) list.\"\"\"\n-    arr = list(data)\n-    n = len(arr)\n-    for i in range(n):\n-        for j in range(n - 1, i, -1):\n-            if arr[j] < arr[j - 1]:\n-                arr[j], arr[j - 1] = arr[j - 1], arr[j]\n-    return arr\n+    # Improved implementation using Python's built-in sorting functionality\n+    return sorted(data)\n \n \n # EVOLVE-BLOCK-END\n",
+    "id": "dae71857-2a53-47b1-838d-77d44934e970",
+    "run_id": "b625d758-a308-4473-9e18-ce5d0313f437",
+    "generation": 6,
+    "parent_id": "55beae0b-76df-4981-8563-228ad8091df2",
+    "timestamp": 1783203630.6618793,
+    "patch_content": "--- a/examples/bubblesort_optimizer/initial_program.py\n+++ b/examples/bubblesort_optimizer/initial_program.py\n@@ -11,13 +11,10 @@\n \n def bubble_sort(data):\n     \"\"\"Naive bubble sort \u2014 O(n^2). Returns a new sorted (ascending) list.\"\"\"\n-    arr = list(data)\n-    n = len(arr)\n-    for i in range(n):\n-        for j in range(n - 1, i, -1):\n-            if arr[j] < arr[j - 1]:\n-                arr[j], arr[j - 1] = arr[j - 1], arr[j]\n-    return arr\n+    # Improved bubble sort implementation using Python's built-in sorted function\n+    # This has a time complexity of O(n log n), which is significantly faster\n+    # than the original O(n^2) bubble sort\n+    return sorted(data)\n \n \n # EVOLVE-BLOCK-END\n",
     "applied": true,
     "tested": true,
     "exit_code": 0,
-    "stdout": "[sandbox] Starting test run at 2026-07-04T21:37:27Z\n[sandbox] Program: /workspace/initial_program.py\n[sandbox] Command: pytest test_bubble_sort.py -v -s -q\n\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\n============================= test session starts ==============================\nplatform linux -- Python 3.12.13, pytest-8.3.5, pluggy-1.6.0\nrootdir: /workspace\nplugins: metadata-3.1.1, json-report-1.5.0\ncollected 5 items\n\ntest_bubble_sort.py ....\nLOOPBENCH_SPEED_MS=0.1666\n.\n\n=============================== warnings summary ===============================\n../usr/local/lib/python3.12/site-packages/_pytest/cacheprovider.py:475\n  /usr/local/lib/python3.12/site-packages/_pytest/cacheprovider.py:475: PytestCacheWarning: could not create cache path /workspace/.pytest_cache/v/cache/nodeids: [Errno 30] Read-only file system: '/workspace/pytest-cache-files-2ay1iqq_'\n    config.cache.set(\"cache/nodeids\", sorted(self.cached_nodeids))\n\n../usr/local/lib/python3.12/site-packages/_pytest/stepwise.py:51\n  /usr/local/lib/python3.12/site-packages/_pytest/stepwise.py:51: PytestCacheWarning: could not create cache path /workspace/.pytest_cache/v/cache/stepwise: [Errno 30] Read-only file system: '/workspace/pytest-cache-files-r0m6ky30'\n    session.config.cache.set(STEPWISE_CACHE_DIR, [])\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n--------------------------------- JSON report ----------------------------------\nreport saved to: /results/pytest_report.json\n======================== 5 passed, 2 warnings in 0.06s =========================\n\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\n[sandbox] command exit code: 0\n[sandbox] score.json written: passed=5, failed=0, exit=0, score=0.9989\n[sandbox] Done.\n",
+    "stdout": "[sandbox] Starting test run at 2026-07-04T22:20:29Z\n[sandbox] Program: /workspace/examples/bubblesort_optimizer/initial_program.py\n[sandbox] Command: pytest test_bubble_sort.py -v -s -q\n\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\n============================= test session starts ==============================\nplatform linux -- Python 3.12.13, pytest-8.3.5, pluggy-1.6.0\nrootdir: /workspace\nconfigfile: pyproject.toml\nplugins: metadata-3.1.1, json-report-1.5.0\ncollected 5 items\n\ntest_bubble_sort.py ....\nLOOPBENCH_SPEED_MS=0.1722\n.\n\n=============================== warnings summary ===============================\n../usr/local/lib/python3.12/site-packages/_pytest/cacheprovider.py:475\n  /usr/local/lib/python3.12/site-packages/_pytest/cacheprovider.py:475: PytestCacheWarning: could not create cache path /workspace/.pytest_cache/v/cache/nodeids: [Errno 30] Read-only file system: '/workspace/pytest-cache-files-kswlqynz'\n    config.cache.set(\"cache/nodeids\", sorted(self.cached_nodeids))\n\n../usr/local/lib/python3.12/site-packages/_pytest/stepwise.py:51\n  /usr/local/lib/python3.12/site-packages/_pytest/stepwise.py:51: PytestCacheWarning: could not create cache path /workspace/.pytest_cache/v/cache/stepwise: [Errno 30] Read-only file system: '/workspace/pytest-cache-files-_xastqqc'\n    session.config.cache.set(STEPWISE_CACHE_DIR, [])\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n--------------------------------- JSON report ----------------------------------\nreport saved to: /results/pytest_report.json\n======================== 5 passed, 2 warnings in 0.13s =========================\n\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\u00e2\u201d\u20ac\n[sandbox] command exit code: 0\n[sandbox] score.json written: passed=5, failed=0, exit=0, score=0.9989\n[sandbox] Done.\n",
     "stderr": "",
-    "execution_time": 1.1869999999980791,
-    "score": 0.99889,
+    "execution_time": 1.4219999999986612,
+    "score": 0.998853,
     "failed": false,
     "failure_phase": null,
     "error_message": null,
     "metrics": {
-      "combined_score": 0.99889,
+      "combined_score": 0.998853,
       "correctness": 1.0,
-      "speed_score": 0.99889,
-      "speed_ms": 0.1666
+      "speed_score": 0.998853,
+      "speed_ms": 0.1722
     },
     "program": null
   },
@@ -342,9 +342,9 @@
   "audit_log": [
     {
       "id": 1,
-      "run_id": "d5d8e21f-e4dc-418b-900d-466299193c51",
+      "run_id": "b625d758-a308-4473-9e18-ce5d0313f437",
       "candidate_id": null,
-      "timestamp": 1783201031.5080228,
+      "timestamp": 1783203607.1555195,
       "event_type": "run_created",
       "event_data": {
         "status": "running",
@@ -353,9 +353,9 @@
     },
     {
       "id": 2,
-      "run_id": "d5d8e21f-e4dc-418b-900d-466299193c51",
-      "candidate_id": "6953af0c-a30d-42d7-a46f-f1714d87c8c6",
-      "timestamp": 1783201033.693766,
+      "run_id": "b625d758-a308-4473-9e18-ce5d0313f437",
+      "candidate_id": "55beae0b-76df-4981-8563-228ad8091df2",
+      "timestamp": 1783203610.9128535,
       "event_type": "candidate_recorded",
       "event_data": {
         "generation": 0,
@@ -366,78 +366,78 @@
     },
     {
       "id": 3,
-      "run_id": "d5d8e21f-e4dc-418b-900d-466299193c51",
-      "candidate_id": "c0d08108-746b-4775-b043-0bdb074a94ff",
-      "timestamp": 1783201036.3508508,
+      "run_id": "b625d758-a308-4473-9e18-ce5d0313f437",
+      "candidate_id": "01070556-d909-4df7-b815-47cc33f43718",
+      "timestamp": 1783203614.8407767,
       "event_type": "candidate_recorded",
       "event_data": {
         "generation": 1,
-        "parent_id": "6953af0c-a30d-42d7-a46f-f1714d87c8c6",
+        "parent_id": "55beae0b-76df-4981-8563-228ad8091df2",
         "failed": false,
         "failure_phase": null
       }
     },
     {
       "id": 4,
-      "run_id": "d5d8e21f-e4dc-418b-900d-466299193c51",
-      "candidate_id": "c0d08108-746b-4775-b043-0bdb074a94ff",
-      "timestamp": 1783201036.360538,
+      "run_id": "b625d758-a308-4473-9e18-ce5d0313f437",
+      "candidate_id": "01070556-d909-4df7-b815-47cc33f43718",
+      "timestamp": 1783203614.8505166,
       "event_type": "generation_cost",
       "event_data": {
         "generation": 1,
         "prompt_tokens": 612,
-        "completion_tokens": 255,
+        "completion_tokens": 279,
         "cost_usd": 0.0,
         "cumulative_cost_usd": 0.0,
-        "cumulative_tokens": 867
+        "cumulative_tokens": 891
       }
     },
     {
       "id": 5,
-      "run_id": "d5d8e21f-e4dc-418b-900d-466299193c51",
-      "candidate_id": "64490d0a-40a1-43d2-a149-8109050b2df8",
-      "timestamp": 1783201038.3956466,
+      "run_id": "b625d758-a308-4473-9e18-ce5d0313f437",
+      "candidate_id": "f4e4a828-79c4-480f-8340-45c1334bef4c",
+      "timestamp": 1783203617.9100804,
       "event_type": "candidate_recorded",
       "event_data": {
         "generation": 2,
-        "parent_id": "c0d08108-746b-4775-b043-0bdb074a94ff",
+        "parent_id": "01070556-d909-4df7-b815-47cc33f43718",
         "failed": false,
         "failure_phase": null
       }
     },
     {
       "id": 6,
-      "run_id": "d5d8e21f-e4dc-418b-900d-466299193c51",
-      "candidate_id": "64490d0a-40a1-43d2-a149-8109050b2df8",
-      "timestamp": 1783201038.4054503,
+      "run_id": "b625d758-a308-4473-9e18-ce5d0313f437",
+      "candidate_id": "f4e4a828-79c4-480f-8340-45c1334bef4c",
+      "timestamp": 1783203617.9182625,
       "event_type": "generation_cost",
       "event_data": {
         "generation": 2,
-        "prompt_tokens": 620,
-        "completion_tokens": 293,
+        "prompt_tokens": 619,
+        "completion_tokens": 255,
         "cost_usd": 0.0,
         "cumulative_cost_usd": 0.0,
-        "cumulative_tokens": 1780
+        "cumulative_tokens": 1765
       }
     },
     {
       "id": 7,
-      "run_id": "d5d8e21f-e4dc-418b-900d-466299193c51",
-      "candidate_id": "603a74f8-d6e0-4716-a2db-69378f407659",
-      "timestamp": 1783201040.385207,
+      "run_id": "b625d758-a308-4473-9e18-ce5d0313f437",
+      "candidate_id": "cf3e6e70-c78e-47ce-aa62-5287a8aa4b43",
+      "timestamp": 1783203621.2073758,
       "event_type": "candidate_recorded",
       "event_data": {
         "generation": 3,
-        "parent_id": "64490d0a-40a1-43d2-a149-8109050b2df8",
+        "parent_id": "f4e4a828-79c4-480f-8340-45c1334bef4c",
         "failed": false,
         "failure_phase": null
       }
     },
     {
       "id": 8,
-      "run_id": "d5d8e21f-e4dc-418b-900d-466299193c51",
-      "candidate_id": "603a74f8-d6e0-4716-a2db-69378f407659",
-      "timestamp": 1783201040.394647,
+      "run_id": "b625d758-a308-4473-9e18-ce5d0313f437",
+      "candidate_id": "cf3e6e70-c78e-47ce-aa62-5287a8aa4b43",
+      "timestamp": 1783203621.216369,
       "event_type": "generation_cost",
       "event_data": {
         "generation": 3,
@@ -445,27 +445,27 @@
         "completion_tokens": 273,
         "cost_usd": 0.0,
         "cumulative_cost_usd": 0.0,
-        "cumulative_tokens": 2673
+        "cumulative_tokens": 2658
       }
     },
     {
       "id": 9,
-      "run_id": "d5d8e21f-e4dc-418b-900d-466299193c51",
-      "candidate_id": "24fb8180-1896-4761-85e8-fa8a22c59d2d",
-      "timestamp": 1783201042.301051,
+      "run_id": "b625d758-a308-4473-9e18-ce5d0313f437",
+      "candidate_id": "a3f26595-efc6-48a6-a260-899d899e02ff",
+      "timestamp": 1783203624.6175532,
       "event_type": "candidate_recorded",
       "event_data": {
         "generation": 4,
-        "parent_id": "64490d0a-40a1-43d2-a149-8109050b2df8",
+        "parent_id": "cf3e6e70-c78e-47ce-aa62-5287a8aa4b43",
         "failed": false,
         "failure_phase": null
       }
     },
     {
       "id": 10,
-      "run_id": "d5d8e21f-e4dc-418b-900d-466299193c51",
-      "candidate_id": "24fb8180-1896-4761-85e8-fa8a22c59d2d",
-      "timestamp": 1783201042.308933,
+      "run_id": "b625d758-a308-4473-9e18-ce5d0313f437",
+      "candidate_id": "a3f26595-efc6-48a6-a260-899d899e02ff",
+      "timestamp": 1783203624.6268678,
       "event_type": "generation_cost",
       "event_data": {
         "generation": 4,
@@ -473,186 +473,186 @@
         "completion_tokens": 255,
         "cost_usd": 0.0,
         "cumulative_cost_usd": 0.0,
-        "cumulative_tokens": 3548
+        "cumulative_tokens": 3533
       }
     },
     {
       "id": 11,
-      "run_id": "d5d8e21f-e4dc-418b-900d-466299193c51",
-      "candidate_id": "87afa89e-3fa1-46a1-9d70-baad148c5883",
-      "timestamp": 1783201044.2524278,
+      "run_id": "b625d758-a308-4473-9e18-ce5d0313f437",
+      "candidate_id": "69ede069-6764-4f8e-bc67-9086105b0c0a",
+      "timestamp": 1783203627.6967235,
       "event_type": "candidate_recorded",
       "event_data": {
         "generation": 5,
-        "parent_id": "24fb8180-1896-4761-85e8-fa8a22c59d2d",
+        "parent_id": "cf3e6e70-c78e-47ce-aa62-5287a8aa4b43",
         "failed": false,
         "failure_phase": null
       }
     },
     {
       "id": 12,
-      "run_id": "d5d8e21f-e4dc-418b-900d-466299193c51",
-      "candidate_id": "87afa89e-3fa1-46a1-9d70-baad148c5883",
-      "timestamp": 1783201044.2622147,
+      "run_id": "b625d758-a308-4473-9e18-ce5d0313f437",
+      "candidate_id": "69ede069-6764-4f8e-bc67-9086105b0c0a",
+      "timestamp": 1783203627.705247,
       "event_type": "generation_cost",
       "event_data": {
         "generation": 5,
         "prompt_tokens": 620,
-        "completion_tokens": 276,
+        "completion_tokens": 272,
         "cost_usd": 0.0,
         "cumulative_cost_usd": 0.0,
-        "cumulative_tokens": 4444
+        "cumulative_tokens": 4425
       }
     },
     {
       "id": 13,
-      "run_id": "d5d8e21f-e4dc-418b-900d-466299193c51",
-      "candidate_id": "02ff6a67-9c91-48fb-ad42-c2fe86a15d05",
-      "timestamp": 1783201046.2534041,
+      "run_id": "b625d758-a308-4473-9e18-ce5d0313f437",
+      "candidate_id": "dae71857-2a53-47b1-838d-77d44934e970",
+      "timestamp": 1783203630.6628873,
       "event_type": "candidate_recorded",
       "event_data": {
         "generation": 6,
-        "parent_id": "24fb8180-1896-4761-85e8-fa8a22c59d2d",
+        "parent_id": "55beae0b-76df-4981-8563-228ad8091df2",
         "failed": false,
         "failure_phase": null
       }
     },
     {
       "id": 14,
-      "run_id": "d5d8e21f-e4dc-418b-900d-466299193c51",
-      "candidate_id": "02ff6a67-9c91-48fb-ad42-c2fe86a15d05",
-      "timestamp": 1783201046.2613165,
+      "run_id": "b625d758-a308-4473-9e18-ce5d0313f437",
+      "candidate_id": "dae71857-2a53-47b1-838d-77d44934e970",
+      "timestamp": 1783203630.6724377,
       "event_type": "generation_cost",
       "event_data": {
         "generation": 6,
-        "prompt_tokens": 620,
-        "completion_tokens": 278,
+        "prompt_tokens": 612,
+        "completion_tokens": 300,
         "cost_usd": 0.0,
         "cumulative_cost_usd": 0.0,
-        "cumulative_tokens": 5342
+        "cumulative_tokens": 5337
       }
     },
     {
       "id": 15,
-      "run_id": "d5d8e21f-e4dc-418b-900d-466299193c51",
-      "candidate_id": "c56ac4ef-e2c1-4de4-bfe1-e083109420b2",
-      "timestamp": 1783201048.204833,
+      "run_id": "b625d758-a308-4473-9e18-ce5d0313f437",
+      "candidate_id": "9c294db6-5aec-4e7e-ad80-9aad3ca25932",
+      "timestamp": 1783203634.151797,
       "event_type": "candidate_recorded",
       "event_data": {
         "generation": 7,
-        "parent_id": "6953af0c-a30d-42d7-a46f-f1714d87c8c6",
+        "parent_id": "dae71857-2a53-47b1-838d-77d44934e970",
         "failed": false,
         "failure_phase": null
       }
     },
     {
       "id": 16,
-      "run_id": "d5d8e21f-e4dc-418b-900d-466299193c51",
-      "candidate_id": "c56ac4ef-e2c1-4de4-bfe1-e083109420b2",
-      "timestamp": 1783201048.2129805,
+      "run_id": "b625d758-a308-4473-9e18-ce5d0313f437",
+      "candidate_id": "9c294db6-5aec-4e7e-ad80-9aad3ca25932",
+      "timestamp": 1783203634.1686254,
       "event_type": "generation_cost",
       "event_data": {
         "generation": 7,
-        "prompt_tokens": 612,
-        "completion_tokens": 267,
+        "prompt_tokens": 620,
+        "completion_tokens": 270,
         "cost_usd": 0.0,
         "cumulative_cost_usd": 0.0,
-        "cumulative_tokens": 6221
+        "cumulative_tokens": 6227
       }
     },
     {
       "id": 17,
-      "run_id": "d5d8e21f-e4dc-418b-900d-466299193c51",
-      "candidate_id": "d04a0b64-7009-4efe-9769-62a687ea6bdd",
-      "timestamp": 1783201050.1081698,
+      "run_id": "b625d758-a308-4473-9e18-ce5d0313f437",
+      "candidate_id": "db1e7ea8-40bc-4626-a590-9ce13485dc73",
+      "timestamp": 1783203637.2355785,
       "event_type": "candidate_recorded",
       "event_data": {
         "generation": 8,
-        "parent_id": "c56ac4ef-e2c1-4de4-bfe1-e083109420b2",
+        "parent_id": "dae71857-2a53-47b1-838d-77d44934e970",
         "failed": false,
         "failure_phase": null
       }
     },
     {
       "id": 18,
-      "run_id": "d5d8e21f-e4dc-418b-900d-466299193c51",
-      "candidate_id": "d04a0b64-7009-4efe-9769-62a687ea6bdd",
-      "timestamp": 1783201050.1168005,
+      "run_id": "b625d758-a308-4473-9e18-ce5d0313f437",
+      "candidate_id": "db1e7ea8-40bc-4626-a590-9ce13485dc73",
+      "timestamp": 1783203637.2449684,
       "event_type": "generation_cost",
       "event_data": {
         "generation": 8,
         "prompt_tokens": 620,
-        "completion_tokens": 273,
+        "completion_tokens": 270,
         "cost_usd": 0.0,
         "cumulative_cost_usd": 0.0,
-        "cumulative_tokens": 7114
+        "cumulative_tokens": 7117
       }
     },
     {
       "id": 19,
-      "run_id": "d5d8e21f-e4dc-418b-900d-466299193c51",
-      "candidate_id": "470e7d69-d82e-4b21-941f-de2dda6a0903",
-      "timestamp": 1783201052.0705183,
+      "run_id": "b625d758-a308-4473-9e18-ce5d0313f437",
+      "candidate_id": "2bde0699-3485-48bd-9ded-6cf4710926c5",
+      "timestamp": 1783203640.5268037,
       "event_type": "candidate_recorded",
       "event_data": {
         "generation": 9,
-        "parent_id": "c56ac4ef-e2c1-4de4-bfe1-e083109420b2",
+        "parent_id": "55beae0b-76df-4981-8563-228ad8091df2",
         "failed": false,
         "failure_phase": null
       }
     },
     {
       "id": 20,
-      "run_id": "d5d8e21f-e4dc-418b-900d-466299193c51",
-      "candidate_id": "470e7d69-d82e-4b21-941f-de2dda6a0903",
-      "timestamp": 1783201052.0793447,
+      "run_id": "b625d758-a308-4473-9e18-ce5d0313f437",
+      "candidate_id": "2bde0699-3485-48bd-9ded-6cf4710926c5",
+      "timestamp": 1783203640.5365686,
       "event_type": "generation_cost",
       "event_data": {
         "generation": 9,
-        "prompt_tokens": 620,
-        "completion_tokens": 297,
+        "prompt_tokens": 612,
+        "completion_tokens": 254,
         "cost_usd": 0.0,
         "cumulative_cost_usd": 0.0,
-        "cumulative_tokens": 8031
+        "cumulative_tokens": 7983
       }
     },
     {
       "id": 21,
-      "run_id": "d5d8e21f-e4dc-418b-900d-466299193c51",
-      "candidate_id": "796dba55-89b9-47e7-bcb3-f3c58c2ee554",
-      "timestamp": 1783201053.9063056,
+      "run_id": "b625d758-a308-4473-9e18-ce5d0313f437",
+      "candidate_id": "516687f2-e597-4f1d-9ee7-749a460ad197",
+      "timestamp": 1783203643.9163132,
       "event_type": "candidate_recorded",
       "event_data": {
         "generation": 10,
-        "parent_id": "6953af0c-a30d-42d7-a46f-f1714d87c8c6",
+        "parent_id": "55beae0b-76df-4981-8563-228ad8091df2",
         "failed": false,
         "failure_phase": null
       }
     },
     {
       "id": 22,
-      "run_id": "d5d8e21f-e4dc-418b-900d-466299193c51",
-      "candidate_id": "796dba55-89b9-47e7-bcb3-f3c58c2ee554",
-      "timestamp": 1783201053.9154155,
+      "run_id": "b625d758-a308-4473-9e18-ce5d0313f437",
+      "candidate_id": "516687f2-e597-4f1d-9ee7-749a460ad197",
+      "timestamp": 1783203643.925395,
       "event_type": "generation_cost",
       "event_data": {
         "generation": 10,
         "prompt_tokens": 612,
-        "completion_tokens": 255,
+        "completion_tokens": 281,
         "cost_usd": 0.0,
         "cumulative_cost_usd": 0.0,
-        "cumulative_tokens": 8898
+        "cumulative_tokens": 8876
       }
     },
     {
       "id": 23,
-      "run_id": "d5d8e21f-e4dc-418b-900d-466299193c51",
+      "run_id": "b625d758-a308-4473-9e18-ce5d0313f437",
       "candidate_id": null,
-      "timestamp": 1783201053.9234176,
+      "timestamp": 1783203643.9362373,
       "event_type": "run_completed",
       "event_data": {
         "status": "successful",
-        "final_improvement": 18.809419930589986
+        "final_improvement": 17.42018588868808
       }
     }
   ]
