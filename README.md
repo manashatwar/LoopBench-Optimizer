@@ -144,16 +144,6 @@ loopbench run --target . --target-file examples/prime_counter_optimizer/initial_
 
 ---
 
-## Advanced
-
-LoopBench is a fork of [OpenEvolve](https://github.com/algorithmicsuperintelligence/openevolve).
-The separate `optimizer` CLI runs the **same** LLM + evaluator loop with a
-heavier search strategy (MAP-Elites / island populations) for very hard,
-open-ended problems — most users won't need it. The everyday `loopbench run`
-flow above is just as capable for "make this faster and keep tests green."
-
----
-
 ## License
 
 Apache-2.0 — see [LICENSE](LICENSE). LoopBench Optimizer is a fork of
