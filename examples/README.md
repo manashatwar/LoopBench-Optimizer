@@ -1,9 +1,8 @@
 # LoopBench Examples
 
-This directory contains runnable examples and subsystem demos for LoopBench
-Optimizer. Each optimizer example is a small, self-contained project you can
-point the optimizer at to watch it evolve faster code while keeping every test
-green.
+This directory contains runnable optimization examples for LoopBench Optimizer.
+Each one is a small, self-contained project you can point the optimizer at to
+watch it evolve faster code while keeping every test green.
 
 > **Optimizing an external repo instead of these examples?** You don't add files
 > here — scaffold a job folder in your own workspace and point it at the repo:
@@ -28,11 +27,6 @@ green.
 | [`gradient_descent_optimizer/`](gradient_descent_optimizer/) | Linear-regression gradient descent (naive Python loops → NumPy vectorization); auto-installs NumPy |
 | [`llm_prompt_optimization/`](llm_prompt_optimization/) | Prompt-evolution example (also used by the template-resolution tests) |
 | [`algotune/`](algotune/) | Real AlgoTune task projects used as fixtures for the repo-context mapper tests |
-| `repo_mapper_demo.py` | Demo of `RepoContextMapper` — builds an LLM-ready context map of a repo |
-| `repo_mapper_config_examples.yaml` | Example `RepoMapperConfig` presets |
-| `metric_parser_demo.py` | Demo of the regex/JSON `MetricParser` |
-| `metric_parser_evaluator_demo.py` | Demo wiring the metric parser into an evaluator |
-| `candidate_db_demo.py` | Demo of the SQLite `CandidateDatabase` audit trail |
 
 ## Running an optimizer example
 

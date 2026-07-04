@@ -116,7 +116,7 @@ async function fetchData() {
   if (!IS_LIVE) {
     // Static mode: load data.json from same directory
     const r = await fetch('./data.json');
-    if (!r.ok) throw new Error('data.json not found — run: optimizer dashboard --run-id <id>');
+    if (!r.ok) throw new Error('data.json not found — run "loopbench run" to generate it');
     return r.json();
   }
   // Live mode: hit local API
@@ -232,8 +232,8 @@ function App() {
     h('div', {className:'error-box', style:{marginTop:'1rem'}},
       h('strong', null, 'Could not load data: '), error, h('br'), h('br'),
       IS_LIVE
-        ? 'Ensure the optimizer dashboard server is running.'
-        : 'Run: optimizer dashboard --run-id <id>  then commit docs/data.json'
+        ? 'Ensure the dashboard server is running.'
+        : 'Run "loopbench run" to generate docs/data.json, then reload.'
     )
   );
 
