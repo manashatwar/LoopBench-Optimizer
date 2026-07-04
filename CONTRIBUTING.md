@@ -125,7 +125,6 @@ Unit tests are grouped by subsystem so they're easy to navigate:
 | `tests/integration/` | End-to-end flows (some require external services; `-m "not slow"` for CI) |
 | `tests/property/` | Hypothesis property-based tests |
 | `tests/performance/` | Performance benchmarks |
-| `tests/examples/` | Example-project fixtures |
 
 `tests/test_utils.py` stays at the root — it's a shared helper imported by the
 integration test harness, not a test module itself.
