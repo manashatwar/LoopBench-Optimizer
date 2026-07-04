@@ -85,7 +85,7 @@ sequenceDiagram
     L->>S: run tests on an isolated copy (network off, read-only mount)
     S-->>L: score.json (passed, speed_ms, combined_score)
     L->>DB: insert_candidate(patch, metrics, score)
-    Note over L: SearchStrategy picks the next baseline; the best candidate is tracked separately and never regresses
+    Note over L: SearchStrategy picks the next baseline, keeping the best candidate separate so it never regresses
 ```
 
 > This is the **default** flow (`auto` → `full` / `search_replace`): the edit is
