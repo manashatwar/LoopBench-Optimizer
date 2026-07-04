@@ -13,6 +13,7 @@ def create_optimizer_prompt(
     baseline_metrics: dict,
     failure_history: list[str],
     optimization_goal: str = "Improve execution performance",
+    language: str = "Python",
 ) -> str:
     """Build the full LLM prompt for the OptimizerLoop.
 
@@ -55,7 +56,9 @@ def create_optimizer_prompt(
 
     # --- 4. Assemble prompt using the canonical template ---
     prompt = (
-        "You are optimizing Python code for performance.\n"
+        f"You are an expert {language} programmer optimizing {language} code for "
+        f"performance. Emit valid {language} only — never use constructs from "
+        "other languages.\n"
         "\n"
         f"Target File: {context_map.target_file}\n"
         f"Current Performance: {metrics_str}\n"

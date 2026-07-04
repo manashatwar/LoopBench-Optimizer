@@ -221,6 +221,19 @@ def run_target_pipeline(args: argparse.Namespace) -> int:
             return 1
         target_path = Path(target_path)
 
+        # Language of the file being optimized — drives language-aware prompting.
+        # Derived from the TARGET FILE extension, not the repo's dominant language
+        # (e.g. the Vyper repo is mostly Python, but crowdfund.vy is Vyper).
+        _LANG_BY_EXT = {
+            ".py": "Python", ".vy": "Vyper", ".sol": "Solidity",
+            ".rs": "Rust", ".go": "Go", ".js": "JavaScript", ".ts": "TypeScript",
+            ".java": "Java", ".c": "C", ".cpp": "C++", ".cc": "C++", ".rb": "Ruby",
+        }
+        target_lang = _LANG_BY_EXT.get(
+            target_path.suffix.lower(), (lang.capitalize() if lang else "Python")
+        )
+        print(f"[LoopBench] Target lang : {target_lang}")
+
         # ── Run mode: stdin/stdout scripts (competitive programming, CLI tools) ─
         # If I/O test cases are provided (or auto-detected), generate a pytest
         # harness that runs the target as a SUBPROCESS instead of importing it.
@@ -355,6 +368,7 @@ def run_target_pipeline(args: argparse.Namespace) -> int:
             "patience": 5,
             "success_threshold": 0.05,
             "db_path": db_path,
+            "language": target_lang,
             "search_strategy": {"strategy": "greedy"},
             "metric_patterns": None,
             "rewrite_mode": "auto",

@@ -248,6 +248,11 @@ class OptimizerLoop:
         self.rewrite_mode: str = config.get("rewrite_mode", "diff")
         self.full_rewrite_max_lines: int = int(config.get("full_rewrite_max_lines", 300))
 
+        # ── Language-aware prompting ──────────────────────────────────────────
+        # The language of the file being optimized (from the target extension).
+        # Defaults to Python so existing behavior is unchanged.
+        self.language: str = config.get("language") or "Python"
+
         # ── Internal state ────────────────────────────────────────────────────
         self._run_id: Optional[str] = None
         self._candidate_history: List[Dict[str, Any]] = []
@@ -411,13 +416,14 @@ class OptimizerLoop:
                     context_map=context_map,
                     baseline_metrics=baseline_metrics,
                     failure_history=failure_history,
+                    language=self.language,
                 )
             else:
                 # Minimal fallback prompt when mapper unavailable
                 metrics_str = ", ".join(f"{k}={v}" for k, v in baseline_metrics.items()) or "N/A"
                 failures_str = "\n".join(f"- {m}" for m in failure_history) or "None"
                 prompt = (
-                    "You are optimizing Python code for performance.\n\n"
+                    f"You are optimizing {self.language} code for performance.\n\n"
                     f"Target File: {self.target_file}\n"
                     f"Current Performance: {metrics_str}\n\n"
                     f"Recent Failures:\n{failures_str}\n\n"
@@ -619,18 +625,22 @@ class OptimizerLoop:
     ) -> str:
         metrics_str = ", ".join(f"{k}={v}" for k, v in baseline_metrics.items()) or "N/A"
         failures_str = "\n".join(f"- {m}" for m in failures) or "None"
+        lang = self.language
+        fence = lang.lower()
         return (
-            "You are optimizing a Python file for performance while keeping all "
-            "tests passing.\n\n"
+            f"You are an expert {lang} programmer optimizing a {lang} file for "
+            "performance while keeping all tests passing.\n\n"
             f"Current performance metrics: {metrics_str}\n"
             f"Recent failed attempts:\n{failures_str}\n\n"
             "Rules:\n"
             "  1. Keep ALL public function/class names and signatures unchanged.\n"
             "  2. Do not change any code outside what is needed for the speed-up.\n"
-            "  3. The output MUST be the COMPLETE file, ready to run as-is.\n"
-            "  4. Return ONLY the full file inside a single ```python code block.\n\n"
+            f"  3. Emit valid {lang} only — use {lang} syntax and idioms, never "
+            "constructs from other languages.\n"
+            "  4. The output MUST be the COMPLETE file, ready to run as-is.\n"
+            f"  5. Return ONLY the full file inside a single ```{fence} code block.\n\n"
             "Here is the current file:\n\n"
-            "```python\n"
+            f"```{fence}\n"
             f"{original}\n"
             "```\n"
         )
@@ -640,9 +650,12 @@ class OptimizerLoop:
     ) -> str:
         metrics_str = ", ".join(f"{k}={v}" for k, v in baseline_metrics.items()) or "N/A"
         failures_str = "\n".join(f"- {m}" for m in failures) or "None"
+        lang = self.language
+        fence = lang.lower()
         return (
-            "You are optimizing a Python file for performance while keeping all "
-            "tests passing. Edit ONLY the minimal region(s) needed.\n\n"
+            f"You are an expert {lang} programmer optimizing a {lang} file for "
+            "performance while keeping all tests passing. Edit ONLY the minimal "
+            "region(s) needed.\n\n"
             f"Current performance metrics: {metrics_str}\n"
             f"Recent failed attempts:\n{failures_str}\n\n"
             "Return one or more SEARCH/REPLACE blocks in EXACTLY this format:\n\n"
@@ -654,9 +667,11 @@ class OptimizerLoop:
             "Rules:\n"
             "  1. The SEARCH section MUST match the current file text exactly.\n"
             "  2. Keep public function/class names and signatures unchanged.\n"
-            "  3. Emit only the blocks — no prose, no full-file dump.\n\n"
+            f"  3. Emit valid {lang} only — use {lang} syntax and idioms, never "
+            "constructs from other languages.\n"
+            "  4. Emit only the blocks — no prose, no full-file dump.\n\n"
             "Here is the current file:\n\n"
-            "```python\n"
+            f"```{fence}\n"
             f"{original}\n"
             "```\n"
         )

@@ -281,3 +281,28 @@ def test_state_consistency_after_multiple_generations():
             assert c["parent_id"] in ids_in_db, (
                 f"Candidate {c['id']} has orphan parent_id={c['parent_id']}"
             )
+
+
+# ── Language-aware prompting ─────────────────────────────────────────────────
+
+def test_language_defaults_to_python():
+    """When no language is configured the loop stays Python (no regression)."""
+    loop = OptimizerLoop(_config(max_iterations=1), llm_ensemble=None)
+    assert loop.language == "Python"
+    prompt = loop._build_full_rewrite_prompt("x = 1\n", {}, [])
+    assert "Python" in prompt
+    assert "```python" in prompt
+
+
+def test_language_is_threaded_into_prompts():
+    """A configured language appears in both rewrite prompt builders."""
+    loop = OptimizerLoop(_config(max_iterations=1, language="Vyper"), llm_ensemble=None)
+    assert loop.language == "Vyper"
+
+    full = loop._build_full_rewrite_prompt("x: uint256 = 1\n", {}, [])
+    sr = loop._build_search_replace_prompt("x: uint256 = 1\n", {}, [])
+    for prompt in (full, sr):
+        assert "Vyper" in prompt
+        assert "```vyper" in prompt          # fenced with the real language
+        assert "Emit valid Vyper only" in prompt
+        assert "```python" not in prompt      # never mislabels as Python

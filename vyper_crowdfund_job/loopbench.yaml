@@ -1,0 +1,23 @@
+# LoopBench job — optimize examples/crowdfund.vy in the Vyper repo for GAS.
+#   loopbench check --config vyper_crowdfund_job/loopbench.yaml   # dry-run
+#   loopbench run   --config vyper_crowdfund_job/loopbench.yaml
+
+target:
+  repo: https://github.com/vyperlang/vyper   # cloned automatically
+  file: examples/crowdfund.vy                 # the Vyper contract to optimize
+  evaluator: test_target.py                   # boa-based gas evaluator (below)
+
+sandbox:
+  command: "pytest test_target.py -v -s"
+  pip: ["vyper", "titanoboa"]                 # Vyper compiler + EVM test harness
+
+metric:
+  name: "combined_score"                      # correctness x speed(gas); higher = less gas
+  threshold: 0.95
+
+search:
+  strategy: auto
+
+constraints:
+  max_iterations: 5
+  max_tokens_total: 60000
