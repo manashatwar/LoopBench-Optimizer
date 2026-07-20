@@ -296,6 +296,10 @@ function App() {
         ? `Live mode · Run: ${run.id||'—'} · Updated: ${lastUpdated||'…'}`
         : `Static mode (GitHub Pages) · Run: ${run.id||'—'}`
     ),
+    h('p', {className:'subtitle', style:{marginTop:'-0.75rem'}},
+      h('a', {href:'./blog.html', style:{color:'#38bdf8',textDecoration:'none'}},
+        '📖 Read the launch blog →')
+    ),
 
     // ── stats row ──────────────────────────────────────────────────────────
     h('div', {className:'stats-row'},

@@ -17,6 +17,8 @@ still passes every test. LLMs happily write faster code that quietly breaks
 things; LoopBench makes speed *and* correctness a hard gate, so you only ever get
 a verified diff.
 
+📖 **[Read the launch blog →](https://manashatwar.github.io/LoopBench-Optimizer/blog.html)**
+
 ---
 
 ## See it
