@@ -6,10 +6,11 @@ on:
   push:
     branches: [main]
     paths:
-      # Only the files actually served by the dashboard — editing architecture
+      # Only the files actually served by the site — editing architecture
       # markdown (which GitHub renders directly) should not trigger a redeploy.
       - "docs/index.html"
       - "docs/data.json"
+      - "docs/blog.html"
       - ".github/workflows/pages.yml"
   workflow_dispatch:
 

@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Introducing LoopBench Optimizer — an evaluator-gated loop that makes your code faster</title>
+  <meta name="description" content="LoopBench Optimizer: an autonomous, evaluator-gated loop that evolves your code to run faster — and proves every change is correct and measurably better." />
+  <style>
+    :root {
+      --bg: #0f172a; --panel: #1e293b; --text: #e2e8f0; --muted: #94a3b8;
+      --accent: #38bdf8; --border: #334155; --code-bg: #0b1220; --green: #4ade80;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; background: var(--bg); color: var(--text);
+      font: 17px/1.7 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+    .wrap { max-width: 720px; margin: 0 auto; padding: 3rem 1.25rem 5rem; }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .kicker { color: var(--muted); font-size: .8rem; letter-spacing: .08em; text-transform: uppercase; }
+    h1 { font-size: 2.1rem; line-height: 1.2; margin: .4rem 0 1rem; }
+    h2 { font-size: 1.4rem; margin: 2.5rem 0 .75rem; border-bottom: 1px solid var(--border); padding-bottom: .4rem; }
+    h3 { font-size: 1.1rem; margin: 1.75rem 0 .5rem; color: #f1f5f9; }
+    .byline { color: var(--muted); font-size: .9rem; margin-bottom: 2.5rem; }
+    .byline a { color: var(--muted); }
+    p, li { color: #cbd5e1; }
+    strong { color: #f1f5f9; }
+    ul { padding-left: 1.25rem; }
+    li { margin: .35rem 0; }
+    code { background: var(--code-bg); border: 1px solid var(--border); border-radius: 4px; padding: .1rem .35rem; font-size: .88em; color: #e2e8f0; }
+    pre { background: var(--code-bg); border: 1px solid var(--border); border-radius: 8px; padding: 1rem 1.1rem; overflow-x: auto; }
+    pre code { border: none; padding: 0; background: none; }
+    .stat { color: var(--green); font-weight: 600; }
+    .lead { font-size: 1.15rem; color: #e2e8f0; }
+    hr { border: none; border-top: 1px solid var(--border); margin: 2.5rem 0; }
+    .cta { display: inline-block; margin-top: 1rem; background: var(--accent); color: #04263a; font-weight: 600; padding: .6rem 1.1rem; border-radius: 8px; }
+    .cta:hover { text-decoration: none; opacity: .9; }
+    footer { color: var(--muted); font-size: .85rem; margin-top: 3rem; }
+  </style>
+</head>
+<body>
+  <article class="wrap">
+    <div class="kicker">⚡ LoopBench Optimizer</div>
+    <h1>Introducing LoopBench Optimizer: an evaluator-gated loop that makes your code faster — and proves it</h1>
+    <div class="byline">
+      by <a href="https://github.com/manashatwar">manashatwar</a> ·
+      <a href="https://github.com/manashatwar/LoopBench-Optimizer">GitHub</a> · 4 min read
+    </div>
+
+    <p class="lead">Today I'm open sourcing <strong>LoopBench Optimizer</strong>: an autonomous optimization
+      harness powered by coding LLMs. You point it at a repo and a file, and it evolves that code to run
+      faster — while proving, every step of the way, that the change is both correct and measurably better.</p>
+
+    <p>You can run LoopBench on your laptop. There's no cloud service to set up and no privileged access to
+      grant. For inference it talks to any OpenAI-compatible endpoint, so you can use Groq, Google Gemini,
+      OpenAI, or a local model — including free tiers. Every candidate is executed in a locked-down Docker
+      sandbox (<code>--network=none</code>, read-only mount), so untrusted, LLM-generated code never touches
+      your machine or the network.</p>
+
+    <p>The whole run is bounded: LoopBench stops on a token, dollar, runtime, or iteration budget, so an
+      experiment can't quietly run up a bill.</p>
+
+    <h2>Architecture</h2>
+    <p>At its core, LoopBench runs an LLM in a closed feedback loop and treats the LLM as an <em>architect</em> —
+      it rewrites the logic, and the system turns that into a guaranteed-valid patch. Every candidate is
+      created, isolated, tested, scored, and recorded before the loop decides what to try next.</p>
+    <p>The cycle each generation:</p>
+    <ul>
+      <li><strong>Map</strong> — a repo context mapper builds a token-budgeted, LLM-ready map of the repository
+        so the model sees the relevant code, not the whole tree.</li>
+      <li><strong>Generate</strong> — the LLM proposes an improvement as a full-file rewrite or Aider-style
+        search/replace blocks, auto-routed by file size. It never hand-writes diffs.</li>
+      <li><strong>Apply</strong> — the change is materialized in a fresh, disposable <strong>git worktree</strong>,
+        and a guaranteed-valid unified diff is computed with Python's <code>difflib</code> — so "corrupt patch"
+        failures are impossible.</li>
+      <li><strong>Test</strong> — the candidate runs in a <strong>Docker sandbox</strong> (network-off,
+        read-only). Correctness comes from your test suite; speed comes from a printed marker or a regex metric.</li>
+      <li><strong>Record</strong> — every attempt, patch, metric, and failure is written to a
+        <strong>SQLite audit trail</strong>.</li>
+      <li><strong>Select</strong> — an auto search strategy picks the next baseline: it starts greedy, and only
+        when it plateaus does it escalate (restart, then diversify), before stopping.</li>
+    </ul>
+    <p>The key design decision: <strong>LLMs are brilliant at logic and terrible at being diff engines.</strong>
+      Asking them for byte-exact unified diffs produces corrupt patches 20–30% of the time. LoopBench sidesteps
+      that entirely — the model rewrites logic, <code>difflib</code> produces the patch, and the loop becomes
+      unbreakable.</p>
+
+    <h2>Running LoopBench on real code</h2>
+    <p>LoopBench has been run against real, external repositories, not just toy fixtures.</p>
+    <p>Pointed at a classic O(n²) bubble sort using a <strong>free</strong> model (Groq's
+      <code>llama-3.3-70b</code>), it took the sort from <span class="stat">443 ms to 0.18 ms — over 2,000×
+      faster</span> — by autonomously replacing the whole algorithm with an O(n log n) sort, with every
+      correctness test still green inside the sandbox. On real numeric code, the same loop found a
+      <span class="stat">+38% NumPy vectorization</span> of a Python loop.</p>
+    <p>The result I care about most is a negative one. Pointed at a Vyper smart contract that had no real
+      optimization headroom, LoopBench reported <span class="stat">+0.00%</span> and kept the original. It
+      refuses to ship a change it can't prove is better. That's the whole philosophy:
+      <strong>a scientist, not a cheerleader.</strong> If a candidate can't demonstrate it's faster <em>and</em>
+      still correct, it never ships — full stop.</p>
+
+    <h3>Where it works, and where it doesn't</h3>
+    <p>LoopBench works best when three things are true: the target has a <strong>measurable metric</strong>
+      (latency, gas, throughput, memory), a <strong>correctness gate</strong> (tests, or an exit code), and a
+      <strong>pip-installable toolchain</strong>. That covers Python and Python-hosted ecosystems like Vyper
+      cleanly.</p>
+    <p>It's not a fit for code with no measurable signal — UI polish, prose, or logic with no tests to anchor
+      correctness. And result quality tracks model quality: a stronger model finds more aggressive, correct
+      rewrites; a weaker one plays it safe. Because the loop only keeps <em>verified</em> wins, a poor fit shows
+      up honestly as a small or zero improvement rather than a broken patch.</p>
+
+    <h2>Defining what "better" means</h2>
+    <p>You tell LoopBench what to optimize with a small evaluator — your test file <em>is</em> the benchmark. It
+      asserts correctness and prints a speed marker (<code>LOOPBENCH_SPEED_MS</code>), or you extract a custom
+      metric (gas, throughput, memory) with a regex and optimize that instead. There's no separate scoring
+      engine to learn; if your tests pass and your number improves, the patch is kept.</p>
+
+    <h2>Do I need a frontier model?</h2>
+    <p>No. LoopBench is provider-agnostic and works with off-the-shelf and free models — the 2,000×
+      bubble-sort result above was produced by a free Groq model. Stronger models simply find bolder rewrites.
+      You set <code>LLM_API_BASE</code> and <code>LLM_MODEL</code> and the loop does the rest.</p>
+
+    <h2>Getting started</h2>
+    <p>Install, add your key, and scaffold a job:</p>
+    <pre><code>pip install -e .
+cp .env.example .env        # add any OpenAI-compatible key (Groq, Gemini, OpenAI)
+
+# Optimize a file that already has a timing test:
+loopbench run --target . --target-file src/hotpath.py --metric latency
+
+# Or scaffold a job to optimize someone else's repo:
+loopbench init --job my_job                 # creates loopbench.yaml + test_target.py
+loopbench run --config my_job/loopbench.yaml</code></pre>
+    <p>Docker Desktop must be running — that's where the verification happens. The full 5-minute quick start is
+      in the <a href="https://github.com/manashatwar/LoopBench-Optimizer">README</a>.</p>
+
+    <h2>Feedback welcome</h2>
+    <p>LoopBench Optimizer is built on the excellent
+      <a href="https://github.com/algorithmicsuperintelligence/openevolve">OpenEvolve</a> project and is still
+      early. Issues, ideas, and contributions
+      <a href="https://github.com/manashatwar/LoopBench-Optimizer">on GitHub</a> are welcome.</p>
+
+    <a class="cta" href="https://github.com/manashatwar/LoopBench-Optimizer">Star it on GitHub →</a>
+
+    <footer>
+      <hr />
+      <a href="./">← Back to the LoopBench dashboard</a>
+    </footer>
+  </article>
+</body>
+</html>
