@@ -81,6 +81,12 @@ class LLMModelConfig:
     # Reasoning parameters
     reasoning_effort: Optional[str] = None
 
+    # Provider prompt caching (design §C2, R5.4/R5.5). When True the LLM layer
+    # feature-detects the provider and structures the static prefix to be
+    # cacheable; when False (or the provider is unsupported) it sends a plain
+    # combined prompt that is byte-for-byte identical to the uncached path.
+    cache_static_prefix: bool = True
+
     # Manual mode (human-in-the-loop)
     manual_mode: Optional[bool] = None
     _manual_queue_dir: Optional[str] = None
@@ -289,6 +295,15 @@ class PromptConfig:
 
     # Repository context mapper configuration
     repo_mapper: Optional['RepoMapperConfig'] = None
+
+    # Provider prompt caching + profiler hotspots (design §C2).
+    # ``cache_static_prefix`` toggles cacheable structuring of the run-stable
+    # static prefix in the LLM layer (default on; degrades to a plain prompt
+    # when the provider is unsupported). ``max_hotspots`` is the single source
+    # of truth for how many baseline profiler hotspots are surfaced in the
+    # prompt (the sandbox runner reads this value; see docs).
+    cache_static_prefix: bool = True
+    max_hotspots: int = 5
 
     # Backward compatibility - deprecated
     code_length_threshold: Optional[int] = (

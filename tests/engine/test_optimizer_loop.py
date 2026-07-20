@@ -306,3 +306,61 @@ def test_language_is_threaded_into_prompts():
         assert "```vyper" in prompt          # fenced with the real language
         assert "Emit valid Vyper only" in prompt
         assert "```python" not in prompt      # never mislabels as Python
+
+
+# ── Task 6: hotspots in rewrite prompt builders (design §C2, R4/R5) ──────────
+
+def test_hotspots_default_empty():
+    """A freshly constructed loop has no hotspots (profiling off by default)."""
+    loop = OptimizerLoop(_config(max_iterations=1), llm_ensemble=None)
+    assert loop.hotspots == []
+
+
+def test_rewrite_prompts_unchanged_without_hotspots():
+    """With no hotspots the rewrite builders are byte-identical to pre-Task-6."""
+    loop = OptimizerLoop(_config(max_iterations=1), llm_ensemble=None)
+    original = "x = 1\n"
+
+    lang = "Python"
+    fence = "python"
+    metrics_str = "N/A"
+    failures_str = "None"
+    expected_full = (
+        f"You are an expert {lang} programmer optimizing a {lang} file for "
+        "performance while keeping all tests passing.\n\n"
+        f"Current performance metrics: {metrics_str}\n"
+        f"Recent failed attempts:\n{failures_str}\n\n"
+        "Rules:\n"
+        "  1. Keep ALL public function/class names, signatures, and observable "
+        "behavior unchanged (every test must still pass).\n"
+        "  2. You MAY replace the ENTIRE algorithm or data structures with a "
+        "faster approach — a better-complexity algorithm (e.g. O(n^2) -> "
+        "O(n log n)), memoization, or a language built-in. Don't limit "
+        "yourself to surface tweaks; rewrite the approach when that is what "
+        "makes it faster.\n"
+        f"  3. Emit valid {lang} only — use {lang} syntax and idioms, never "
+        "constructs from other languages.\n"
+        "  4. The output MUST be the COMPLETE file, ready to run as-is.\n"
+        f"  5. Return ONLY the full file inside a single ```{fence} code block.\n\n"
+        "Here is the current file:\n\n"
+        f"```{fence}\n"
+        f"{original}\n"
+        "```\n"
+    )
+    assert loop._build_full_rewrite_prompt(original, {}, []) == expected_full
+
+
+def test_rewrite_prompts_include_hotspots_at_top_edge():
+    """When hotspots are present they appear in the static portion, top edge."""
+    loop = OptimizerLoop(_config(max_iterations=1), llm_ensemble=None)
+    loop.hotspots = [
+        {"function": "mod.py:10(hot_loop)", "tottime": 0.5, "cumtime": 0.9, "ncalls": 100},
+    ]
+    for builder in (loop._build_full_rewrite_prompt, loop._build_search_replace_prompt):
+        prompt = builder("x = 1\n", {}, [])
+        assert "top hotspots by self-time" in prompt
+        assert "hot_loop" in prompt
+        # Hotspots sit ahead of the per-generation metrics (top edge).
+        assert prompt.index("top hotspots by self-time") < prompt.index(
+            "Current performance metrics:"
+        )

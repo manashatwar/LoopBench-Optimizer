@@ -187,3 +187,155 @@ class TestRepoContextSection:
         ctx2 = _make_context_map("evaluator.py")
         prompt = create_optimizer_prompt(ctx2, {}, [])
         assert "evaluator.py" in prompt
+
+
+# ---------------------------------------------------------------------------
+# Task 6 — static prefix + dynamic delta split, hotspots, backward compat
+# (design §C2, requirements R4/R5)
+# ---------------------------------------------------------------------------
+
+from openevolve.repo_mapper.optimizer_prompt import build_prompt_parts  # noqa: E402
+from openevolve.profiler import format_hotspots  # noqa: E402
+
+
+def _sample_hotspots():
+    """A small, deterministic hotspot list mirroring profiler output."""
+    return [
+        {"function": "mod.py:10(hot_loop)", "tottime": 0.512, "cumtime": 0.9, "ncalls": 1000},
+        {"function": "mod.py:42(helper)", "tottime": 0.130, "cumtime": 0.2, "ncalls": 500},
+    ]
+
+
+def _pre_task6_prompt(
+    context_map,
+    baseline_metrics,
+    failure_history,
+    optimization_goal="Improve execution performance",
+    language="Python",
+) -> str:
+    """Reconstruct the EXACT pre-Task-6 template for the regression baseline."""
+    if baseline_metrics:
+        metrics_str = ", ".join(f"{k}={v}" for k, v in baseline_metrics.items())
+    else:
+        metrics_str = "No baseline yet"
+    failures_str = "\n".join(f"- {msg}" for msg in failure_history) if failure_history else "None"
+    repo_context_section = context_map.to_prompt_section()
+    return (
+        f"You are an expert {language} programmer optimizing {language} code for "
+        f"performance. Emit valid {language} only — never use constructs from "
+        "other languages.\n"
+        "\n"
+        f"Target File: {context_map.target_file}\n"
+        f"Current Performance: {metrics_str}\n"
+        f"Optimization Goal: {optimization_goal}\n"
+        "\n"
+        f"{repo_context_section}\n"
+        "\n"
+        "Recent Failures:\n"
+        f"{failures_str}\n"
+        "\n"
+        "Generate a git patch in unified diff format (starting with --- and +++) "
+        "to improve performance.\n"
+        "Focus on algorithmic improvements. "
+        "Output only the patch inside a ```diff code block."
+    )
+
+
+class TestBackwardCompatibility:
+    """With no hotspots, output must be byte-for-byte identical to pre-Task-6."""
+
+    def test_empty_hotspots_matches_legacy_template(self, ctx, metrics, failures):
+        expected = _pre_task6_prompt(ctx, metrics, failures)
+        assert create_optimizer_prompt(ctx, metrics, failures) == expected
+
+    def test_empty_hotspots_no_metrics_no_failures(self, ctx):
+        expected = _pre_task6_prompt(ctx, {}, [])
+        assert create_optimizer_prompt(ctx, {}, []) == expected
+
+    def test_explicit_empty_hotspots_arg_matches_legacy(self, ctx, metrics, failures):
+        expected = _pre_task6_prompt(ctx, metrics, failures)
+        assert create_optimizer_prompt(ctx, metrics, failures, hotspots=[]) == expected
+
+    def test_none_hotspots_arg_matches_legacy(self, ctx, metrics, failures):
+        expected = _pre_task6_prompt(ctx, metrics, failures)
+        assert create_optimizer_prompt(ctx, metrics, failures, hotspots=None) == expected
+
+    def test_no_hotspot_section_when_absent(self, ctx, metrics, failures):
+        prompt = create_optimizer_prompt(ctx, metrics, failures)
+        assert "top hotspots by self-time" not in prompt
+
+
+class TestPrefixDeltaComposition:
+    """combined prompt == static_prefix + dynamic_delta (composition consistent)."""
+
+    def test_composition_no_hotspots(self, ctx, metrics, failures):
+        prefix, delta = build_prompt_parts(ctx, metrics, failures)
+        combined = create_optimizer_prompt(ctx, metrics, failures)
+        assert prefix + delta == combined
+
+    def test_composition_with_hotspots(self, ctx, metrics, failures):
+        hs = _sample_hotspots()
+        prefix, delta = build_prompt_parts(ctx, metrics, failures, hotspots=hs)
+        combined = create_optimizer_prompt(ctx, metrics, failures, hotspots=hs)
+        assert prefix + delta == combined
+
+    def test_composition_equals_legacy_when_empty(self, ctx, metrics, failures):
+        prefix, delta = build_prompt_parts(ctx, metrics, failures)
+        assert prefix + delta == _pre_task6_prompt(ctx, metrics, failures)
+
+
+class TestStaticPrefixStability:
+    """Static prefix is stable across generations; the delta carries per-gen data."""
+
+    def test_prefix_stable_delta_varies_across_generations(self, ctx):
+        hs = _sample_hotspots()
+        # Simulate three generations with changing metrics + failures.
+        gens = [
+            ({"speed_ms": 460.0}, ["gen1 failure"]),
+            ({"speed_ms": 441.0}, ["gen2 failure a", "gen2 failure b"]),
+            ({"speed_ms": 430.0}, []),
+        ]
+        prefixes = []
+        deltas = []
+        for gen_metrics, gen_failures in gens:
+            prefix, delta = build_prompt_parts(ctx, gen_metrics, gen_failures, hotspots=hs)
+            prefixes.append(prefix)
+            deltas.append(delta)
+
+        # Prefix identical across every generation (stable / cacheable).
+        assert len(set(prefixes)) == 1
+        # Delta changes with per-generation metrics/failures.
+        assert len(set(deltas)) == len(deltas)
+
+    def test_prefix_stable_without_hotspots(self, ctx):
+        p1, d1 = build_prompt_parts(ctx, {"speed_ms": 460.0}, ["a"])
+        p2, d2 = build_prompt_parts(ctx, {"speed_ms": 441.0}, ["b", "c"])
+        assert p1 == p2
+        assert d1 != d2
+
+
+class TestHotspotPlacement:
+    """Hotspots live in the static prefix, at the TOP edge with the target."""
+
+    def test_hotspots_appear_in_static_prefix(self, ctx, metrics, failures):
+        hs = _sample_hotspots()
+        prefix, delta = build_prompt_parts(ctx, metrics, failures, hotspots=hs)
+        summary = format_hotspots(hs)
+        assert summary in prefix
+        assert summary not in delta
+
+    def test_hotspots_and_target_at_top_edge(self, ctx, metrics, failures):
+        hs = _sample_hotspots()
+        prompt = create_optimizer_prompt(ctx, metrics, failures, hotspots=hs)
+        idx_target = prompt.index("Target File:")
+        idx_hotspots = prompt.index("top hotspots by self-time")
+        idx_metrics = prompt.index("Current Performance:")
+        idx_failures = prompt.index("Recent Failures:")
+        # Target first, then hotspots, both ahead of the dynamic middle content.
+        assert idx_target < idx_hotspots < idx_metrics < idx_failures
+
+    def test_hotspot_function_names_present(self, ctx, metrics, failures):
+        hs = _sample_hotspots()
+        prompt = create_optimizer_prompt(ctx, metrics, failures, hotspots=hs)
+        assert "hot_loop" in prompt
+        assert "helper" in prompt

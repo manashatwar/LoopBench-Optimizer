@@ -21,6 +21,62 @@ from openevolve.llm.base import LLMInterface
 logger = logging.getLogger(__name__)
 
 
+# ── Provider prompt-caching feature detection (design §C2, R5.4/R5.5) ─────────
+# OpenAI-compatible endpoints (OpenAI, Groq, and friends) perform *automatic*
+# prompt caching keyed on the literal leading prefix of the request — no
+# per-block marking is required, we only need the stable static prefix to sit at
+# the very start of the message content. Anthropic-style endpoints require an
+# explicit ``cache_control`` marker on the cached content block. Anything we do
+# not recognise degrades to a plain, uncached prompt.
+_OPENAI_COMPATIBLE_HOST_MARKERS = (
+    "openai.com",
+    "groq.com",
+    "googleapis.com",
+    "openrouter.ai",
+    "azure.com",
+    "mistral.ai",
+    "together.ai",
+    "together.xyz",
+    "deepinfra.com",
+    "fireworks.ai",
+    "perplexity.ai",
+    "anyscale.com",
+    "localhost",
+    "127.0.0.1",
+)
+
+CACHE_CAPABILITY_OPENAI = "openai"
+CACHE_CAPABILITY_ANTHROPIC = "anthropic"
+CACHE_CAPABILITY_NONE = "none"
+
+
+def detect_cache_capability(api_base: Optional[str]) -> str:
+    """Feature-detect a provider's prompt-caching style from its API base URL.
+
+    Returns one of:
+      * ``"anthropic"`` — Anthropic-style; the static prefix is sent as a
+        content block carrying an explicit ``cache_control`` marker.
+      * ``"openai"`` — OpenAI-compatible (OpenAI, Groq, …); caching is automatic
+        on the leading prefix, so no structural change is needed beyond keeping
+        the static prefix at the start of the content.
+      * ``"none"`` — unknown/unsupported; send a plain combined prompt (R5.5).
+
+    Args:
+        api_base: The configured provider base URL (may be ``None``).
+
+    Returns:
+        The detected capability string.
+    """
+    base = (api_base or "").lower()
+    if not base:
+        return CACHE_CAPABILITY_NONE
+    if "anthropic" in base:
+        return CACHE_CAPABILITY_ANTHROPIC
+    if any(marker in base for marker in _OPENAI_COMPATIBLE_HOST_MARKERS):
+        return CACHE_CAPABILITY_OPENAI
+    return CACHE_CAPABILITY_NONE
+
+
 def _iso_now() -> str:
     return datetime.now(tz=timezone.utc).isoformat()
 
@@ -64,6 +120,12 @@ class OpenAILLM(LLMInterface):
         self.random_seed = getattr(model_cfg, "random_seed", None)
         self.reasoning_effort = getattr(model_cfg, "reasoning_effort", None)
 
+        # ── Provider prompt caching (design §C2, R5.4/R5.5) ───────────────────
+        # Behaviour flag threaded from ``prompt.cache_static_prefix`` (default
+        # on). ``cache_capability`` is feature-detected from the endpoint.
+        self.cache_static_prefix = bool(getattr(model_cfg, "cache_static_prefix", True))
+        self.cache_capability = detect_cache_capability(self.api_base)
+
         # ── Token accounting (for cost budgeting / audit) ─────────────────────
         # Updated from each API response's `usage` field when available.
         self.total_prompt_tokens = 0
@@ -103,8 +165,66 @@ class OpenAILLM(LLMInterface):
             logger.info(f"Initialized OpenAI LLM with model: {self.model}")
             logger._initialized_models.add(self.model)
 
+    def _apply_prompt_caching(
+        self,
+        messages: List[Dict[str, Any]],
+        cache_prefix: Optional[str],
+        enabled: bool,
+    ) -> List[Dict[str, Any]]:
+        """Structure the request so the static prefix is cacheable (R5.4/R5.5).
+
+        ``cache_prefix`` is the run-stable leading portion of the final user
+        message (by contract the message content equals ``cache_prefix +
+        delta``). Behaviour by detected capability:
+
+          * ``none``/disabled/no prefix → return ``messages`` unchanged. The
+            content is already the plain combined prompt, so the request is
+            byte-for-byte identical to sending the combined string (R5.5).
+          * ``openai`` → return ``messages`` unchanged. Caching is automatic on
+            the leading prefix, which already leads the content; the payload is
+            therefore also byte-identical to the plain path.
+          * ``anthropic`` → split the last user message whose content starts
+            with ``cache_prefix`` into two content blocks, marking the prefix
+            block with an explicit ``cache_control`` marker (R5.4).
+        """
+        if not enabled or not cache_prefix:
+            return messages
+        if self.cache_capability != CACHE_CAPABILITY_ANTHROPIC:
+            # OpenAI-compatible (automatic caching) or unknown/unsupported: the
+            # plain combined prompt already leads with the prefix — no change.
+            return messages
+
+        new_messages = list(messages)
+        for i in range(len(new_messages) - 1, -1, -1):
+            msg = new_messages[i]
+            content = msg.get("content")
+            if (
+                msg.get("role") == "user"
+                and isinstance(content, str)
+                and content.startswith(cache_prefix)
+            ):
+                delta = content[len(cache_prefix):]
+                blocks: List[Dict[str, Any]] = [
+                    {
+                        "type": "text",
+                        "text": cache_prefix,
+                        "cache_control": {"type": "ephemeral"},
+                    }
+                ]
+                if delta:
+                    blocks.append({"type": "text", "text": delta})
+                new_messages[i] = {**msg, "content": blocks}
+                break
+        return new_messages
+
     async def generate(self, prompt: str, **kwargs) -> str:
-        """Generate text from a prompt"""
+        """Generate text from a prompt.
+
+        Optional keyword ``cache_prefix`` may be supplied to mark the run-stable
+        leading portion of ``prompt`` as cacheable (see
+        :meth:`_apply_prompt_caching`). It is forwarded to
+        :meth:`generate_with_context`.
+        """
         return await self.generate_with_context(
             system_message=self.system_message,
             messages=[{"role": "user", "content": prompt}],
@@ -112,9 +232,32 @@ class OpenAILLM(LLMInterface):
         )
 
     async def generate_with_context(
-        self, system_message: str, messages: List[Dict[str, str]], **kwargs
+        self,
+        system_message: str,
+        messages: List[Dict[str, str]],
+        *,
+        cache_prefix: Optional[str] = None,
+        cache_static_prefix: Optional[bool] = None,
+        **kwargs,
     ) -> str:
-        """Generate text using a system message and conversational context"""
+        """Generate text using a system message and conversational context.
+
+        Args:
+            system_message: System prompt (omitted when empty).
+            messages: Conversation messages.
+            cache_prefix: Optional run-stable leading portion of the final user
+                message to mark as cacheable. ``None`` sends a plain prompt.
+            cache_static_prefix: Optional per-call override of the model's
+                ``cache_static_prefix`` behaviour flag. ``None`` uses the model
+                default.
+        """
+        # Resolve the effective caching behaviour and (optionally) restructure
+        # the messages so the static prefix is cacheable (R5.4/R5.5).
+        caching_enabled = (
+            self.cache_static_prefix if cache_static_prefix is None else cache_static_prefix
+        )
+        messages = self._apply_prompt_caching(messages, cache_prefix, caching_enabled)
+
         # Prepare messages with system message.
         # Only include the system role when content is non-empty: some
         # providers (e.g. Groq) reject a system message with null content.

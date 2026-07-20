@@ -405,6 +405,22 @@ def run_target_pipeline(args: argparse.Namespace) -> int:
         print(f"[LoopBench] Min effect   : {opt_cfg['min_effect']:.3f} "
               "(min relative median speedup to accept)")
 
+        # ── Profiler hotspot budget (design §C2) ───────────────────────────────
+        # `prompt.max_hotspots` is the single source of truth for how many
+        # baseline hotspots surface in the prompt. Thread it into the sandbox
+        # cfg (the runner's `_max_hotspots_from_cfg` reads `max_hotspots`), so
+        # the prompt-side config governs the sandbox-side truncation.
+        from openevolve.profiler import DEFAULT_MAX_HOTSPOTS
+        yaml_prompt = raw.get("prompt") if isinstance(raw.get("prompt"), dict) else {}
+        max_hotspots = yaml_prompt.get("max_hotspots", DEFAULT_MAX_HOTSPOTS)
+        try:
+            max_hotspots = int(max_hotspots)
+        except (TypeError, ValueError):
+            max_hotspots = DEFAULT_MAX_HOTSPOTS
+        opt_cfg["sandbox_cfg"]["max_hotspots"] = (
+            max_hotspots if max_hotspots >= 0 else DEFAULT_MAX_HOTSPOTS
+        )
+
         # ── Final winner revalidation (design §C1, Requirement 3) ──────────────
         # ON by default; re-runs the winner M times in the sandbox after the loop
         # (no LLM calls) and keeps the run "successful" only if the gain holds.

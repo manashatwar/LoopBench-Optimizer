@@ -133,6 +133,120 @@ def _repeats_from_cfg(sandbox_cfg: Optional[dict]) -> int:
         return 1
     return repeats if repeats >= 1 else 1
 
+
+def _profile_enabled(sandbox_cfg: Optional[dict]) -> bool:
+    """Whether the optional baseline profiling path should run (design §C2)."""
+    return bool((sandbox_cfg or {}).get("profile"))
+
+
+def _max_hotspots_from_cfg(sandbox_cfg: Optional[dict]) -> int:
+    """Resolve how many hotspots to keep (default 5, design §Data Models)."""
+    from openevolve.profiler import DEFAULT_MAX_HOTSPOTS
+
+    raw = (sandbox_cfg or {}).get("max_hotspots", DEFAULT_MAX_HOTSPOTS)
+    try:
+        value = int(raw)
+    except (TypeError, ValueError):
+        return DEFAULT_MAX_HOTSPOTS
+    return value if value >= 0 else DEFAULT_MAX_HOTSPOTS
+
+
+def _run_profile_docker(
+    docker_cmd: list[str],
+    timeout: float,
+) -> Optional["subprocess.CompletedProcess"]:
+    """Run one profiling container, mirroring _execute_container's plumbing.
+
+    Returns the completed process, or ``None`` if Docker is unavailable or the
+    run timed out. The profiling path is best-effort, so callers treat a
+    ``None`` result as "no hotspots" rather than an error.
+    """
+    container_name = f"loopbench-profile-{uuid.uuid4().hex[:12]}"
+    docker_cmd = [*docker_cmd[:2], "--name", container_name, *docker_cmd[2:]]
+    try:
+        return subprocess.run(
+            docker_cmd,
+            capture_output=True,
+            text=True,
+            timeout=timeout,
+        )
+    except subprocess.TimeoutExpired:
+        _stop_container(container_name)
+        return None
+    except FileNotFoundError:
+        return None
+    finally:
+        _cleanup_container(container_name)
+
+
+def _collect_hotspots(
+    mount_spec: str,
+    container_program: str,
+    container_test: str,
+    sandbox_cfg: Optional[dict],
+    image: str,
+    timeout: float,
+) -> List[dict]:
+    """Best-effort baseline profiling pass (design §C2, R4).
+
+    Runs the workload once under a profiler in the container and parses the
+    top hotspots. Uses ``sandbox.profile_command`` when set (non-Python
+    override, R4.6); otherwise profiles with Python's cProfile. Returns an
+    empty list on any failure so the loop can continue (R4.4).
+
+    Args:
+        mount_spec: The ``-v host:/workspace[:ro]`` value to reuse the scoring
+            run's workspace mount.
+        container_program: Container-side path to the evolved program.
+        container_test: Container-side path to the test/workload file.
+        sandbox_cfg: The sandbox config section.
+        image: The resolved sandbox image.
+        timeout: Per-run timeout (seconds).
+    """
+    from openevolve import profiler
+
+    try:
+        max_hotspots = _max_hotspots_from_cfg(sandbox_cfg)
+        profile_command = (sandbox_cfg or {}).get("profile_command")
+        use_override = bool(profile_command and str(profile_command).strip())
+
+        with tempfile.TemporaryDirectory(prefix="loopbench_profile_") as results_tmp:
+            results_path = Path(results_tmp) / "results"
+            results_path.mkdir()
+
+            if use_override:
+                profile_cmd = str(profile_command).strip()
+            else:
+                profile_cmd = profiler.build_cprofile_command(container_test)
+
+            docker_cmd = [
+                "docker", "run",
+                "--rm",
+                "--network=none",
+                "-v", mount_spec,
+                "-v", f"{results_path}:/results",
+                "-e", f"LOOPBENCH_PROGRAM_PATH={container_program}",
+                "-e", f"LOOPBENCH_TEST_CMD={profile_cmd}",
+                "-e", "LOOPBENCH_REPEATS=1",
+                image,
+            ]
+
+            print(f"[sandbox] Profiling baseline workload: {container_program}")
+            proc = _run_profile_docker(docker_cmd, timeout)
+            if proc is None:
+                return []
+
+            if use_override:
+                return profiler.parse_command_output(proc.stdout, max_hotspots)
+
+            dump_file = results_path / "profile.out"
+            if dump_file.exists():
+                return profiler.parse_profile_dump(str(dump_file), max_hotspots)
+            return []
+    except Exception as exc:  # noqa: BLE001 — profiling must never break the run
+        print(f"[sandbox] WARNING: profiling failed ({exc}); continuing without hotspots")
+        return []
+
 # Docker image name — built from sandbox/Dockerfile.sandbox
 SANDBOX_IMAGE = "loopbench-sandbox"
 
@@ -503,7 +617,17 @@ def run_in_sandbox(
 
             print(f"[sandbox] Running container (worktree) for: {prog_path.name}")
             score_file = results_path / "score.json"
-            return _execute_container(docker_cmd, score_file, timeout)
+            result = _execute_container(docker_cmd, score_file, timeout)
+            if _profile_enabled(sandbox_cfg):
+                result["hotspots"] = _collect_hotspots(
+                    f"{wt_path}:/workspace:ro",
+                    container_program,
+                    container_test,
+                    sandbox_cfg,
+                    image,
+                    timeout,
+                )
+            return result
 
     # ── Original temp-copy approach (no worktree) ────────────────────────────
     with tempfile.TemporaryDirectory(prefix="loopbench_workspace_") as workspace:
@@ -540,7 +664,17 @@ def run_in_sandbox(
 
         print(f"[sandbox] Running container for: {prog_path.name}")
         score_file = results_path / "score.json"
-        return _execute_container(docker_cmd, score_file, timeout)
+        result = _execute_container(docker_cmd, score_file, timeout)
+        if _profile_enabled(sandbox_cfg):
+            result["hotspots"] = _collect_hotspots(
+                f"{workspace}:/workspace:ro",
+                container_program,
+                container_test,
+                sandbox_cfg,
+                image,
+                timeout,
+            )
+        return result
 
 
 def _error_result(

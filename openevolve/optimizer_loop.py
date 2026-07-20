@@ -270,6 +270,11 @@ def _import_optimizer_prompt():
     return create_optimizer_prompt
 
 
+def _import_build_prompt_parts():
+    from openevolve.repo_mapper.optimizer_prompt import build_prompt_parts
+    return build_prompt_parts
+
+
 def _import_sandbox():
     from sandbox.runner import run_in_sandbox, verify_output_streams
     return run_in_sandbox, verify_output_streams
@@ -383,6 +388,12 @@ class OptimizerLoop:
         # Defaults to Python so existing behavior is unchanged.
         self.language: str = config.get("language") or "Python"
 
+        # ── Baseline profiler hotspots (design §C2, Requirements R4/R5) ───────
+        # Computed ONCE from the baseline sandbox result and reused across every
+        # generation's prompt (cached static prefix). Empty list when profiling
+        # is off, in which case prompts are byte-for-byte identical to today.
+        self.hotspots: List[Dict[str, Any]] = []
+
         # ── Internal state ────────────────────────────────────────────────────
         self._run_id: Optional[str] = None
         self._candidate_history: List[Dict[str, Any]] = []
@@ -427,6 +438,11 @@ class OptimizerLoop:
 
         # Carry the C1 speed distribution so best-selection can apply the gate.
         self._merge_speed_distribution(metrics, result)
+
+        # Capture baseline profiler hotspots ONCE (design §C2, R4). Present only
+        # when sandbox.profile is enabled; otherwise the key is absent and
+        # self.hotspots stays [] so prompts are unchanged (R4.5).
+        self.hotspots = result.get("hotspots") or []
 
         score = self._score_from_metrics(metrics, result)
         if failed:
@@ -543,14 +559,21 @@ class OptimizerLoop:
             failure_history = self.db.get_recent_failures(
                 window=5, run_id=self._run_id
             )
+            # ``cache_prefix`` is the run-stable static prefix; passing it lets
+            # the LLM layer structure the request so the prefix is cacheable
+            # (design §C2). ``None`` on the fallback path → plain prompt.
+            cache_prefix: Optional[str] = None
             if context_map is not None:
-                create_optimizer_prompt = _import_optimizer_prompt()
-                prompt = create_optimizer_prompt(
+                build_prompt_parts = _import_build_prompt_parts()
+                static_prefix, dynamic_delta = build_prompt_parts(
                     context_map=context_map,
                     baseline_metrics=baseline_metrics,
                     failure_history=failure_history,
                     language=self.language,
+                    hotspots=self.hotspots,
                 )
+                prompt = static_prefix + dynamic_delta
+                cache_prefix = static_prefix
             else:
                 # Minimal fallback prompt when mapper unavailable
                 metrics_str = ", ".join(f"{k}={v}" for k, v in baseline_metrics.items()) or "N/A"
@@ -563,7 +586,9 @@ class OptimizerLoop:
                     "Generate a git patch in unified diff format to improve performance."
                 )
 
-            patch = asyncio.run(self.llm_ensemble.generate_patch(prompt))
+            patch = asyncio.run(
+                self.llm_ensemble.generate_patch(prompt, cache_prefix=cache_prefix)
+            )
             logger.debug(
                 "Phase 2 complete: patch generated gen=%d len=%s",
                 generation, len(patch) if patch else 0,
@@ -756,6 +781,19 @@ class OptimizerLoop:
     # Full-file rewrite generation (robust, diff computed via difflib)
     # -------------------------------------------------------------------------
 
+    def _hotspot_block(self) -> str:
+        """Return the baseline hotspot summary for a rewrite prompt's static
+        portion, or ``""`` when profiling produced no hotspots.
+
+        When non-empty the block ends with a blank-line separator so it can be
+        interpolated directly. When empty, the enclosing prompt is byte-for-byte
+        identical to the pre-Task-6 output (design §C2, R4.5).
+        """
+        from openevolve.profiler import format_hotspots
+
+        summary = format_hotspots(self.hotspots)
+        return f"{summary}\n\n" if summary else ""
+
     def _build_full_rewrite_prompt(
         self, original: str, baseline_metrics: Dict[str, Any], failures: list
     ) -> str:
@@ -763,9 +801,13 @@ class OptimizerLoop:
         failures_str = "\n".join(f"- {m}" for m in failures) or "None"
         lang = self.language
         fence = lang.lower()
+        # Baseline hotspots are static (computed once) — grounding rides at the
+        # TOP edge, after the intro. Empty => byte-identical to pre-Task-6 output.
+        hotspot_block = self._hotspot_block()
         return (
             f"You are an expert {lang} programmer optimizing a {lang} file for "
             "performance while keeping all tests passing.\n\n"
+            f"{hotspot_block}"
             f"Current performance metrics: {metrics_str}\n"
             f"Recent failed attempts:\n{failures_str}\n\n"
             "Rules:\n"
@@ -793,11 +835,15 @@ class OptimizerLoop:
         failures_str = "\n".join(f"- {m}" for m in failures) or "None"
         lang = self.language
         fence = lang.lower()
+        # Baseline hotspots are static (computed once) — grounding rides at the
+        # TOP edge, after the intro. Empty => byte-identical to pre-Task-6 output.
+        hotspot_block = self._hotspot_block()
         return (
             f"You are an expert {lang} programmer optimizing a {lang} file for "
             "performance while keeping all tests passing. Edit the minimal "
             "region(s) needed — but that region can be an entire function body "
             "if a faster algorithm requires it.\n\n"
+            f"{hotspot_block}"
             f"Current performance metrics: {metrics_str}\n"
             f"Recent failed attempts:\n{failures_str}\n\n"
             "Return one or more SEARCH/REPLACE blocks in EXACTLY this format:\n\n"

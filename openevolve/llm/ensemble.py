@@ -34,6 +34,14 @@ class LLMEnsemble:
             for model_cfg in models_cfg
         ]
 
+        # Provider prompt-caching behaviour flag (design §C2). Mirrors the
+        # per-model ``cache_static_prefix`` so callers can inspect whether the
+        # ensemble will structure the static prefix as cacheable. Threaded from
+        # ``prompt.cache_static_prefix`` via the model configs.
+        self.cache_static_prefix = bool(
+            getattr(models_cfg[0], "cache_static_prefix", True) if models_cfg else True
+        )
+
         # Extract and normalize model weights
         self.weights = [model.weight for model in models_cfg]
         total = sum(self.weights)

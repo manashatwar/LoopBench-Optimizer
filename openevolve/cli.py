@@ -392,6 +392,12 @@ def _build_llm_ensemble(raw: dict):
     from openevolve.config import LLMModelConfig
     from openevolve.llm.ensemble import LLMEnsemble
 
+    # Provider prompt caching (design §C2, R5.4/R5.5): threaded from the
+    # `prompt.cache_static_prefix` flag (default on) down to every model so the
+    # LLM layer knows whether to structure the static prefix as cacheable.
+    prompt_cfg = raw.get("prompt") or {}
+    cache_static_prefix = bool(prompt_cfg.get("cache_static_prefix", True))
+
     # Shared defaults applied to every model unless overridden per-model
     shared = {
         "api_base": llm_cfg.get("api_base"),
@@ -426,6 +432,7 @@ def _build_llm_ensemble(raw: dict):
                 retries=merged.get("retries"),
                 retry_delay=merged.get("retry_delay"),
                 reasoning_effort=merged.get("reasoning_effort"),
+                cache_static_prefix=cache_static_prefix,
             )
         )
 
