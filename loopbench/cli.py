@@ -232,6 +232,8 @@ def _config_to_hero_args(args: argparse.Namespace, lb: dict, config_path: str) -
         max_tokens=constraints.get("max_tokens_total"),
         max_cost=constraints.get("max_token_cost_usd"),
         max_runtime=constraints.get("max_runtime_seconds"),
+        revalidate=getattr(args, "revalidate", True),
+        revalidate_runs=getattr(args, "revalidate_runs", 7),
         output=getattr(args, "output", None),
         config=config_path,
         log_level=getattr(args, "log_level", "INFO"),
@@ -438,6 +440,15 @@ def build_parser() -> argparse.ArgumentParser:
                             "(requires pricing in loopbench.yaml constraints)")
     run_p.add_argument("--max-runtime", dest="max_runtime", type=float,
                        help="Stop the loop after this many seconds of wall-clock time")
+    run_p.add_argument("--no-revalidate", dest="revalidate", action="store_false",
+                       help="Disable final revalidation of the winner. By default the "
+                            "winning candidate is re-run in the sandbox after the loop "
+                            "(no LLM calls) and the run stays 'successful' only if the "
+                            "speed gain still holds.")
+    run_p.set_defaults(revalidate=True)
+    run_p.add_argument("--revalidate-runs", dest="revalidate_runs", type=int, default=7,
+                       help="Number of sandbox re-measurement runs for final winner "
+                            "revalidation (default: 7). Ignored with --no-revalidate.")
     run_p.add_argument("--strategy", dest="strategy",
                        choices=["auto", "greedy", "beam", "random_restart"],
                        help="Search strategy (default: auto — greedy that escalates to "

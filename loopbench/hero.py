@@ -383,6 +383,51 @@ def run_target_pipeline(args: argparse.Namespace) -> int:
         if not raw.get("llm"):
             raw["llm"] = _default_llm_cfg()
 
+        # ── Statistical speed gate config (design §C1) ─────────────────────────
+        # Thread sandbox.repeats (K-run measurement, default 1) and
+        # metric.min_effect (minimum relative median improvement, default 0.03)
+        # from loopbench.yaml into the sandbox cfg / OptimizerLoop.
+        yaml_sandbox = raw.get("sandbox") if isinstance(raw.get("sandbox"), dict) else {}
+        yaml_metric = raw.get("metric") if isinstance(raw.get("metric"), dict) else {}
+        repeats = yaml_sandbox.get("repeats", 1)
+        try:
+            repeats = int(repeats)
+        except (TypeError, ValueError):
+            repeats = 1
+        opt_cfg["sandbox_cfg"]["repeats"] = repeats if repeats >= 1 else 1
+        min_effect = yaml_metric.get("min_effect", 0.03)
+        try:
+            opt_cfg["min_effect"] = float(min_effect)
+        except (TypeError, ValueError):
+            opt_cfg["min_effect"] = 0.03
+        if repeats > 1:
+            print(f"[LoopBench] Speed repeats: {opt_cfg['sandbox_cfg']['repeats']} runs/candidate")
+        print(f"[LoopBench] Min effect   : {opt_cfg['min_effect']:.3f} "
+              "(min relative median speedup to accept)")
+
+        # ── Final winner revalidation (design §C1, Requirement 3) ──────────────
+        # ON by default; re-runs the winner M times in the sandbox after the loop
+        # (no LLM calls) and keeps the run "successful" only if the gain holds.
+        # CLI --no-revalidate / --revalidate-runs win; loopbench.yaml `sandbox`
+        # may set defaults (revalidate / revalidate_runs).
+        revalidate = getattr(args, "revalidate", True)
+        if yaml_sandbox.get("revalidate") is not None:
+            revalidate = bool(yaml_sandbox.get("revalidate"))
+        opt_cfg["revalidate"] = bool(revalidate)
+        reval_runs = getattr(args, "revalidate_runs", 7)
+        if yaml_sandbox.get("revalidate_runs") is not None:
+            reval_runs = yaml_sandbox.get("revalidate_runs")
+        try:
+            reval_runs = int(reval_runs)
+        except (TypeError, ValueError):
+            reval_runs = 7
+        opt_cfg["revalidate_runs"] = reval_runs if reval_runs >= 1 else 7
+        if opt_cfg["revalidate"]:
+            print(f"[LoopBench] Revalidate   : winner re-run {opt_cfg['revalidate_runs']}× "
+                  "after loop (no LLM)")
+        else:
+            print("[LoopBench] Revalidate   : disabled (--no-revalidate)")
+
         # ── Constraints (CLI flags override loopbench.yaml constraints) ────────
         constraints = raw.get("constraints") if isinstance(raw.get("constraints"), dict) else {}
         opt_cfg["metric_name"] = metric

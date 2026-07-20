@@ -28,12 +28,110 @@ Security:
 
 import hashlib
 import json
+import statistics
 import subprocess
 import tempfile
 import time
 import uuid
 from pathlib import Path
 from typing import Any, List, Optional
+
+# Distribution field names written by the sandbox entrypoint (design §C1).
+_DISTRIBUTION_FIELDS = (
+    "speed_ms_median",
+    "speed_ms_mean",
+    "speed_ms_stddev",
+    "speed_ms_samples",
+    "runs",
+)
+
+
+def aggregate_speed_samples(samples: Any) -> dict[str, Any]:
+    """Aggregate kept per-run speed markers into a distribution.
+
+    This is the host-side reference implementation of the aggregation the
+    sandbox entrypoint performs inside the container. It mirrors that logic so
+    the math can be unit-tested without Docker.
+
+    Args:
+        samples: Iterable of per-run speed values (ms). These are the *kept*
+                 runs — the warm-up run (when K >= 3) has already been dropped.
+
+    Returns:
+        A dict with ``speed_ms`` (the median, for back-compat), plus
+        ``speed_ms_median``, ``speed_ms_mean``, ``speed_ms_stddev``,
+        ``speed_ms_samples``, and ``runs``. When no samples are supplied the
+        speed fields are ``None`` and ``runs`` is 0.
+    """
+    values: List[float] = []
+    for sample in samples or []:
+        if sample is None:
+            continue
+        try:
+            values.append(float(sample))
+        except (TypeError, ValueError):
+            continue
+
+    if not values:
+        return {
+            "speed_ms": None,
+            "speed_ms_median": None,
+            "speed_ms_mean": None,
+            "speed_ms_stddev": None,
+            "speed_ms_samples": [],
+            "runs": 0,
+        }
+
+    median = statistics.median(values)
+    mean = statistics.fmean(values)
+    # Sample standard deviation (ddof=1); 0 for a single kept run so that
+    # repeats=1 reproduces the current single-shot behavior.
+    stddev = statistics.stdev(values) if len(values) > 1 else 0.0
+
+    return {
+        "speed_ms": round(median, 4),
+        "speed_ms_median": round(median, 4),
+        "speed_ms_mean": round(mean, 4),
+        "speed_ms_stddev": round(stddev, 4),
+        "speed_ms_samples": [round(v, 4) for v in values],
+        "runs": len(values),
+    }
+
+
+def _normalize_distribution_fields(score: dict[str, Any]) -> None:
+    """Ensure a loaded score carries the C1 speed-distribution fields.
+
+    Newer containers write these directly; for older score.json payloads (or a
+    generic scorer that only reports ``speed_ms_samples``) the fields are
+    derived here so callers always see a consistent distribution.
+    """
+    if not isinstance(score, dict):
+        return
+
+    if all(field in score for field in _DISTRIBUTION_FIELDS):
+        if score.get("speed_ms_samples") is None:
+            score["speed_ms_samples"] = []
+        return
+
+    samples = score.get("speed_ms_samples")
+    if samples is None:
+        single = score.get("speed_ms")
+        samples = [single] if single is not None else []
+
+    aggregate = aggregate_speed_samples(samples)
+    for field, value in aggregate.items():
+        # Preserve any value the container already provided (e.g. speed_ms).
+        score.setdefault(field, value)
+
+
+def _repeats_from_cfg(sandbox_cfg: Optional[dict]) -> int:
+    """Resolve the configured number of speed-measurement repeats (default 1)."""
+    raw = (sandbox_cfg or {}).get("repeats", 1)
+    try:
+        repeats = int(raw)
+    except (TypeError, ValueError):
+        return 1
+    return repeats if repeats >= 1 else 1
 
 # Docker image name — built from sandbox/Dockerfile.sandbox
 SANDBOX_IMAGE = "loopbench-sandbox"
@@ -167,6 +265,9 @@ def _execute_container(
             exit_code=proc.returncode,
             execution_time=execution_time,
         )
+
+    # Parse / backfill the C1 speed-distribution fields (design §C1).
+    _normalize_distribution_fields(score)
 
     score.update(
         {
@@ -332,6 +433,7 @@ def run_in_sandbox(
     timeout = float(sandbox_cfg.get("timeout", SANDBOX_TIMEOUT_S))
     if timeout <= 0:
         raise ValueError("sandbox timeout must be greater than zero")
+    repeats = _repeats_from_cfg(sandbox_cfg)
     prog_path = Path(program_path).resolve()
     test_path = Path(test_file).resolve()
 
@@ -395,6 +497,7 @@ def run_in_sandbox(
                 "-v", f"{results_path}:/results",
                 "-e", f"LOOPBENCH_PROGRAM_PATH={container_program}",
                 "-e", f"LOOPBENCH_TEST_CMD={test_cmd}",
+                "-e", f"LOOPBENCH_REPEATS={repeats}",
                 image,
             ]
 
@@ -431,6 +534,7 @@ def run_in_sandbox(
             "-v", f"{results_path}:/results",       # results: read-write
             "-e", f"LOOPBENCH_PROGRAM_PATH={container_program}",
             "-e", f"LOOPBENCH_TEST_CMD={test_cmd}",
+            "-e", f"LOOPBENCH_REPEATS={repeats}",
             image,
         ]
 

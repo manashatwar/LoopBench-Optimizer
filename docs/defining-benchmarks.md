@@ -414,6 +414,118 @@ Swap `--max-tokens 1` for a realistic value (e.g. `--max-tokens 50000`) or use
 
 ---
 
+## Measuring speed reliably (statistical speed gate)
+
+A single timing is noisy. The same code can measure 5% faster or slower run to
+run because of CPU scheduling, cache state, and background load. Left unchecked,
+that noise lets LoopBench "accept" a candidate that isn't actually faster — it
+just got a lucky sample. The statistical speed gate measures each candidate
+several times and only accepts a win that clears the noise.
+
+It is **off by default** in the sense that the defaults reproduce the original
+single-shot behavior: `repeats=1` measures once and accepts any median
+improvement, exactly as before. Turn it on by asking for more repeats.
+
+### Measuring each candidate more than once
+
+Set `sandbox.repeats` in `loopbench.yaml` to the number of times the speed
+workload is measured per candidate:
+
+```yaml
+sandbox:
+  repeats: 5        # measure each candidate 5 times (default: 1)
+```
+
+- **`repeats: 1`** (default) — single-shot measurement. Identical to the
+  original behavior; nothing else in this section changes the outcome.
+- **`repeats >= 3`** — the first run is discarded as a warm-up (it pays cold-cache
+  and JIT/import costs that don't reflect steady state), and the remaining runs
+  are kept.
+- **`repeats: 5`** is the recommended value for noise-robust measurement: after
+  dropping the warm-up you keep four samples, enough for a stable median and a
+  meaningful spread without paying for many extra runs.
+
+Repeated measurement only re-runs the sandboxed workload — it costs **no extra
+LLM tokens**.
+
+### The acceptance rule (median-over-K + noise gate)
+
+With repeats configured, a candidate becomes the new best only if **both**
+conditions hold:
+
+- **(a) Real effect:** the relative median improvement clears `metric.min_effect`
+  —
+  `(median_base − median_cand) / median_base >= min_effect`.
+- **(b) Above the noise:** the candidate's median, padded by the larger of the
+  two spreads, still beats the baseline median —
+  `median_cand + max(stddev_cand, stddev_base) < median_base`.
+
+```yaml
+metric:
+  min_effect: 0.03   # require a 3% relative median speedup (default: 0.03)
+```
+
+In plain language: condition (a) rejects wins too small to matter, and condition
+(b) rejects wins that are within measurement noise. If the improvement is smaller
+than how much the numbers jitter between runs, we don't trust it, so we don't
+accept it. With `repeats=1` both spreads are `0`, so condition (b) collapses to
+"is the candidate's median lower?" and the gate behaves like the original
+single-shot comparison.
+
+### New `score.json` fields
+
+Each scored candidate now records the full speed distribution, not just one
+number:
+
+| Field | Meaning |
+|-------|---------|
+| `speed_ms` | The **median** of the kept runs (was a single timing before). Kept for backward compatibility. |
+| `speed_ms_median` | Median of the kept per-run timings (ms). |
+| `speed_ms_mean` | Mean of the kept timings (ms). |
+| `speed_ms_stddev` | Sample standard deviation of the kept timings (ms); `0.0` when only one run is kept. |
+| `speed_ms_samples` | The kept per-run timings (warm-up already dropped). |
+| `runs` | How many runs were kept. |
+
+Because `speed_ms` is now the median, older consumers that read `speed_ms`
+continue to work unchanged.
+
+### Revalidating the winner
+
+Even with repeated measurement, the candidate that wins the loop was chosen partly
+because it measured well *during* the loop. To guard against a winner that got a
+favorable sample, LoopBench re-runs the winning candidate after the loop and
+checks that the speed gain still holds. This is **on by default**.
+
+- Revalidation re-applies the winner's patch and re-measures it `M` times in the
+  sandbox (default `M = 7`). It builds no prompts and makes **no LLM calls**, so
+  it adds no token cost.
+- The run is marked **`successful`** only if the re-measured distribution still
+  clears the same speed gate (conditions (a) and (b) above) against the baseline.
+  If the gain no longer holds, the status is downgraded to
+  `revalidation_failed` — the code and patch are still reported, but the claimed
+  speedup didn't survive re-measurement.
+
+Control it from the CLI:
+
+```bash
+# Revalidation is ON by default — nothing to do to enable it.
+loopbench run --target . --target-file src/hot.py --metric latency
+
+# Re-measure the winner 15× instead of the default 7
+loopbench run --target . --target-file src/hot.py --metric latency \
+  --revalidate-runs 15
+
+# Skip revalidation entirely
+loopbench run --target . --target-file src/hot.py --metric latency \
+  --no-revalidate
+```
+
+`--no-revalidate` turns the final check off; `--revalidate-runs N` sets how many
+times the winner is re-measured (default `7`, ignored when `--no-revalidate` is
+set).
+
+---
+
 ## Inspecting the benchmark result
 
 Every run writes artifacts to `loopbench_output/` (hero mode) or your

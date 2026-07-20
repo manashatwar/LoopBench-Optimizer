@@ -27,6 +27,115 @@ from typing import Any, Dict, List, Optional, Tuple
 logger = logging.getLogger(__name__)
 
 
+# ---------------------------------------------------------------------------
+# Confidence-based (dispersion-aware) speed gate — design §C1 / Requirement 2.
+#
+# These are module-level pure helpers so the gate is directly unit- and
+# property-testable without spinning up the full loop.
+# ---------------------------------------------------------------------------
+
+# Default minimum relative median improvement required to accept a candidate
+# (metric.min_effect, i.e. 3%).
+DEFAULT_MIN_EFFECT = 0.03
+
+# Speed-distribution fields the gate reads off a candidate's metrics (written by
+# the sandbox per design §C1). ``speed_ms`` is the back-compat median alias.
+_SPEED_DIST_KEYS = ("speed_ms", "speed_ms_median", "speed_ms_stddev")
+
+
+def _dist_median(dist: Optional[Dict[str, Any]]) -> Optional[float]:
+    """Extract the median speed (ms) from a distribution/metrics mapping.
+
+    Prefers ``speed_ms_median`` and falls back to the back-compat ``speed_ms``.
+    Returns ``None`` when no usable numeric median is present.
+    """
+    if not isinstance(dist, dict):
+        return None
+    for key in ("speed_ms_median", "speed_ms"):
+        val = dist.get(key)
+        if isinstance(val, (int, float)) and not isinstance(val, bool):
+            return float(val)
+    return None
+
+
+def _dist_stddev(dist: Optional[Dict[str, Any]]) -> float:
+    """Extract the sample stddev (ms) from a distribution/metrics mapping.
+
+    Missing or non-numeric stddev is treated as 0.0 (the ``repeats=1`` case),
+    which makes the dispersion guard collapse to a pure median comparison.
+    """
+    if isinstance(dist, dict):
+        val = dist.get("speed_ms_stddev")
+        if isinstance(val, (int, float)) and not isinstance(val, bool):
+            return max(float(val), 0.0)
+    return 0.0
+
+
+def accept_as_new_best(
+    base_dist: Optional[Dict[str, Any]],
+    cand_dist: Optional[Dict[str, Any]],
+    min_effect: float = DEFAULT_MIN_EFFECT,
+) -> bool:
+    """Return whether a candidate clears the C1 dispersion-aware speed gate.
+
+    A candidate is accepted as a new best ONLY IF BOTH hold (design §C1,
+    Requirement 2, correctness properties CP1/CP2):
+
+      (a) relative median improvement >= ``min_effect``:
+          ``(median_base - median_cand) / median_base >= min_effect``
+      (b) ``median_cand + max(stddev_cand, stddev_base) < median_base``
+
+    ``base_dist`` / ``cand_dist`` are mappings exposing ``speed_ms_median``
+    (or the back-compat ``speed_ms``) and ``speed_ms_stddev``. When either
+    median is missing or the baseline median is non-positive the gate returns
+    ``False`` so the caller can fall back to score-based selection (backward
+    compatibility / non-speed metrics).
+
+    With ``repeats=1`` both stddevs are 0, so condition (b) reduces to
+    ``median_cand < median_base`` — implied by (a) for any ``min_effect > 0`` —
+    and the gate collapses to "median improvement >= min_effect".
+    """
+    median_base = _dist_median(base_dist)
+    median_cand = _dist_median(cand_dist)
+    if median_base is None or median_cand is None or median_base <= 0:
+        return False
+
+    stddev_base = _dist_stddev(base_dist)
+    stddev_cand = _dist_stddev(cand_dist)
+
+    # (a) relative median improvement must clear the minimum effect size.
+    rel_improvement = (median_base - median_cand) / median_base
+    if rel_improvement < min_effect:
+        return False
+
+    # (b) the candidate's dispersion band must sit strictly below the baseline.
+    if median_cand + max(stddev_cand, stddev_base) >= median_base:
+        return False
+
+    return True
+
+
+def revalidation_holds(
+    base_dist: Optional[Dict[str, Any]],
+    revalidated_dist: Optional[Dict[str, Any]],
+    min_effect: float = DEFAULT_MIN_EFFECT,
+) -> bool:
+    """Whether a winner's re-measured gain still holds (design §C1, R3, CP3).
+
+    Pure, testable decision for final revalidation: the winner's re-measured
+    distribution must still clear the SAME dispersion-aware speed gate against
+    the baseline distribution that governed acceptance during the loop. This
+    delegates to :func:`accept_as_new_best` so the gate math is single-sourced
+    and revalidation stays consistent with CP1/CP2 — no duplicated arithmetic.
+
+    Returns ``True`` only when the revalidated median improvement over baseline
+    is still >= ``min_effect`` AND ``median_reval + max(stddev_reval,
+    stddev_base) < median_base``. A missing/failed revalidation distribution
+    (e.g. no usable median) yields ``False`` so the caller downgrades the run.
+    """
+    return accept_as_new_best(base_dist, revalidated_dist, min_effect)
+
+
 def _extract_code_block(text: str) -> str:
     """Extract the largest fenced code block from an LLM response.
 
@@ -221,6 +330,27 @@ class OptimizerLoop:
         # ── Sandbox cfg (passed through to run_in_sandbox) ────────────────────
         self.sandbox_cfg: Dict[str, Any] = config.get("sandbox_cfg") or {}
 
+        # ── Statistical speed gate (design §C1, Requirement 2) ────────────────
+        # Minimum relative median improvement (metric.min_effect) a candidate
+        # must clear to be accepted as a new best. Default 0.03 (3%).
+        try:
+            self.min_effect: float = float(config.get("min_effect", DEFAULT_MIN_EFFECT))
+        except (TypeError, ValueError):
+            self.min_effect = DEFAULT_MIN_EFFECT
+
+        # ── Final winner revalidation (design §C1, Requirement 3) ─────────────
+        # After the loop, re-run the winning candidate M times in the sandbox
+        # (no LLM calls) and keep status="successful" only if the gain still
+        # holds under re-measurement. ON by default (R3.6); ``--no-revalidate``
+        # opts out. ``revalidate_runs`` is M (default 7, R3.1).
+        self.revalidate: bool = bool(config.get("revalidate", True))
+        try:
+            self.revalidate_runs: int = int(config.get("revalidate_runs", 7))
+        except (TypeError, ValueError):
+            self.revalidate_runs = 7
+        if self.revalidate_runs < 1:
+            self.revalidate_runs = 7
+
         # ── Cost / token budgeting ────────────────────────────────────────────
         # The loop stops early when either budget is set and reached. Token
         # counts come from the LLM provider's usage field; the USD estimate
@@ -294,6 +424,9 @@ class OptimizerLoop:
             for key in ("combined_score", "correctness", "speed_score"):
                 if result.get(key) is not None:
                     metrics[key] = result[key]
+
+        # Carry the C1 speed distribution so best-selection can apply the gate.
+        self._merge_speed_distribution(metrics, result)
 
         score = self._score_from_metrics(metrics, result)
         if failed:
@@ -544,6 +677,9 @@ class OptimizerLoop:
                         if result.get(key) is not None:
                             metrics[key] = result[key]
 
+                # Carry the C1 speed distribution for the best-selection gate.
+                self._merge_speed_distribution(metrics, result)
+
                 score = self._score_from_metrics(metrics, result)
                 failed = result.get("exit_code", 1) != 0
                 if failed:
@@ -772,6 +908,8 @@ class OptimizerLoop:
         for key in ("combined_score", "correctness", "speed_score", "speed_ms"):
             if result.get(key) is not None:
                 metrics[key] = result[key]
+        # Carry the C1 speed distribution for the best-selection gate.
+        self._merge_speed_distribution(metrics, result)
         score = self._score_from_metrics(metrics, result)
         failed = (not streams_ok) or result.get("exit_code", 1) != 0
         if failed:
@@ -903,6 +1041,148 @@ class OptimizerLoop:
                     return float(val)
         return 0.0
 
+    @staticmethod
+    def _merge_speed_distribution(
+        metrics: Dict[str, Any], result: Optional[Dict[str, Any]]
+    ) -> None:
+        """Copy the C1 speed-distribution fields from a sandbox result onto metrics.
+
+        The dispersion-aware speed gate reads median/stddev off a candidate's
+        stored ``metrics``; mirroring them here (when the sandbox reported them)
+        makes best-selection able to apply the gate regardless of which
+        metric-extraction path ran. Values already present on ``metrics`` win.
+        """
+        if not isinstance(result, dict):
+            return
+        for key in _SPEED_DIST_KEYS:
+            val = result.get(key)
+            if val is not None and metrics.get(key) is None:
+                metrics[key] = val
+
+    def _speed_gate_metric(self) -> bool:
+        """Whether the configured metric is speed-oriented (gate applies).
+
+        The C1 speed gate reasons over the measured speed distribution, so it
+        only governs selection for the default combined_score / speed metrics.
+        Custom metrics fall back to plain score comparison.
+        """
+        name = (self.metric_name or "combined_score").lower()
+        return name in ("combined_score", "speed_score", "speed_ms")
+
+    def _is_new_best(
+        self,
+        best_candidate: Dict[str, Any],
+        candidate: Dict[str, Any],
+        candidate_score: float,
+        best_score: float,
+    ) -> bool:
+        """Decide whether ``candidate`` should replace the current best.
+
+        When a speed distribution is available for both the incumbent best and
+        the candidate (and the metric is speed-oriented), the Phase-1 statistical
+        gate applies: accept only when the correctness gate passes (candidate not
+        failed) AND the dispersion-aware speed gate accepts (design §C1,
+        Requirement 2; correctness property CP1). Otherwise fall back to plain
+        score comparison, preserving current behavior for correctness-only or
+        non-speed metrics.
+        """
+        if candidate.get("failed"):
+            return False
+
+        base_metrics = best_candidate.get("metrics") if isinstance(best_candidate, dict) else None
+        cand_metrics = candidate.get("metrics") if isinstance(candidate, dict) else None
+        gate_applies = (
+            self._speed_gate_metric()
+            and _dist_median(base_metrics) is not None
+            and _dist_median(cand_metrics) is not None
+        )
+        if gate_applies:
+            return accept_as_new_best(base_metrics, cand_metrics, self.min_effect)
+
+        return candidate_score > best_score
+
+    # -------------------------------------------------------------------------
+    # Task 3.1 – Final revalidation of the winner (design §C1, Requirement 3)
+    # -------------------------------------------------------------------------
+
+    def _revalidate_winner(
+        self, best_candidate: Dict[str, Any]
+    ) -> Optional[Dict[str, Any]]:
+        """Re-run the winning candidate M times in the sandbox (NO LLM calls).
+
+        Orchestrates the M-run re-measurement of the winner by reusing the exact
+        same ``run_in_sandbox`` path used for scoring (design §C1, R3.1/R3.2):
+        the winner's patch is re-applied to an isolated worktree and the speed
+        workload is re-run ``self.revalidate_runs`` times, producing a fresh
+        speed distribution. No prompts are built and the LLM ensemble is never
+        touched.
+
+        Returns:
+            The revalidated speed-distribution mapping (``speed_ms_median`` /
+            ``speed_ms_stddev`` / ``speed_ms_samples`` / ``runs``) when the
+            re-measurement ran. When the winner regresses on correctness under
+            re-measurement, a distribution with no usable median is returned so
+            the hold-check fails (gain does not hold). Returns ``None`` when
+            revalidation could not be performed (no winning patch, patch failed
+            to re-apply, or a sandbox error) — the caller then leaves the run
+            status unchanged.
+        """
+        patch = (best_candidate or {}).get("patch_content") or ""
+        if not patch.strip():
+            return None
+
+        run_in_sandbox, verify_output_streams = _import_sandbox()
+        WorkspaceManager = _import_workspace_manager()
+
+        # Same sandbox path as scoring, but with M repeats for re-measurement.
+        reval_cfg: Dict[str, Any] = dict(self.sandbox_cfg)
+        reval_cfg["repeats"] = self.revalidate_runs
+
+        try:
+            wm = WorkspaceManager(repo_root=self.repo_path)
+            with wm as worktree_path:
+                apply_result = wm.apply_patch(worktree_path, patch)
+                if not apply_result.success:
+                    logger.warning(
+                        "Revalidation skipped: winner patch failed to re-apply: %s",
+                        apply_result.error_output,
+                    )
+                    return None
+                result = run_in_sandbox(
+                    program_path=self.target_file,
+                    test_file=self.test_file,
+                    sandbox_cfg=reval_cfg,
+                    repo_root=self.repo_path,
+                    worktree_path=worktree_path,
+                )
+        except (KeyboardInterrupt, SystemExit):
+            raise
+        except Exception as exc:  # pragma: no cover - defensive
+            logger.warning("Revalidation sandbox run failed: %s — status unchanged", exc)
+            return None
+
+        if not verify_output_streams(result.get("stdout"), result.get("stderr")):
+            logger.warning("Revalidation: output stream verification failed — status unchanged")
+            return None
+
+        if result.get("exit_code", 1) != 0:
+            # Correctness regressed under re-measurement → the gain does not hold.
+            logger.warning(
+                "Revalidation: winner FAILED correctness on re-measurement "
+                "(exit_code=%s) — gain does not hold.",
+                result.get("exit_code"),
+            )
+            return {
+                "speed_ms_median": None,
+                "speed_ms_stddev": None,
+                "speed_ms_samples": [],
+                "runs": 0,
+            }
+
+        revalidated_dist: Dict[str, Any] = {}
+        self._merge_speed_distribution(revalidated_dist, result)
+        return revalidated_dist
+
     def _budget_snapshot(self) -> Dict[str, Any]:
         """Current cumulative token usage and estimated cost from the LLM."""
         usage = {"prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0, "api_calls": 0}
@@ -1030,8 +1310,8 @@ class OptimizerLoop:
             except Exception:
                 pass
 
-            # 3b. Update best candidate
-            if candidate_score > best_score:
+            # 3b. Update best candidate — dispersion-aware speed gate (§C1, R2).
+            if self._is_new_best(best_candidate, candidate, candidate_score, best_score):
                 best_candidate = candidate
                 best_score = candidate_score
                 generations_without_improvement = 0
@@ -1062,10 +1342,72 @@ class OptimizerLoop:
                     logger.warning("Strategy.select_baseline failed gen=%d: %s — keeping current best", generation, exc)
                     current_baseline = best_candidate
 
-        # 4. Complete run in db
+        # 4. Final revalidation of the winner (design §C1, Requirement 3, CP3).
+        # Re-run the winning candidate M times in the sandbox (no LLM calls) and
+        # keep "successful" only if the re-measured gain still clears the same
+        # dispersion-aware speed gate against the baseline distribution.
+        baseline_dist = (
+            baseline_candidate.get("metrics") if isinstance(baseline_candidate, dict) else None
+        )
+        winner_has_patch = bool(((best_candidate or {}).get("patch_content") or "").strip())
+        revalidation_performed = False
+        revalidation_held = False
+        revalidated_dist: Optional[Dict[str, Any]] = None
+        should_revalidate = (
+            self.revalidate
+            and winner_has_patch
+            and best_candidate is not baseline_candidate
+            and final_status != "interrupted"
+            and self._speed_gate_metric()
+            and _dist_median(baseline_dist) is not None
+        )
+        if should_revalidate:
+            logger.info(
+                "Final revalidation: re-running the winner %d× in the sandbox (no LLM calls)",
+                self.revalidate_runs,
+            )
+            revalidated_dist = self._revalidate_winner(best_candidate)
+            if revalidated_dist is not None:
+                revalidation_performed = True
+                revalidation_held = revalidation_holds(
+                    baseline_dist, revalidated_dist, self.min_effect
+                )
+                self.db.log_event(
+                    "winner_revalidated",
+                    {
+                        "runs": self.revalidate_runs,
+                        "held": revalidation_held,
+                        "baseline_median": _dist_median(baseline_dist),
+                        "revalidated_median": _dist_median(revalidated_dist),
+                        "revalidated_stddev": _dist_stddev(revalidated_dist),
+                        "min_effect": self.min_effect,
+                    },
+                    candidate_id=(best_candidate or {}).get("id"),
+                )
+
+        # 5. Complete run in db
         improvement = (best_score - baseline_score) / max(abs(baseline_score), 1e-9)
         if improvement > self.success_threshold:
             final_status = "successful"
+
+        # Revalidation soundness (R3.3/R3.4, CP3): a run stays "successful" only
+        # if the winner's gain still holds under re-measurement. When it does
+        # not, downgrade and log the reason clearly.
+        revalidation_downgraded = (
+            revalidation_performed and final_status == "successful" and not revalidation_held
+        )
+        if revalidation_downgraded:
+            logger.warning(
+                "Winner revalidation FAILED: re-measured gain no longer clears the speed "
+                "gate (baseline_median=%s, revalidated_median=%s, revalidated_stddev=%s, "
+                "min_effect=%.3f) — downgrading status from 'successful' to "
+                "'revalidation_failed'.",
+                _dist_median(baseline_dist),
+                _dist_median(revalidated_dist),
+                _dist_stddev(revalidated_dist),
+                self.min_effect,
+            )
+            final_status = "revalidation_failed"
 
         self.db.complete_run(
             run_id=self._run_id,
@@ -1085,6 +1427,17 @@ class OptimizerLoop:
         )
         export = self.db.export_run(run_id=self._run_id)
         report["export"] = export
+
+        # Reflect the final revalidation decision in the report (R3.3/R3.4, CP3).
+        report["revalidation"] = {
+            "enabled": self.revalidate,
+            "performed": revalidation_performed,
+            "held": revalidation_held,
+            "runs": self.revalidate_runs if revalidation_performed else 0,
+            "revalidated_dist": revalidated_dist,
+        }
+        if revalidation_downgraded:
+            report["status"] = "revalidation_failed"
 
         # Attach cost / token usage summary for the report and dashboard.
         snap = self._budget_snapshot()
