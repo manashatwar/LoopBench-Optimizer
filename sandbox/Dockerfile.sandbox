@@ -26,9 +26,10 @@ RUN pip install --no-cache-dir --root-user-action=ignore \
     pytest==8.3.5 \
     pytest-json-report==1.5.0
 
-# Copy the entrypoint script
+# Copy the entrypoint script and the generic (non-Python) scorer it calls
 COPY sandbox/entrypoint.sh /sandbox/entrypoint.sh
-RUN chmod +x /sandbox/entrypoint.sh
+COPY sandbox/score_generic.sh /sandbox/score_generic.sh
+RUN chmod +x /sandbox/entrypoint.sh /sandbox/score_generic.sh
 
 # Workspace is mounted read-only at runtime: -v <code_dir>:/workspace:ro
 # Results are written to: -v <results_dir>:/results

@@ -373,7 +373,13 @@ def run_target_pipeline(args: argparse.Namespace) -> int:
             "metric_patterns": None,
             "rewrite_mode": "auto",
             "full_rewrite_max_lines": 300,
-            "sandbox_cfg": {"test_command": test_cmd, "timeout": 120, "pip_install": pip_pkgs},
+            "sandbox_cfg": {
+                "test_command": test_cmd,
+                "timeout": 120,
+                "pip_install": pip_pkgs,
+                "image": None,
+                "setup": [],
+            },
         }
 
         raw: Dict[str, Any] = {}
@@ -404,6 +410,27 @@ def run_target_pipeline(args: argparse.Namespace) -> int:
             print(f"[LoopBench] Speed repeats: {opt_cfg['sandbox_cfg']['repeats']} runs/candidate")
         print(f"[LoopBench] Min effect   : {opt_cfg['min_effect']:.3f} "
               "(min relative median speedup to accept)")
+
+        # ── Pluggable sandbox image + setup (design §C3, Requirement 6) ────────
+        # `sandbox.image` (default null → default Python sandbox) and
+        # `sandbox.setup` (default [] → no extra build steps) are threaded into
+        # the sandbox cfg. The runner normalizes `setup` (string or list) and
+        # only layers pip on a custom image when packages are present. Defaults
+        # preserve today's behavior byte-for-byte (R6.2/R6.4).
+        image = yaml_sandbox.get("image")
+        opt_cfg["sandbox_cfg"]["image"] = (
+            str(image).strip() if image and str(image).strip() else None
+        )
+        # Pass `setup` through as-is (string or list); the runner normalizes it.
+        opt_cfg["sandbox_cfg"]["setup"] = yaml_sandbox.get("setup", []) or []
+        if opt_cfg["sandbox_cfg"]["image"]:
+            print(f"[LoopBench] Sandbox image: {opt_cfg['sandbox_cfg']['image']} (custom base)")
+        if opt_cfg["sandbox_cfg"]["setup"]:
+            _n_setup = (
+                1 if isinstance(opt_cfg["sandbox_cfg"]["setup"], str)
+                else len(opt_cfg["sandbox_cfg"]["setup"])
+            )
+            print(f"[LoopBench] Sandbox setup: {_n_setup} step(s)")
 
         # ── Profiler hotspot budget (design §C2) ───────────────────────────────
         # `prompt.max_hotspots` is the single source of truth for how many

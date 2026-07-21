@@ -28,6 +28,7 @@ Security:
 
 import hashlib
 import json
+import math
 import statistics
 import subprocess
 import tempfile
@@ -95,6 +96,65 @@ def aggregate_speed_samples(samples: Any) -> dict[str, Any]:
         "speed_ms_stddev": round(stddev, 4),
         "speed_ms_samples": [round(v, 4) for v in values],
         "runs": len(values),
+    }
+
+
+def _generic_score(samples: Any, cmd_exit: int) -> dict[str, Any]:
+    """Pure-Python reference for the generic (non-Python) scorer (design §C3).
+
+    This encodes the EXACT formula the shell/awk scorer (``score_generic.sh``)
+    computes inside the container for non-pytest commands, so the equivalence
+    property (CP5, R7.3) can be unit-tested without Docker and — where ``awk``
+    and ``sh`` exist — asserted byte-for-byte against the real script.
+
+    Correctness comes from the command exit code (0 == pass). Speed is the
+    aggregated distribution of the kept markers; ``speed_score`` uses the same
+    ``exp(-speed_ms / 150.0)`` decay and rounding (speeds 4dp, scores 6dp) as
+    the pytest python scorer. With no markers a passing run scores on
+    correctness alone.
+
+    Args:
+        samples: Iterable of kept per-run speed values (ms).
+        cmd_exit: The command's integer exit code.
+
+    Returns:
+        A score dict with the same field names/shape the pytest path writes.
+    """
+    aggregate = aggregate_speed_samples(samples)
+    speed_ms = aggregate["speed_ms"]
+
+    all_passed = cmd_exit == 0
+    correctness = 1.0 if all_passed else 0.0
+    n_passed, n_failed = (1, 0) if all_passed else (0, 1)
+
+    if speed_ms is not None and correctness > 0:
+        speed_score = math.exp(-speed_ms / 150.0)
+    else:
+        speed_score = 0.0
+
+    # No speed marker -> score on correctness alone (mirror the python path).
+    if speed_ms is None:
+        combined_score = correctness
+    else:
+        combined_score = correctness * speed_score
+
+    return {
+        "passed": n_passed,
+        "failed": n_failed,
+        "errors": 0,
+        "total": 1,
+        "duration_s": 0.0,
+        "speed_ms": speed_ms,
+        "speed_ms_median": aggregate["speed_ms_median"],
+        "speed_ms_mean": aggregate["speed_ms_mean"],
+        "speed_ms_stddev": aggregate["speed_ms_stddev"],
+        "speed_ms_samples": aggregate["speed_ms_samples"],
+        "runs": aggregate["runs"],
+        "correctness": correctness,
+        "speed_score": round(speed_score, 6),
+        "combined_score": round(combined_score, 6),
+        "all_passed": all_passed,
+        "cmd_exit": cmd_exit,
     }
 
 
@@ -469,6 +529,38 @@ def _normalize_packages(pip_install: Any) -> List[str]:
     return sorted(out)
 
 
+def _normalize_setup(setup: Any) -> List[str]:
+    """Coerce the ``sandbox.setup`` config into an ordered list of shell commands.
+
+    Accepts either a single string (one command) or a list of strings (like
+    ``_normalize_packages`` accepts for pip). Unlike pip packages, setup steps
+    are ORDER-SENSITIVE build commands, so — deliberately — order is preserved
+    and duplicates are NOT removed (a user may legitimately repeat a command).
+    Blank / whitespace-only entries are dropped.
+    """
+    if not setup:
+        return []
+    items = [setup] if isinstance(setup, str) else list(setup)
+    out = []
+    for it in items:
+        step = str(it).strip()
+        if step:
+            out.append(step)
+    return out
+
+
+def _base_image(sandbox_cfg: Optional[dict]) -> Optional[str]:
+    """Return the configured custom base image, or ``None`` for the default.
+
+    ``sandbox.image`` being null / absent / blank means "use the default
+    LoopBench Python sandbox" — i.e. behave exactly as today (design §C3, R6.2).
+    """
+    raw = (sandbox_cfg or {}).get("image")
+    if raw and str(raw).strip():
+        return str(raw).strip()
+    return None
+
+
 def ensure_deps_image(packages: List[str], repo_root: Optional[str] = None) -> str:
     """Return an image that has ``packages`` installed on top of the base image.
 
@@ -512,10 +604,134 @@ def ensure_deps_image(packages: List[str], repo_root: Optional[str] = None) -> s
     return tag
 
 
+def ensure_derived_image(
+    base: str,
+    setup: List[str],
+    packages: List[str],
+    repo_root: Optional[str] = None,
+    *,
+    is_default_base: bool,
+) -> str:
+    """Return an image layering ``setup`` steps (+ optional pip) on top of ``base``.
+
+    This generalizes :func:`ensure_deps_image` (design §C3, R6): it builds (with
+    network enabled — the ONLY networked step; the scored run still uses
+    ``--network=none``) a small derived image and caches it by a hash of the
+    resulting Dockerfile, which captures the base image, the ordered setup
+    steps, and the pip packages. Repeated runs with the same inputs reuse the
+    cached image. On any build failure it falls back to ``base`` and logs a
+    warning, exactly like :func:`ensure_deps_image`.
+
+    Args:
+        base: The base image to build FROM.
+        setup: Ordered shell commands to run on top of the base (``RUN`` lines).
+        packages: pip packages to layer. For the default Python base these are
+            installed as today; for a custom base a pip layer is added ONLY when
+            packages are present (a non-Python image may have no pip), so pip is
+            never forced (R6, §C3).
+        repo_root: Repo root, used as the Docker build context when the scorer
+            files must be copied in (custom base).
+        is_default_base: ``True`` when ``base`` is the LoopBench default Python
+            sandbox, which already bundles ``entrypoint.sh`` + ``score_generic.sh``
+            (built via :func:`build_sandbox_image`); no files are copied and the
+            Dockerfile is fed through stdin (no build context needed). ``False``
+            for a user-supplied image: the entrypoint + generic scorer are copied
+            into the derived image and the entrypoint is set, so the generic
+            (non-Python) scorer path works in any base image.
+    """
+    if is_default_base:
+        # The default base already has the entrypoint + scorer copied in; make
+        # sure it exists before layering on top of it.
+        if not build_sandbox_image(repo_root=repo_root):
+            return SANDBOX_IMAGE
+        base = SANDBOX_IMAGE
+
+    # Compose the derived Dockerfile. Order: FROM -> setup -> pip -> scorer glue.
+    lines = [f"FROM {base}"]
+    for step in setup:
+        lines.append(f"RUN {step}")
+    if packages:
+        lines.append(f"RUN pip install --no-cache-dir {' '.join(packages)}")
+    if not is_default_base:
+        # A custom base image has no idea about LoopBench's scoring contract.
+        # Layer the entrypoint + generic (awk-only) scorer into the image and
+        # set the entrypoint so the sandbox run + generic scorer work unchanged.
+        # These are copied from the repo build context (sandbox/*.sh).
+        lines.append("COPY sandbox/entrypoint.sh /sandbox/entrypoint.sh")
+        lines.append("COPY sandbox/score_generic.sh /sandbox/score_generic.sh")
+        lines.append("RUN chmod +x /sandbox/entrypoint.sh /sandbox/score_generic.sh")
+        lines.append('ENTRYPOINT ["/sandbox/entrypoint.sh"]')
+    dockerfile = "\n".join(lines) + "\n"
+
+    # Cache by a hash of the full Dockerfile (base + setup + packages + glue).
+    digest = hashlib.sha1(dockerfile.encode()).hexdigest()[:12]
+    tag = f"{SANDBOX_IMAGE}:derived-{digest}"
+
+    exists = subprocess.run(["docker", "image", "inspect", tag], capture_output=True)
+    if exists.returncode == 0:
+        return tag
+
+    if is_default_base:
+        # No files to copy → the Dockerfile itself is the whole build context.
+        build_cmd = ["docker", "build", "-t", tag, "-"]
+    else:
+        # COPY needs a real build context containing sandbox/*.sh.
+        if repo_root is None:
+            repo_root = str(Path(__file__).parent.parent.resolve())
+        build_cmd = ["docker", "build", "-t", tag, "-f", "-", repo_root]
+
+    print(f"[sandbox] Building derived image {tag} (base={base}, "
+          f"setup steps={len(setup)}, pip={len(packages)})")
+    try:
+        build = subprocess.run(
+            build_cmd,
+            input=dockerfile,
+            text=True,
+            capture_output=True,
+            timeout=600,
+        )
+    except (subprocess.TimeoutExpired, FileNotFoundError) as exc:
+        print(f"[sandbox] WARNING: derived image build failed ({exc}); using base image")
+        return base
+    if build.returncode != 0:
+        print(f"[sandbox] WARNING: derived image build failed; using base image.\n{build.stderr[-800:]}")
+        return base
+    print(f"[sandbox] Derived image ready: {tag}")
+    return tag
+
+
 def _resolve_image(sandbox_cfg: Optional[dict], repo_root: Optional[str]) -> str:
-    """Pick the container image, layering in pip dependencies when requested."""
-    packages = _normalize_packages((sandbox_cfg or {}).get("pip_install"))
-    return ensure_deps_image(packages, repo_root=repo_root)
+    """Pick the container image (design §C3, R6).
+
+    Behavior matrix:
+      * no ``sandbox.image`` and no ``sandbox.setup`` → EXACTLY today's behavior:
+        the default Python sandbox with pip packages layered by
+        :func:`ensure_deps_image` (byte-for-byte identical resolution).
+      * no ``sandbox.image`` but ``sandbox.setup`` present → derive on top of the
+        default Python base, running the setup steps and still layering pip.
+      * ``sandbox.image`` set → build FROM that base, running only the setup
+        steps (pip is never forced — layered only if packages are configured),
+        and layer the entrypoint + generic scorer so scoring works.
+    """
+    cfg = sandbox_cfg or {}
+    base = _base_image(cfg)
+    setup = _normalize_setup(cfg.get("setup"))
+    packages = _normalize_packages(cfg.get("pip_install"))
+
+    # Default Python sandbox with no setup → unchanged (back-compat, R6.2/R6.4).
+    if base is None and not setup:
+        return ensure_deps_image(packages, repo_root=repo_root)
+
+    if base is None:
+        # Default Python base + setup steps (pip still layered as today).
+        return ensure_derived_image(
+            SANDBOX_IMAGE, setup, packages, repo_root=repo_root, is_default_base=True
+        )
+
+    # Custom base image: run setup only; pip layered only if packages given.
+    return ensure_derived_image(
+        base, setup, packages, repo_root=repo_root, is_default_base=False
+    )
 
 
 def run_in_sandbox(
@@ -551,9 +767,13 @@ def run_in_sandbox(
     prog_path = Path(program_path).resolve()
     test_path = Path(test_file).resolve()
 
-    # Ensure image is built (and layer in any requested pip dependencies).
-    if not build_sandbox_image(repo_root=repo_root):
-        return _error_result("Docker image build failed")
+    # Ensure the image is ready. For the default Python sandbox we build the
+    # base image first (unchanged behavior). For a user-supplied
+    # ``sandbox.image`` we do NOT build the default base — _resolve_image derives
+    # straight from the custom base instead.
+    if _base_image(sandbox_cfg) is None:
+        if not build_sandbox_image(repo_root=repo_root):
+            return _error_result("Docker image build failed")
     image = _resolve_image(sandbox_cfg, repo_root)
 
     # ── Set up host directories ───────────────────────────────────────────────

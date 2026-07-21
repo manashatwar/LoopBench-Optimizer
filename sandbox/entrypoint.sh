@@ -19,6 +19,10 @@
 #   distribution (median / mean / stddev / samples / runs); speed_ms is the
 #   median so existing single-shot behavior is preserved when K == 1.
 
+# Directory holding this script (and its helper scorers), resolved from $0 so
+# the generic scorer can be located regardless of the working directory.
+SCRIPT_DIR=$(dirname "$0")
+
 RESULTS_DIR="/results"
 SCORE_FILE="$RESULTS_DIR/score.json"
 PYTEST_JSON="$RESULTS_DIR/pytest_report.json"
@@ -100,6 +104,17 @@ echo "────────────────────────�
 echo "[sandbox] command exit code: $CMD_EXIT"
 
 # ── Parse results and write score.json ────────────────────────────────────────
+# Two scoring paths (design §C3, R7):
+#   * pytest command  -> the python3 JSON-report parse below (unchanged).
+#   * any other command -> the generic shell/awk scorer, which needs NO python3
+#     so it works on non-Python images.
+if [ "$IS_PYTEST" -eq 0 ]; then
+    sh "$SCRIPT_DIR/score_generic.sh" "$EXIT_FILE" "$SAMPLES_FILE" "$SCORE_FILE"
+    echo "[sandbox] score.json written by generic scorer (exit=$CMD_EXIT)"
+    echo "[sandbox] Done."
+    exit 0
+fi
+
 python3 - <<'PYEOF'
 import json
 import math

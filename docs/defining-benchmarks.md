@@ -526,6 +526,128 @@ set).
 
 ---
 
+## Running non-Python toolchains (any language)
+
+Everything above assumes the default sandbox — a Python image running pytest.
+But the correctness/speed contract is language-agnostic: a candidate passes if a
+command exits `0`, and its speed is whatever it prints as `LOOPBENCH_SPEED_MS`.
+Two config keys let you point that contract at a Node, Go, Rust, or any other
+toolchain by swapping the base image.
+
+### `sandbox.image` — a custom base image
+
+`sandbox.image` (default `null` → the default LoopBench Python sandbox) sets the
+base Docker image the candidate runs and is scored in. Point it at any image
+that has your toolchain:
+
+```yaml
+sandbox:
+  image: node:20-alpine        # or golang:1.22-alpine, rust:1-slim, …
+```
+
+Leaving it unset (or blank) keeps today's behavior exactly — the Python sandbox,
+byte-for-byte. When you do set it, LoopBench builds a small derived image on top
+of your base and layers in its own entrypoint + scorer automatically (see
+[How scoring works without Python](#how-scoring-works-without-python) below), so
+you only supply the base image, any build steps, and a command.
+
+### `sandbox.setup` — one-time build steps
+
+`sandbox.setup` (default `[]` → none) is an ordered list of shell commands run
+**once at image-build time**, on top of the base, before any candidate runs.
+Use it to install dependencies or compile a project:
+
+```yaml
+sandbox:
+  image: node:20-alpine
+  setup:
+    - npm ci
+    - npm run build
+```
+
+A single string is also accepted (`setup: "npm ci"`) and treated as one step.
+Order is preserved and steps are not de-duplicated — they are literal `RUN`
+lines in the derived image, so `npm ci` then `npm run build` run in that order.
+
+The derived image is cached by a hash of the base image, the setup steps, and
+any pip packages, so repeated runs reuse it instead of rebuilding. As with the
+Python dependency layer, **the build is the only step with network access** —
+the scored run still executes with `--network=none`.
+
+> pip is never forced onto a custom base. `sandbox.pip` packages are layered
+> only when you actually declare them, so an image without Python (or without
+> pip) works fine.
+
+### How scoring works without Python
+
+For a **pytest** `sandbox.command` (or `--test-command`), scoring is unchanged —
+the structured pass/fail report drives correctness. For **any other** command,
+LoopBench uses a toolchain-agnostic scorer written in shell + `awk` with **no
+`python3` dependency**, so it runs on images that have no Python at all:
+
+- **Correctness** = the command's exit code (`0` = pass, nonzero = fail).
+- **Speed** = the median of the `LOOPBENCH_SPEED_MS` markers the command prints
+  (across [repeats](#measuring-speed-reliably-statistical-speed-gate), warm-up
+  dropped when `repeats >= 3`).
+
+The formula, rounding, and `score.json` fields are identical to the Python
+scorer for the same inputs — the only difference is the implementation language.
+When you use a custom image, LoopBench copies its entrypoint and this generic
+scorer into the derived image and sets the entrypoint for you; nothing about the
+scoring contract changes.
+
+> **Limitation — correctness is exit-code based.** Outside the pytest path there
+> is no structured test report, so a non-pytest command must **exit nonzero when
+> it fails** and `0` only when it truly passes. If your command always exits `0`
+> (e.g. a runner that prints "FAILED" but returns success), correctness will
+> read as passing. Make the command itself assert and exit nonzero on failure —
+> or run your tests through pytest to get report-based correctness.
+
+### Worked example — a Node target
+
+Optimize a Node solution. The target prints `LOOPBENCH_SPEED_MS=<ms>` for the
+hot path and exits `0` when the result is correct (nonzero otherwise):
+
+```javascript
+// solution.js
+function solve(n) { /* the hot path being optimized */ }
+
+const t0 = process.hrtime.bigint();
+const result = solve(50000);
+const elapsedMs = Number(process.hrtime.bigint() - t0) / 1e6;
+
+console.log(`LOOPBENCH_SPEED_MS=${elapsedMs}`);   // <- LoopBench reads this
+process.exit(result === 1666416667 ? 0 : 1);       // exit 0 = pass, nonzero = fail
+```
+
+```yaml
+# loopbench.yaml
+target:
+  file: solution.js
+
+sandbox:
+  image: node:20-alpine
+  setup: ["npm ci"]            # omit if the target has no dependencies
+  command: "node solution.js"  # non-pytest → exit-code correctness + speed marker
+
+metric:
+  name: "combined_score"
+```
+
+```bash
+loopbench run --config loopbench.yaml
+```
+
+LoopBench builds `node:20-alpine` + `npm ci` once, then runs `node solution.js`
+per candidate with `--network=none`, scoring correctness from the exit code and
+speed from the printed marker — the same `combined_score = correctness × speed`
+you get in Python mode. See
+[Custom sandbox commands](#custom-sandbox-commands-any-testbenchmark-runner) for
+the command key and [Third-party dependencies](#third-party-dependencies-numpy-pandas-)
+for how the caching layer relates to `sandbox.pip`.
+
+---
+
 ## Inspecting the benchmark result
 
 Every run writes artifacts to `loopbench_output/` (hero mode) or your
